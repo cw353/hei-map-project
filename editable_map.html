@@ -79,10 +79,9 @@
       });
     }
 
-    function changeMarkerPopupContent(marker, newContent) {
+    function updateMarkerPopupContent(marker, newContent) {
       marker.closePopup();
       marker.setPopupContent(newContent);
-      //marker.openPopup();
     }
 
     function getEditMarkerUI(latlngString) {
@@ -148,12 +147,19 @@
               }),
             ],
           }),
-          createButton("Cancel", () => {
-            console.log("editMarkerForm cancel button clicked");
-            changeMarkerPopupContent(markerRecord.markerReference, getViewMarkerUI(latlngString));
-          }), 
-          createButton("Save", () => {
-            console.log("editMarkerForm save button clicked");
+          createButton("Delete Marker", () => {
+            if (window.confirm("Are you sure you want to delete this marker?")) {
+              markerRecord.markerReference.closePopup();
+              markerRecords.delete(latlngString);
+              markerRecord.markerReference.removeFrom(markerLayerGroup);
+            }
+          }),
+          createButton("Discard Changes", () => {
+            if (window.confirm("Are you sure you want to discard your changes?")) {
+              updateMarkerPopupContent(markerRecord.markerReference, getEditMarkerUI(latlngString));
+            }
+          }),
+          createButton("Save Changes", () => {
             markerRecords.set(latlngString, {
               markerReference: markerRecord.markerReference, // !!! edit this later to account for case where marker does not exist?
               label: form.elements["label"].value,
@@ -161,40 +167,12 @@
               color: form.elements["color"].value,
             });
             markerRecord.markerReference.setIcon(generateIcon(form.elements["color"].value));
-            changeMarkerPopupContent(markerRecord.markerReference, getViewMarkerUI(latlngString));
+            updateMarkerPopupContent(markerRecord.markerReference, getEditMarkerUI(latlngString));
             console.log(JSON.stringify(markerRecords.get(latlngString), ["label", "notes", "color",]));
           }),
         ]
       });
       return form;
-    }
-
-    function getViewMarkerUI(latlngString) {
-      const markerRecord = markerRecords.get(latlngString);
-      const view = createElement({
-        type: "div",
-        attributes: [["id", "viewMarkerDiv"]],
-        children: [
-          createElement({
-            type: "p",
-            text: markerRecord.label,
-          }),
-          createElement({
-            type: "p",
-            text: markerRecord.notes
-              ? "Notes: " + markerRecord.notes
-              : "No notes have been added yet.",
-          }),
-          createButton("Delete", () => {
-            console.log("delete button clicked");
-          }), 
-          createButton("Edit", () => {
-            console.log("edit button clicked");
-            changeMarkerPopupContent(markerRecord.markerReference, getEditMarkerUI(latlngString));
-          }),
-        ]
-      });
-      return view;
     }
 
     function getDefaultMarkerRecord(markerReference) {
@@ -218,10 +196,10 @@
       } else {
         const popup = L.popup({
           keepInView : true,
-          /*closeButton : false,
+          closeButton : false,
           autoClose : false,
           closeOnEscapeKey : false,
-          closeOnClick : false,*/
+          closeOnClick : false,
         });
         // create marker
         const marker = L.marker(event.latlng, {
