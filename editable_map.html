@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Editable Map Draft 5</title>
+  <title>Editable Map</title>
 
   <!-- Leaflet CDN -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
@@ -79,6 +79,12 @@
       });
     }
 
+    function changeMarkerPopupContent(marker, newContent) {
+      marker.closePopup();
+      marker.setPopupContent(newContent);
+      //marker.openPopup();
+    }
+
     function getEditMarkerUI(latlngString) {
       // !!! account for case where marker doesn't yet exist?
       const markerRecord = markerRecords.get(latlngString);
@@ -128,15 +134,15 @@
           createElement({
             type: "p",
             children: [
-              // textarea for editing marker description
+              // textarea for editing marker notes
               createElement({
                 type: "label",
-                text: "Edit description:",
+                text: "Edit notes:",
                 children: [
                   createElement({
                     type: "textarea",
-                    text: markerRecord.description, // populate textarea with current description
-                    attributes: [["name", "description"], ["rows", "5"], ["cols", "30"]],
+                    text: markerRecord.notes, // populate textarea with current notes
+                    attributes: [["name", "notes"], ["rows", "5"], ["cols", "30"]],
                   })
                 ],
               }),
@@ -144,18 +150,19 @@
           }),
           createButton("Cancel", () => {
             console.log("editMarkerForm cancel button clicked");
+            changeMarkerPopupContent(markerRecord.markerReference, getViewMarkerUI(latlngString));
           }), 
           createButton("Save", () => {
             console.log("editMarkerForm save button clicked");
             markerRecords.set(latlngString, {
-              markerReference: markerRecords.get(latlngString).markerReference, // !!! edit this later to account for case where marker does not exist?
+              markerReference: markerRecord.markerReference, // !!! edit this later to account for case where marker does not exist?
               label: form.elements["label"].value,
-              description: form.elements["description"].value,
+              notes: form.elements["notes"].value,
               color: form.elements["color"].value,
             });
-            markerRecords.get(latlngString).markerReference.setIcon(generateIcon(form.elements["color"].value));
-            console.log(markerRecords.get(latlngString).markerReference != undefined);
-            console.log(JSON.stringify(markerRecords.get(latlngString), ["label", "description", "color",]));
+            markerRecord.markerReference.setIcon(generateIcon(form.elements["color"].value));
+            changeMarkerPopupContent(markerRecord.markerReference, getViewMarkerUI(latlngString));
+            console.log(JSON.stringify(markerRecords.get(latlngString), ["label", "notes", "color",]));
           }),
         ]
       });
@@ -163,13 +170,38 @@
     }
 
     function getViewMarkerUI(latlngString) {
+      const markerRecord = markerRecords.get(latlngString);
+      const view = createElement({
+        type: "div",
+        attributes: [["id", "viewMarkerDiv"]],
+        children: [
+          createElement({
+            type: "p",
+            text: markerRecord.label,
+          }),
+          createElement({
+            type: "p",
+            text: markerRecord.notes
+              ? "Notes: " + markerRecord.notes
+              : "No notes have been added yet.",
+          }),
+          createButton("Delete", () => {
+            console.log("delete button clicked");
+          }), 
+          createButton("Edit", () => {
+            console.log("edit button clicked");
+            changeMarkerPopupContent(markerRecord.markerReference, getEditMarkerUI(latlngString));
+          }),
+        ]
+      });
+      return view;
     }
 
     function getDefaultMarkerRecord(markerReference) {
       return {
         markerReference: markerReference,
-        label: "",
-        description: "",
+        label: "Unnamed Marker",
+        notes: "",
         color: "#0000ff",
       }
     }
