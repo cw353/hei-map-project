@@ -19,10 +19,34 @@
     #map {
       position: relative;
       width: 100%;
-      height: 700px;
+      height: 500px;
       left: 0;
       top: 0;
     }
+
+    .flexColumn {
+      display: flex;
+      flex-direction: column;
+    }
+
+    button {
+      margin: 5px;
+      border-color: grey;
+      border-style: solid;
+    }
+
+    .warning {
+      background-color: #ff5370;
+    }
+
+    .defaultOption {
+      background-color: #6699ff;
+    }
+
+    .warning:hover, .defaultOption:hover {
+      color: #eeffff;
+    }
+
   </style>
     
 </head>
@@ -84,24 +108,24 @@
       marker.setPopupContent(newContent);
     }
 
-    function getEditMarkerUI(latlngString) {
+    function getEditMarkerUI(latlng) {
       // !!! account for case where marker doesn't yet exist?
+      const latlngString = JSON.stringify(latlng);
       const markerRecord = markerRecords.get(latlngString);
-
       const form = createElement({
-        type: "form",
-        attributes: [["id", "editMarkerForm"]],
+        // input for editing marker label
+        tag: "form",
+        attributes: [["id", "editMarkerForm"], ["class", "editMarkerForm"]],
         children: [
           createElement({
-            type: "p",
+            tag: "p",
             children: [
-              // input for editing marker label
               createElement({
-                type: "label",
-                text: "Edit label: ",
+                tag: "label",
+                text: "Label: ",
                 children: [
                   createElement({
-                    type: "input",
+                    tag: "input",
                     attributes: [
                       ["name", "label"], ["type", "text"],
                       ["value", markerRecord.label], // populate input with current label
@@ -111,16 +135,16 @@
               })
             ]
           }),
+          // input for editing marker color
           createElement({
-            type: "p",
+            tag: "p",
             children: [
-              // input for editing marker color
               createElement({
-                type: "label",
-                text: "Edit color: ",
+                tag: "label",
+                text: "Color: ",
                 children: [
                   createElement({
-                    type: "input",
+                    tag: "input",
                     attributes: [
                       ["name", "color"], ["type", "color"],
                       ["value", markerRecord.color], // populate input with current label
@@ -130,45 +154,60 @@
               })
             ]
           }),
+          // textarea for editing marker notes
           createElement({
-            type: "p",
+            tag: "p",
             children: [
-              // textarea for editing marker notes
               createElement({
-                type: "label",
-                text: "Edit notes:",
+                tag: "label",
+                text: "Notes:",
+                attributes: [["class", "flexColumn"]],
                 children: [
                   createElement({
-                    type: "textarea",
+                    tag: "textarea",
                     text: markerRecord.notes, // populate textarea with current notes
-                    attributes: [["name", "notes"], ["rows", "5"], ["cols", "30"]],
+                    attributes: [["name", "notes"], ["rows", "5"], ["cols", "30"], ["class", "flexColumn"]],
                   })
                 ],
               }),
             ],
           }),
-          createButton("Delete Marker", () => {
+          /*createButton("Delete Marker", () => {
             if (window.confirm("Are you sure you want to delete this marker?")) {
               markerRecord.markerReference.closePopup();
               markerRecords.delete(latlngString);
               markerRecord.markerReference.removeFrom(markerLayerGroup);
             }
+          }),*/
+          createElement({
+            tag: "button",
+            text: "Save Changes",
+            attributes: [["type", "button"], ["name", "saveChangesButton"], ["class", "defaultOption"]],
+            eventListeners: [
+              ["click", () => {
+                markerRecords.set(latlngString, {
+                  markerReference: markerRecord.markerReference, // !!! edit this later to account for case where marker does not exist?
+                  label: form.elements["label"].value,
+                  notes: form.elements["notes"].value,
+                  color: form.elements["color"].value,
+                });
+                markerRecord.markerReference.setIcon(generateIcon(form.elements["color"].value));
+                updateMarkerPopupContent(markerRecord.markerReference, getEditMarkerUI(latlng));
+              }],
+            ],
           }),
-          createButton("Discard Changes", () => {
-            if (window.confirm("Are you sure you want to discard your changes?")) {
-              updateMarkerPopupContent(markerRecord.markerReference, getEditMarkerUI(latlngString));
-            }
-          }),
-          createButton("Save Changes", () => {
-            markerRecords.set(latlngString, {
-              markerReference: markerRecord.markerReference, // !!! edit this later to account for case where marker does not exist?
-              label: form.elements["label"].value,
-              notes: form.elements["notes"].value,
-              color: form.elements["color"].value,
-            });
-            markerRecord.markerReference.setIcon(generateIcon(form.elements["color"].value));
-            updateMarkerPopupContent(markerRecord.markerReference, getEditMarkerUI(latlngString));
-            console.log(JSON.stringify(markerRecords.get(latlngString), ["label", "notes", "color",]));
+          createElement({
+            tag: "button",
+            text: "Discard Changes",
+            attributes: [["type", "button"], ["name", "discardChangesButton"], ["class", "warning"]],
+            eventListeners: [
+              ["click", () => {
+                console.log(form.elements["discardChangesButton"].classList);
+                if (window.confirm("Are you sure you want to discard your changes?")) {
+                  updateMarkerPopupContent(markerRecord.markerReference, getEditMarkerUI(latlng));
+                }
+              }],
+            ],
           }),
         ]
       });
@@ -207,8 +246,7 @@
         });
         // add marker to map
         markerRecords.set(latlngString, getDefaultMarkerRecord(marker));
-        popup.setContent(getEditMarkerUI(latlngString));
-        console.log(markerRecords.get(latlngString) == undefined);
+        popup.setContent(getEditMarkerUI(event.latlng));
         marker
           .bindPopup(popup)
           .addTo(markerLayerGroup)

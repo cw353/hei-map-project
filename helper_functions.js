@@ -19,7 +19,7 @@ function createButton(text, onClick) {
  * @param element An object describing the element to create.
  */
 function createElement(element) {
-  const e = document.createElement(element.type);
+  const e = document.createElement(element.tag);
   if (element.text) {
     e.appendChild(document.createTextNode(element.text));
   }
@@ -33,6 +33,11 @@ function createElement(element) {
       if (child) {
         e.appendChild(child);
       }
+    }
+  }
+  if (element.eventListeners) {
+    for (const listenerPair of element.eventListeners) {
+      e.addEventListener(listenerPair[0], listenerPair[1]);
     }
   }
   return e;
