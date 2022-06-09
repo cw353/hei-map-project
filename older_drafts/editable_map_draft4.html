@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Editable Map</title>
+
+  <!-- Leaflet CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+    integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+    crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+    integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+    crossorigin=""></script>
+  <script src="helper_functions.js"></script>
+
+  <style>
+    #map {
+      position: relative;
+      width: 100%;
+      height: 700px;
+      left: 0;
+      top: 0;
+    }
+  </style>
+    
+</head>
+
+<body>
+
+  <div id="controlButtons"></div>
+  <div id="map"></div>
+
+  <script>
+
+    // create map
+    const map = L.map("map", {
+      center: [41.783, -87.621],
+      zoom: 5,
+    });
+
+    // add tiles to map
+    const tiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap"
+    }).addTo(map);
+
+    // data structure to track markers
+    const markers = new Map();
+
+    // create marker layer
+    const markerLayerGroup = L.layerGroup().addTo(map);
+
+    function getEditMarkerUI(popup) {
+      const markerRecord = {
+        "color" : "#e66465",
+        "label" : "Placeholder Label",
+        "description" : "This is a sample description.",
+      }; // placeholder for development
+      // form for editing the marker
+      return createElement({
+        type: "form",
+        attributes: [["id", "editMarkerForm"]],
+        children: [
+          createElement({
+            type: "p",
+            children: [
+              // input for editing marker label
+              createElement({
+                type: "label",
+                text: "Edit label: ",
+                children: [
+                  createElement({
+                    type: "input",
+                    attributes: [
+                      ["id", "editMarkerLabel"], ["type", "text"],
+                      ["value", markerRecord.label], // populate input with current label
+                    ],
+                  })
+                ],
+              })
+            ]
+          }),
+          createElement({
+            type: "p",
+            children: [
+              // input for editing marker color
+              createElement({
+                type: "label",
+                text: "Edit color: ",
+                children: [
+                  createElement({
+                    type: "input",
+                    attributes: [
+                      ["id", "editMarkerColor"], ["type", "color"],
+                      ["value", markerRecord.color], // populate input with current label
+                    ],
+                  })
+                ],
+              })
+            ]
+          }),
+          createElement({
+            type: "p",
+            children: [
+              // textarea for editing marker description
+              createElement({
+                type: "label",
+                text: "Edit description:",
+                children: [
+                  createElement({
+                    type: "textarea",
+                    text: markerRecord.description, // populate textarea with current description
+                    attributes: [["id", "editMarkerDescription"], ["rows", "5"], ["cols", "30"]],
+                  })
+                ],
+              }),
+            ],
+          }),
+          createButton("Cancel", () => map.closePopup(popup)),
+          createButton("Save", () => map.closePopup(popup)),
+        ]
+      });
+    }
+
+    /**
+     * Function to run whenever the map is clicked.
+     */
+    function onMapClick(event) {
+      const latlngString = JSON.stringify(event.latlng);
+      // if a marker with these coordinates has already been added to the map, open its popup
+      // otherwise, add a marker to the map at these coordinates
+      if (markers.has(latlngString)) {
+        markers.get(latlngString).markerObject.openPopup();
+      } else {
+        const popup = L.popup({
+          keepInView : true,
+          /*closeButton : false,
+          autoClose : false,
+          closeOnEscapeKey : false,
+          closeOnClick : false,*/
+        });
+        popup.setContent(getEditMarkerUI(popup));
+        // create marker
+        const marker = L.marker(event.latlng) // create a new marker
+          .bindPopup(popup) // add popup
+          .addTo(markerLayerGroup) // add to layer group (and map)
+          .openPopup();
+        // add marker to map
+        markers.set(latlngString, {
+          markerObject: marker,
+          label: null,
+          description: null,
+        });
+      }
+    }
+
+    // add click event listener to map
+    map.on("click", onMapClick);
+    
+    document.getElementById("controlButtons").appendChild(createButton("Clear Markers", () => {
+      // also reset markers set
+      markerLayerGroup.clearLayers();
+      markers.clear();
+      console.log("markerLayerGroup cleared");
+    }));
+
+    // TODO: consider making markers draggable (would have to add "move" event listener)
+  </script>   
+
+</body>
+
+</html>
+<!-- references:
+  https://github.com/Leaflet/Leaflet/tree/main/docs/examples (BSD 2-Clause license)
+  https://stackoverflow.com/a/59052053 (CC BY-SA 4.0 license)
+-->

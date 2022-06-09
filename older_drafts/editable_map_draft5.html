@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Editable Map Draft 5</title>
+
+  <!-- Leaflet CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+    integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+    crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+    integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+    crossorigin=""></script>
+  <script src="helper_functions.js"></script>
+
+  <style>
+    #map {
+      position: relative;
+      width: 100%;
+      height: 700px;
+      left: 0;
+      top: 0;
+    }
+  </style>
+    
+</head>
+
+<body>
+
+  <div id="controlButtons"></div>
+  <div id="map"></div>
+
+  <script>
+
+    // create map
+    const map = L.map("map", {
+      center: [41.783, -87.621],
+      zoom: 5,
+    });
+
+    // add tiles to map
+    const tiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap"
+    }).addTo(map);
+
+    // data structure to track markerRecords
+    const markerRecords = new Map();
+
+    // create marker layer
+    const markerLayerGroup = L.layerGroup().addTo(map);
+
+    
+    /**
+     * Generate a custom icon with the specified fill color.
+     * The icon is based on https://commons.wikimedia.org/wiki/File:Octicons-location.svg (MIT license).
+     * Resources referenced: https://onestepcode.com/leaflet-markers-svg-icons/.
+     * @param color The fill color.
+     * @returns The custom icon with the specified fill color.
+     */
+     function generateIcon(color) {
+      return L.divIcon({
+        className: "custom_divicon",
+        iconSize: [26, 50],
+        popupAnchor: [0,-13],
+        html:
+          `<svg
+            width="25"
+            height="50"
+            viewBox="0 0 640 1024"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M320 0c-177 0-320 143-320 320s160 416 320 704c160-288 320-527 320-704s-143-320-320-320z m0 448c-71 0-128-57-128-128s57-128 128-128 128 57 128 128-57 128-128 128z"
+              fill=${color}
+            />
+          </svg>`
+      });
+    }
+
+    function getEditMarkerUI(latlngString) {
+      // !!! account for case where marker doesn't yet exist?
+      const markerRecord = markerRecords.get(latlngString);
+
+      const form = createElement({
+        type: "form",
+        attributes: [["id", "editMarkerForm"]],
+        children: [
+          createElement({
+            type: "p",
+            children: [
+              // input for editing marker label
+              createElement({
+                type: "label",
+                text: "Edit label: ",
+                children: [
+                  createElement({
+                    type: "input",
+                    attributes: [
+                      ["name", "label"], ["type", "text"],
+                      ["value", markerRecord.label], // populate input with current label
+                    ],
+                  })
+                ],
+              })
+            ]
+          }),
+          createElement({
+            type: "p",
+            children: [
+              // input for editing marker color
+              createElement({
+                type: "label",
+                text: "Edit color: ",
+                children: [
+                  createElement({
+                    type: "input",
+                    attributes: [
+                      ["name", "color"], ["type", "color"],
+                      ["value", markerRecord.color], // populate input with current label
+                    ],
+                  })
+                ],
+              })
+            ]
+          }),
+          createElement({
+            type: "p",
+            children: [
+              // textarea for editing marker description
+              createElement({
+                type: "label",
+                text: "Edit description:",
+                children: [
+                  createElement({
+                    type: "textarea",
+                    text: markerRecord.description, // populate textarea with current description
+                    attributes: [["name", "description"], ["rows", "5"], ["cols", "30"]],
+                  })
+                ],
+              }),
+            ],
+          }),
+          createButton("Cancel", () => {
+            console.log("editMarkerForm cancel button clicked");
+          }), 
+          createButton("Save", () => {
+            console.log("editMarkerForm save button clicked");
+            markerRecords.set(latlngString, {
+              markerReference: markerRecords.get(latlngString).markerReference, // !!! edit this later to account for case where marker does not exist?
+              label: form.elements["label"].value,
+              description: form.elements["description"].value,
+              color: form.elements["color"].value,
+            });
+            markerRecords.get(latlngString).markerReference.setIcon(generateIcon(form.elements["color"].value));
+            console.log(markerRecords.get(latlngString).markerReference != undefined);
+            console.log(JSON.stringify(markerRecords.get(latlngString), ["label", "description", "color",]));
+          }),
+        ]
+      });
+      return form;
+    }
+
+    function getViewMarkerUI(latlngString) {
+    }
+
+    function getDefaultMarkerRecord(markerReference) {
+      return {
+        markerReference: markerReference,
+        label: "",
+        description: "",
+        color: "#0000ff",
+      }
+    }
+
+    /**
+     * Function to run whenever the map is clicked.
+     */
+    function onMapClick(event) {
+      const latlngString = JSON.stringify(event.latlng);
+      // if a marker with these coordinates has already been added to the map, open its popup
+      // otherwise, add a marker to the map at these coordinates
+      if (markerRecords.has(latlngString)) {
+        markerRecords.get(latlngString).markerReference.openPopup();
+      } else {
+        const popup = L.popup({
+          keepInView : true,
+          /*closeButton : false,
+          autoClose : false,
+          closeOnEscapeKey : false,
+          closeOnClick : false,*/
+        });
+        // create marker
+        const marker = L.marker(event.latlng, {
+          icon : generateIcon("#0000ff"),
+        });
+        // add marker to map
+        markerRecords.set(latlngString, getDefaultMarkerRecord(marker));
+        popup.setContent(getEditMarkerUI(latlngString));
+        console.log(markerRecords.get(latlngString) == undefined);
+        marker
+          .bindPopup(popup)
+          .addTo(markerLayerGroup)
+          .openPopup();
+      }
+    }
+
+    // add click event listener to map
+    map.on("click", onMapClick);
+    
+    document.getElementById("controlButtons").appendChild(createButton("Clear markerRecords", () => {
+      // also reset markerRecords set
+      markerLayerGroup.clearLayers();
+      markerRecords.clear();
+      console.log("markerLayerGroup cleared");
+    }));
+
+    // TODO: consider making markerRecords draggable (would have to add "move" event listener)
+  </script>   
+
+</body>
+
+</html>
+<!-- references:
+  https://github.com/Leaflet/Leaflet/tree/main/docs/examples (BSD 2-Clause license)
+  https://stackoverflow.com/a/59052053 (CC BY-SA 4.0 license)
+-->

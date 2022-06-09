@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Editable Map</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+    integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+    crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+    integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+    crossorigin=""></script>
+  <script
+    src="https://code.jquery.com/jquery-3.6.0.js"
+    integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+    crossorigin="anonymous"></script>
+
+  <style>
+    #map {
+      position: relative;
+      width: 100%;
+      height: 700px;
+      left: 0;
+      top: 0;
+    }
+  </style>
+    
+</head>
+
+<body>
+
+  <div id="map"></div>
+
+  <script>
+
+    // create map
+
+    var map = L.map("map", {
+      center: [41.783, -87.621],
+      zoom: 13,
+    });
+
+    var tiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap"
+    }).addTo(map);
+
+    /*function buttonClickTest(coordinates) {
+      alert("coordinates:");
+      L.popup()
+        .setLatLng(coordinates)
+        .setContent(testButton)
+        .openOn(map);
+    }
+
+    var coordinates = L.latLng(41.780465, -87.629442);
+
+    function getOnClickContent(latlng) {
+      return `<div>\
+      Add a marker to the map at this location?\
+      <br\>\
+      <button>Cancel</button>\
+      <button onclick=alert(${latlng})>Add Marker</button>\
+      </div>`;
+    }*/
+
+      //41.780465, -87.629442
+    function onMapClick(e) {
+
+      //button.appendChild(document.createTextNode("Add Marker Test"));
+
+
+      var $testButton = document.createElement("button");
+      $testButton.appendChild(document.createTextNode("Test"));
+      $testButton.setAttribute("id", "testbutton")
+
+      var onClickPopup = L.popup({
+        keepInView: true, // prevent user from panning the popup out of view
+      })
+        .setLatLng(e.latlng)
+        .setContent($testButton)
+        .openOn(map);
+
+      $testButtonRef = $("#testbutton");
+      //testButton.setAttribute("onclick", function() { alert("setAttribute test");})
+      /*$testButtonRef.click(function() {
+        alert("jquery click test 2");
+      });*/
+
+      $( "#testbutton" ).click(function() {
+        alert("jquery click test");
+      })
+    }
+
+    map.on("click", onMapClick);
+
+  </script>   
+
+</body>
+
+</html>
+<!-- reference: https://github.com/Leaflet/Leaflet/tree/main/docs/examples (BSD 2-Clause License) -->
