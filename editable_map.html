@@ -56,28 +56,6 @@
       color: #eeffff;
     }
 
-    .iconButton {
-      padding-top: 2px;
-      padding-bottom: 2px;
-      vertical-align: middle;
-      align-items: center;
-      text-align: center;
-    }
-
-    /* reference: https://stackoverflow.com/a/2920238 (CC BY-SA 3.0) */
-    .bgIconButton {
-      background-image: url(https://upload.wikimedia.org/wikipedia/commons/a/a0/Font_Awesome_5_regular_arrow-alt-circle-up.svg);
-      background-position: left center;
-      background-repeat: no-repeat;
-      background-origin: padding-box;
-      background-size: 20px 20px;
-      height: 30px;
-      padding-left: 30px;
-      vertical-align: middle;
-      text-align: center;
-      align-items: center;
-    }
-
     .transparentButton {
       border: none;
       background-color: transparent;
@@ -97,62 +75,18 @@
 
 <body>
 
-  <!-- 
-    https://commons.wikimedia.org/wiki/Category:SVG_arrow_icons:_Noun_project
-    https://commons.wikimedia.org/wiki/File:Download_(4501)_-_The_Noun_Project.svg
-    https://commons.wikimedia.org/wiki/File:Download_(89523)_-_The_Noun_Project.svg,
-    https://commons.wikimedia.org/wiki/File:Noun_project_-_Upload.svg
-    https://commons.wikimedia.org/wiki/File:Upload_(89524)_-_The_Noun_Project.svg
-  -->
   <div id="globalButtonDiv" class="globalButtonDiv flexRow">
-    <button type="button" style="text-align: center">
-      <div class="bgIconButton">Import Markers</div>
-      <!-- https://commons.wikimedia.org/wiki/File:Font_Awesome_5_regular_arrow-alt-circle-up.svg (CC BY 4.0 license)-->
-      <!--img
-        src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Font_Awesome_5_regular_arrow-alt-circle-up.svg"
-        alt="import icon"
-        width="20px"
-        height="20px"
-      /-->
-    </button>
-    <button type="button" class="bgIconButton">
-      <!-- https://commons.wikimedia.org/wiki/File:Font_Awesome_5_regular_arrow-alt-circle-up.svg (CC BY 4.0 license)-->
-      <!--img
-      src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Font_Awesome_5_regular_arrow-alt-circle-up.svg"
-      alt="import icon"
-      width="20px"
-      height="20px"
-      style="transform: rotate(0.5turn)"
-    /-->
-      Export Markers
-    </button>
-
-    <button type="button" class="iconButton">
-      <!-- https://commons.wikimedia.org/wiki/File:Font_Awesome_5_regular_arrow-alt-circle-up.svg (CC BY 4.0 license)-->
-      <img
-        src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Font_Awesome_5_regular_arrow-alt-circle-up.svg"
-        alt="import icon"
-        width="20px"
-        height="20px"
-      />
+    <button type="button">
       Import Markers
     </button>
-    <button type="button" class="iconButton">
-      <!-- https://commons.wikimedia.org/wiki/File:Font_Awesome_5_regular_arrow-alt-circle-up.svg (CC BY 4.0 license)-->
-      <img
-      src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Font_Awesome_5_regular_arrow-alt-circle-up.svg"
-      alt="import icon"
-      width="20px"
-      height="20px"
-      style="transform: rotate(0.5turn)"
-    />
+    <button type="button">
       Export Markers
     </button>
-
     <button type="button">
       Delete Markers
     </button>
   </div>
+
   <div id="map"></div>
 
   <script>
@@ -174,6 +108,42 @@
     // create marker layer
     const markerLayerGroup = L.layerGroup().addTo(map);
 
+    function hasMarkerRecord(recordKey) {
+      for (const key of markerRecords.keys()) {
+        if (markerRecords.get(key).has(recordKey)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function getMarkerRecord(recordKey) {
+      for (const key of markerRecords.keys()) {
+        if (markerRecords.get(key).has(recordKey)) {
+          return markerRecords.get(key).get(recordKey);
+        }
+      }
+      return null;
+    }
+
+    function setMarkerRecord(categoryName, recordKey, recordValue) {
+      if (!(markerRecords.has(categoryName))) {
+        markerRecords.set(categoryName, new Map());
+      }
+      markerRecords.get(categoryName).set(recordKey, recordValue);
+    }
+
+    function deleteMarkerRecord(categoryName, recordKey) {
+      if (markerRecords.has(categoryName)) {
+        markerRecords.get(categoryName).delete(recordKey);
+      }
+    }
+
+    const categories = [
+      "Unsorted",
+      "Houses",
+      "Vacant Lots",
+    ]
     
     /**
      * Generate a custom icon with the specified fill color.
@@ -213,7 +183,7 @@
     function getEditMarkerUI(latlng) {
       // !!! account for case where marker doesn't yet exist?
       const latlngString = JSON.stringify(latlng);
-      const markerRecord = markerRecords.get(latlngString);
+      const markerRecord = getMarkerRecord(latlngString);
       const form = createElement({
         // input for editing marker label
         tag: "form",
@@ -227,6 +197,7 @@
                 // close popup before deleting it
                 markerRecord.markerReference.closePopup();
                 // delete marker record
+                deleteMarkerRecord(markerRecord.category, latlngString);
                 markerRecords.delete(latlngString);
                 // remove marker from markerLayerGroup
                 markerRecord.markerReference.removeFrom(markerLayerGroup);
@@ -302,11 +273,23 @@
           }),
           createElement({
             tag: "button",
+            text: "Discard Changes",
+            attributes: [["type", "button"], ["class", "warning"]],
+            eventListeners: [
+              ["click", () => {
+                if (window.confirm("Are you sure you want to discard your changes?")) {
+                  updateMarkerPopupContent(markerRecord.markerReference, getEditMarkerUI(latlng));
+                }
+              }],
+            ],
+          }),
+          createElement({
+            tag: "button",
             text: "Save Changes",
             attributes: [["type", "button"], ["class", "defaultOption"]],
             eventListeners: [
               ["click", () => {
-                markerRecords.set(latlngString, {
+                setMarkerRecord("Unsorted", latlngString, {
                   markerReference: markerRecord.markerReference, // !!! edit this later to account for case where marker does not exist?
                   label: form.elements["label"].value,
                   notes: form.elements["notes"].value,
@@ -314,19 +297,6 @@
                 });
                 markerRecord.markerReference.setIcon(generateIcon(form.elements["color"].value));
                 updateMarkerPopupContent(markerRecord.markerReference, getEditMarkerUI(latlng));
-              }],
-            ],
-          }),
-          createElement({
-            tag: "button",
-            text: "Discard Changes",
-            attributes: [["type", "button"], ["class", "warning"]],
-            eventListeners: [
-              ["click", () => {
-                console.log(form.elements["discardChangesButton"].classList);
-                if (window.confirm("Are you sure you want to discard your changes?")) {
-                  updateMarkerPopupContent(markerRecord.markerReference, getEditMarkerUI(latlng));
-                }
               }],
             ],
           }),
@@ -338,6 +308,7 @@
     function getDefaultMarkerRecord(markerReference) {
       return {
         markerReference: markerReference,
+        category: "Unsorted",
         label: "Unnamed Marker",
         notes: "",
         color: "#0000ff",
@@ -351,8 +322,9 @@
       const latlngString = JSON.stringify(event.latlng);
       // if a marker with these coordinates has already been added to the map, open its popup
       // otherwise, add a marker to the map at these coordinates
-      if (markerRecords.has(latlngString)) {
-        markerRecords.get(latlngString).markerReference.openPopup();
+      const markerRecord = getMarkerRecord(latlngString);
+      if (markerRecord) {
+        markerRecord.markerReference.openPopup();
       } else {
         const popup = L.popup({
           keepInView : true,
@@ -365,8 +337,9 @@
         const marker = L.marker(event.latlng, {
           icon : generateIcon("#0000ff"),
         });
+        // add marker record
+        setMarkerRecord("Unsorted", latlngString, getDefaultMarkerRecord(marker));
         // add marker to map
-        markerRecords.set(latlngString, getDefaultMarkerRecord(marker));
         popup.setContent(getEditMarkerUI(event.latlng));
         marker
           .bindPopup(popup)

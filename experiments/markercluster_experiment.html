@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Test</title>
+
+  <!-- Leaflet CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+    integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+    crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+    integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+    crossorigin=""></script>
+
+  <!-- Leaflet.markercluster CDN !!! replace with minified -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
+    integrity="sha512-RLEjtaFGdC4iQMJDbMzim/dOvAu+8Qp9sw7QE4wIMYcg2goVoivzwgSZq9CsIxp4xKAZPKh5J2f2lOko2Ze6FQ=="
+    crossorigin=""/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"
+    integrity="sha512-BBToHPBStgMiw0lD4AtkRIZmdndhB6aQbXpX7omcrXeG2PauGBl2lzq2xUZTxaLxYz5IDHlmneCZ1IJ+P3kYtQ=="
+    crossorigin=""/>
+  <!-- non-minified -->
+  <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster-src.js"
+    integrity="sha512-gu3GZbPnPGREFcXgxeWVbp9Oeq3Tdvskd5PaQ0q//PCDMsa0WSSABIqLDwF5ebaDBfJbcM+lamNEe8ln9dPWwA=="
+    crossorigin=""></script>
+  <!-- minified -->
+  <!--script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"
+    integrity="sha512-MQlyPV+ol2lp4KodaU/Xmrn+txc1TP15pOBF/2Sfre7MRsA/pB4Vy58bEqe9u7a7DczMLtU5wT8n7OblJepKbg=="
+    crossorigin=""></script-->
+
+  <script src="../helper_functions.js"></script>
+
+  <style>
+    #map {
+      position: relative;
+      width: 100%;
+      height: 500px;
+      left: 0;
+      top: 0;
+    }
+
+  </style>
+    
+</head>
+
+<body>
+
+  <div id="map"></div>
+
+  <script>
+  // reference: https://leafletjs.com/examples/geojson/
+
+    // create map
+    const map = L.map("map", {
+      center: [41.783, -87.621],
+      zoom: 5,
+    });
+
+    // add tiles to map
+    const tiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap"
+    }).addTo(map);
+
+    // data structure to track markerRecords
+    const markerRecords = new Map();
+
+    // create marker layer
+    const cluster = L.markerClusterGroup().addTo(map);
+
+    /**
+     * Function to run whenever the map is clicked.
+     */
+    function onMapClick(event) {
+      const latlngString = JSON.stringify(event.latlng);
+      // if a marker with these coordinates has already been added to the map, open its popup
+      // otherwise, add a marker to the map at these coordinates
+      const popup = L.popup();
+      // create marker
+      const marker = L.marker(event.latlng);
+      //markerRecords.set(latlngString, getDefaultMarkerRecord(marker));
+      popup.setContent(latlngString);
+      marker.bindPopup(popup);
+      cluster.addLayer(marker);
+      //map.setView(marker.getLatLng(), 13);
+      //marker.openPopup();
+    }
+
+    // add click event listener to map
+    map.on("click", onMapClick);
+    
+  </script>   
+
+</body>
+
+</html>
