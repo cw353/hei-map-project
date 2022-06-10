@@ -29,10 +29,19 @@
       flex-direction: column;
     }
 
+    .flexRow {
+      display: flex;
+      flex-direction: row;
+    }
+
     button {
       margin: 5px;
       border-color: grey;
       border-style: solid;
+    }
+
+    .globalButtonDiv {
+      margin: 10px;
     }
 
     .warning {
@@ -48,11 +57,33 @@
     }
 
     .iconButton {
+      padding-top: 2px;
+      padding-bottom: 2px;
+      vertical-align: middle;
+      align-items: center;
+      text-align: center;
+    }
+
+    /* reference: https://stackoverflow.com/a/2920238 (CC BY-SA 3.0) */
+    .bgIconButton {
+      background-image: url(https://upload.wikimedia.org/wikipedia/commons/a/a0/Font_Awesome_5_regular_arrow-alt-circle-up.svg);
+      background-position: left center;
+      background-repeat: no-repeat;
+      background-origin: padding-box;
+      background-size: 20px 20px;
+      height: 30px;
+      padding-left: 30px;
+      vertical-align: middle;
+      text-align: center;
+      align-items: center;
+    }
+
+    .transparentButton {
       border: none;
       background-color: transparent;
     }
 
-    .iconButton:hover {
+    .transparentButton:hover {
       background-color: lightgrey;
     }
 
@@ -66,7 +97,62 @@
 
 <body>
 
-  <div id="controlButtons"></div>
+  <!-- 
+    https://commons.wikimedia.org/wiki/Category:SVG_arrow_icons:_Noun_project
+    https://commons.wikimedia.org/wiki/File:Download_(4501)_-_The_Noun_Project.svg
+    https://commons.wikimedia.org/wiki/File:Download_(89523)_-_The_Noun_Project.svg,
+    https://commons.wikimedia.org/wiki/File:Noun_project_-_Upload.svg
+    https://commons.wikimedia.org/wiki/File:Upload_(89524)_-_The_Noun_Project.svg
+  -->
+  <div id="globalButtonDiv" class="globalButtonDiv flexRow">
+    <button type="button" style="text-align: center">
+      <div class="bgIconButton">Import Markers</div>
+      <!-- https://commons.wikimedia.org/wiki/File:Font_Awesome_5_regular_arrow-alt-circle-up.svg (CC BY 4.0 license)-->
+      <!--img
+        src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Font_Awesome_5_regular_arrow-alt-circle-up.svg"
+        alt="import icon"
+        width="20px"
+        height="20px"
+      /-->
+    </button>
+    <button type="button" class="bgIconButton">
+      <!-- https://commons.wikimedia.org/wiki/File:Font_Awesome_5_regular_arrow-alt-circle-up.svg (CC BY 4.0 license)-->
+      <!--img
+      src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Font_Awesome_5_regular_arrow-alt-circle-up.svg"
+      alt="import icon"
+      width="20px"
+      height="20px"
+      style="transform: rotate(0.5turn)"
+    /-->
+      Export Markers
+    </button>
+
+    <button type="button" class="iconButton">
+      <!-- https://commons.wikimedia.org/wiki/File:Font_Awesome_5_regular_arrow-alt-circle-up.svg (CC BY 4.0 license)-->
+      <img
+        src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Font_Awesome_5_regular_arrow-alt-circle-up.svg"
+        alt="import icon"
+        width="20px"
+        height="20px"
+      />
+      Import Markers
+    </button>
+    <button type="button" class="iconButton">
+      <!-- https://commons.wikimedia.org/wiki/File:Font_Awesome_5_regular_arrow-alt-circle-up.svg (CC BY 4.0 license)-->
+      <img
+      src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Font_Awesome_5_regular_arrow-alt-circle-up.svg"
+      alt="import icon"
+      width="20px"
+      height="20px"
+      style="transform: rotate(0.5turn)"
+    />
+      Export Markers
+    </button>
+
+    <button type="button">
+      Delete Markers
+    </button>
+  </div>
   <div id="map"></div>
 
   <script>
@@ -135,7 +221,7 @@
         children: [
           createElement({
             tag: "button",
-            attributes: [["type", "button"], ["class", "iconButton alignRight"]],
+            attributes: [["type", "button"], ["class", "transparentButton alignRight"]],
             eventListeners: [["click", () => {
               if (window.confirm("Are you sure you want to delete this marker?")) {
                 // close popup before deleting it
@@ -292,12 +378,12 @@
     // add click event listener to map
     map.on("click", onMapClick);
     
-    document.getElementById("controlButtons").appendChild(createButton("Clear markerRecords", () => {
+    /*document.getElementById("controlButtons").appendChild(createButton("Clear markerRecords", () => {
       // also reset markerRecords set
       markerLayerGroup.clearLayers();
       markerRecords.clear();
       console.log("markerLayerGroup cleared");
-    }));
+    }));*/
 
     // TODO: consider making markerRecords draggable (would have to add "move" event listener)
   </script>   
