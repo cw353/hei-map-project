@@ -29,6 +29,11 @@
       flex-direction: column;
     }
 
+    .flexRow {
+      display: flex;
+      flex-direction: row;
+    }
+
     button {
       margin: 5px;
       border-color: grey;
@@ -45,6 +50,15 @@
 
     .warning:hover, .defaultOption:hover {
       color: #eeffff;
+    }
+
+    .iconButton {
+      border: none;
+      background-color: transparent;
+    }
+
+    .icon:hover {
+      background-color: lightgrey;
     }
 
   </style>
@@ -84,14 +98,17 @@
      * @returns The custom icon with the specified fill color.
      */
      function generateIcon(color) {
+      const width = 26;
+      const height = 50;
       return L.divIcon({
         className: "custom_divicon",
-        iconSize: [26, 50],
-        popupAnchor: [0,-13],
+        iconSize: [width, height],
+        iconAnchor: [width/2, height],
+        popupAnchor: [0,-(height/5)*4],
         html:
           `<svg
-            width="25"
-            height="50"
+            width="${width}"
+            height="${height}"
             viewBox="0 0 640 1024"
             xmlns="http://www.w3.org/2000/svg"
           >
@@ -113,26 +130,48 @@
       const latlngString = JSON.stringify(latlng);
       const markerRecord = markerRecords.get(latlngString);
       const form = createElement({
-        // input for editing marker label
         tag: "form",
         attributes: [["id", "editMarkerForm"], ["class", "editMarkerForm"]],
         children: [
           createElement({
-            tag: "p",
+            // input for editing marker label
+            tag: "div",
+            attributes: [["class", "flexRow"]],
             children: [
               createElement({
-                tag: "label",
-                text: "Label: ",
-                children: [
-                  createElement({
-                    tag: "input",
+                  tag: "p",
+                  children: [
+                    createElement({
+                      tag: "label",
+                      text: "Label: ",
+                      children: [
+                        createElement({
+                          tag: "input",
+                          attributes: [
+                            ["name", "label"], ["type", "text"],
+                            ["value", markerRecord.label], // populate input with current label
+                          ],
+                        })
+                      ],
+                    })
+                  ]
+                }),
+                createElement({
+                  tag: "button",
+                  attributes: [["type", "button"], ["class", "iconButton"]],
+                  children: [createElement({
+                    tag: "img",
                     attributes: [
-                      ["name", "label"], ["type", "text"],
-                      ["value", markerRecord.label], // populate input with current label
-                    ],
-                  })
-                ],
-              })
+                      // Source: https://commons.wikimedia.org/wiki/File:Toicon-icon-lines-and-angles-discard.svg (CC BY 4.0 license)
+                      ["src", "https://upload.wikimedia.org/wikipedia/commons/b/bb/Toicon-icon-lines-and-angles-discard.svg"],
+                      ["alt", "Delete Marker"],
+                      ["title", "Delete Marker"],
+                      ["width", "30px"],
+                      ["height", "30px"],
+                      ["class", "icon"],
+                    ]
+                  })]
+                }),
             ]
           }),
           // input for editing marker color
@@ -182,7 +221,7 @@
           createElement({
             tag: "button",
             text: "Save Changes",
-            attributes: [["type", "button"], ["name", "saveChangesButton"], ["class", "defaultOption"]],
+            attributes: [["type", "button"], ["class", "defaultOption"]],
             eventListeners: [
               ["click", () => {
                 markerRecords.set(latlngString, {
@@ -199,7 +238,7 @@
           createElement({
             tag: "button",
             text: "Discard Changes",
-            attributes: [["type", "button"], ["name", "discardChangesButton"], ["class", "warning"]],
+            attributes: [["type", "button"], ["class", "warning"]],
             eventListeners: [
               ["click", () => {
                 console.log(form.elements["discardChangesButton"].classList);
