@@ -36,8 +36,12 @@ function createElement(element) {
     }
   }
   if (element.eventListeners) {
-    for (const listenerPair of element.eventListeners) {
-      e.addEventListener(listenerPair[0], listenerPair[1]);
+    for (const listener of element.eventListeners) {
+      if (listener.length > 2) {
+        e.addEventListener(listener[0], listener[1], listener[2]);
+      } else {
+        e.addEventListener(listener[0], listener[1]);
+      }
     }
   }
   return e;
