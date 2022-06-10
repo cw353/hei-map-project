@@ -51,7 +51,12 @@
     }
 
     .warning {
-      background-color: #ff5370;
+      background-color: #fc617b;
+    }
+
+    .warning:hover {
+      background-color: #fd4b68;
+      border-color: #fd4b68;
     }
 
     .defaultOption {
@@ -203,33 +208,6 @@
         attributes: [["id", "editMarkerForm"], ["class", "editMarkerForm"]],
         children: [
           createElement({
-            tag: "button",
-            attributes: [["type", "button"], ["class", "iconButton floatRight"]],
-            eventListeners: [["click", () => {
-              if (window.confirm("Are you sure you want to delete this marker?")) {
-                // close popup before deleting it
-                markerRecord.markerReference.closePopup();
-                // delete marker record
-                deleteMarkerRecord(markerRecord.category, latlngString);
-                markerRecords.delete(latlngString);
-                // remove marker from markerLayerGroup
-                markerRecord.markerReference.removeFrom(markerLayerGroup);
-              }
-            }]],
-            children: [createElement({
-              tag: "img",
-              attributes: [
-                // Source: https://commons.wikimedia.org/wiki/File:Toicon-icon-lines-and-angles-discard.svg (CC BY 4.0 license)
-                ["src", "https://upload.wikimedia.org/wikipedia/commons/b/bb/Toicon-icon-lines-and-angles-discard.svg"],
-                ["alt", "Delete Marker"],
-                ["title", "Delete Marker"],
-                ["width", "30px"],
-                ["height", "30px"],
-                ["class", "icon"],
-              ]
-            })]
-          }),
-          createElement({
             tag: "p",
             attributes: [["class", "flexRow"]],
             children: [
@@ -294,11 +272,27 @@
             attributes: [["type", "button"]],
             eventListeners: [
               ["click", () => {
-                if ((!unsavedChanges) || window.confirm("Are you sure you want to discard your changes?")) {
+                if ((!unsavedChanges) || window.confirm("Are you sure you want to close this popup? Your unsaved changes will be lost.")) {
                   updateMarkerPopupContent(markerRecord.markerReference, getEditMarkerUI(latlng));
                 }
               }],
             ],
+          }),
+          createElement({
+            tag: "button",
+            text: "Delete Marker",
+            attributes: [["type", "button"], ["class", "warning"]],
+            eventListeners: [["click", () => {
+              if (window.confirm("Are you sure you want to delete this marker?")) {
+                // close popup before deleting it
+                markerRecord.markerReference.closePopup();
+                // delete marker record
+                deleteMarkerRecord(markerRecord.category, latlngString);
+                markerRecords.delete(latlngString);
+                // remove marker from markerLayerGroup
+                markerRecord.markerReference.removeFrom(markerLayerGroup);
+              }
+            }]],
           }),
           createElement({
             tag: "button",
