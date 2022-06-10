@@ -218,7 +218,7 @@
                   createElement({
                     tag: "input",
                     attributes: [
-                      ["name", "label"], ["type", "text"],
+                      ["name", "label"], ["type", "text"], ["size", "25"],
                       ["value", markerRecord.label], // populate input with current label
                     ],
                     eventListeners: [unsavedChangesListener],
@@ -267,49 +267,55 @@
             ],
           }),
           createElement({
-            tag: "button",
-            text: "Close",
-            attributes: [["type", "button"]],
-            eventListeners: [
-              ["click", () => {
-                if ((!unsavedChanges) || window.confirm("Are you sure you want to close this popup? Your unsaved changes will be lost.")) {
-                  updateMarkerPopupContent(markerRecord.markerReference, getEditMarkerUI(latlng));
-                }
-              }],
-            ],
-          }),
-          createElement({
-            tag: "button",
-            text: "Delete Marker",
-            attributes: [["type", "button"], ["class", "warning"]],
-            eventListeners: [["click", () => {
-              if (window.confirm("Are you sure you want to delete this marker?")) {
-                // close popup before deleting it
-                markerRecord.markerReference.closePopup();
-                // delete marker record
-                deleteMarkerRecord(markerRecord.category, latlngString);
-                markerRecords.delete(latlngString);
-                // remove marker from markerLayerGroup
-                markerRecord.markerReference.removeFrom(markerLayerGroup);
-              }
-            }]],
-          }),
-          createElement({
-            tag: "button",
-            text: "Save Changes",
-            attributes: [["type", "button"], ["class", "defaultOption"]],
-            eventListeners: [
-              ["click", () => {
-                setMarkerRecord("Unsorted", latlngString, {
-                  markerReference: markerRecord.markerReference, // !!! edit this later to account for case where marker does not exist?
-                  label: form.elements["label"].value,
-                  notes: form.elements["notes"].value,
-                  color: form.elements["color"].value,
-                });
-                markerRecord.markerReference.setIcon(generateIcon(form.elements["color"].value));
-                updateMarkerPopupContent(markerRecord.markerReference, getEditMarkerUI(latlng));
-              }],
-            ],
+            tag: "div",
+            attributes: [["class", "flexRow"]],
+            children: [
+              createElement({
+                tag: "button",
+                text: "Close",
+                attributes: [["type", "button"]],
+                eventListeners: [
+                  ["click", () => {
+                    if ((!unsavedChanges) || window.confirm("Are you sure you want to close this popup? Your unsaved changes will be lost.")) {
+                      updateMarkerPopupContent(markerRecord.markerReference, getEditMarkerUI(latlng));
+                    }
+                  }],
+                ],
+              }),
+              createElement({
+                tag: "button",
+                text: "Delete Marker",
+                attributes: [["type", "button"], ["class", "warning"]],
+                eventListeners: [["click", () => {
+                  if (window.confirm("Are you sure you want to delete this marker?")) {
+                    // close popup before deleting it
+                    markerRecord.markerReference.closePopup();
+                    // delete marker record
+                    deleteMarkerRecord(markerRecord.category, latlngString);
+                    markerRecords.delete(latlngString);
+                    // remove marker from markerLayerGroup
+                    markerRecord.markerReference.removeFrom(markerLayerGroup);
+                  }
+                }]],
+              }),
+              createElement({
+                tag: "button",
+                text: "Save Changes",
+                attributes: [["type", "button"], ["class", "defaultOption"]],
+                eventListeners: [
+                  ["click", () => {
+                    setMarkerRecord("Unsorted", latlngString, {
+                      markerReference: markerRecord.markerReference, // !!! edit this later to account for case where marker does not exist?
+                      label: form.elements["label"].value,
+                      notes: form.elements["notes"].value,
+                      color: form.elements["color"].value,
+                    });
+                    markerRecord.markerReference.setIcon(generateIcon(form.elements["color"].value));
+                    updateMarkerPopupContent(markerRecord.markerReference, getEditMarkerUI(latlng));
+                  }],
+                ],
+              }),
+            ]
           }),
         ]
       });
