@@ -29,11 +29,6 @@
       flex-direction: column;
     }
 
-    .flexRow {
-      display: flex;
-      flex-direction: row;
-    }
-
     button {
       margin: 5px;
       border-color: grey;
@@ -45,7 +40,7 @@
     }
 
     .defaultOption {
-      background-color: #6699ff;
+      background-color: #82aaff;
     }
 
     .warning:hover, .defaultOption:hover {
@@ -59,6 +54,10 @@
 
     .icon:hover {
       background-color: lightgrey;
+    }
+
+    .alignRight {
+      float: right;
     }
 
   </style>
@@ -130,48 +129,42 @@
       const latlngString = JSON.stringify(latlng);
       const markerRecord = markerRecords.get(latlngString);
       const form = createElement({
+        // input for editing marker label
         tag: "form",
         attributes: [["id", "editMarkerForm"], ["class", "editMarkerForm"]],
         children: [
           createElement({
-            // input for editing marker label
-            tag: "div",
-            attributes: [["class", "flexRow"]],
+            tag: "button",
+            attributes: [["type", "button"], ["class", "iconButton alignRight"]],
+            children: [createElement({
+              tag: "img",
+              attributes: [
+                // Source: https://commons.wikimedia.org/wiki/File:Toicon-icon-lines-and-angles-discard.svg (CC BY 4.0 license)
+                ["src", "https://upload.wikimedia.org/wikipedia/commons/b/bb/Toicon-icon-lines-and-angles-discard.svg"],
+                ["alt", "Delete Marker"],
+                ["title", "Delete Marker"],
+                ["width", "30px"],
+                ["height", "30px"],
+                ["class", "icon"],
+              ]
+            })]
+          }),
+          createElement({
+            tag: "p",
             children: [
               createElement({
-                  tag: "p",
-                  children: [
-                    createElement({
-                      tag: "label",
-                      text: "Label: ",
-                      children: [
-                        createElement({
-                          tag: "input",
-                          attributes: [
-                            ["name", "label"], ["type", "text"],
-                            ["value", markerRecord.label], // populate input with current label
-                          ],
-                        })
-                      ],
-                    })
-                  ]
-                }),
-                createElement({
-                  tag: "button",
-                  attributes: [["type", "button"], ["class", "iconButton"]],
-                  children: [createElement({
-                    tag: "img",
+                tag: "label",
+                text: "Label: ",
+                children: [
+                  createElement({
+                    tag: "input",
                     attributes: [
-                      // Source: https://commons.wikimedia.org/wiki/File:Toicon-icon-lines-and-angles-discard.svg (CC BY 4.0 license)
-                      ["src", "https://upload.wikimedia.org/wikipedia/commons/b/bb/Toicon-icon-lines-and-angles-discard.svg"],
-                      ["alt", "Delete Marker"],
-                      ["title", "Delete Marker"],
-                      ["width", "30px"],
-                      ["height", "30px"],
-                      ["class", "icon"],
-                    ]
-                  })]
-                }),
+                      ["name", "label"], ["type", "text"],
+                      ["value", markerRecord.label], // populate input with current label
+                    ],
+                  })
+                ],
+              })
             ]
           }),
           // input for editing marker color
