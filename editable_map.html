@@ -111,8 +111,6 @@
 
   <div id="map"></div>
 
-  <div id="editCategoryDiv"></div>
-
   <script>
 
     // create map
@@ -132,107 +130,36 @@
     const markerRecords = new Map();
 
     // create marker layer
-    const markerLayerGroup = L.layerGroup().addTo(map);
-    const markerLayerGroup2 = L.layerGroup().addTo(map);
+    const markerLayerGroup = L.layerGroup()
+      .addTo(map);
 
     function hasMarkerRecord(recordKey) {
-      for (const key of markerRecords.keys()) {
-        if (markerRecords.get(key).has(recordKey)) {
-          return true;
-        }
-      }
-      return false;
+      return markerRecords.has(recordKey);
     }
 
     function getMarkerRecord(recordKey) {
-      for (const key of markerRecords.keys()) {
-        if (markerRecords.get(key).has(recordKey)) {
-          return markerRecords.get(key).get(recordKey);
-        }
-      }
-      return null;
+      return markerRecords.get(recordKey);
     }
 
-    function setMarkerRecord(categoryName, recordKey, recordValue) {
-      if (!(markerRecords.has(categoryName))) {
-        markerRecords.set(categoryName, new Map());
-      }
-      markerRecords.get(categoryName).set(recordKey, recordValue);
-      return markerRecords.get(categoryName).get(recordKey);
+    function setMarkerRecord(recordKey, recordValue) {
+      markerRecords.set(recordKey, recordValue);
     }
 
-    function deleteMarkerRecord(categoryName, recordKey) {
-      if (markerRecords.has(categoryName)) {
-        const toDelete = markerRecords.get(categoryName).get(recordKey);
-        markerRecords.get(categoryName).delete(recordKey);
+    function deleteMarkerRecord(recordKey) {
+      if (markerRecords.has(recordKey)) {
+        const toDelete = markerRecords.get(recordKey);
+        markerRecords.delete(recordKey);
         return toDelete;
       }
       return null;
     }
-
-    const categories = new Map([
-      ["Unsorted", { color: "#0000ff" }], // blue
-      ["Vacant Lots", { color: "#ff0000" }], // red
-      ["Houses", { color: "#00ff00" }], // green
-    ]);
-
-    const editCategoryElements = [];
 
     const layerControl = L.control.layers(
       {
         "OpenStreetMap" : osmtiles,
       },
       null,
-      {
-        sortLayers : true,
-        hideSingleBase : true,
-      },
     ).addTo(map);
-
-    categories.forEach((categoryInfo, categoryName) => {
-      const layerGroup = L.layerGroup().addTo(map);
-      categoryInfo.layerGroup = layerGroup;
-      if (categoryName !== "Unsorted") layerControl.addOverlay(layerGroup, categoryName);
-    });
-
-    categories.forEach((categoryInfo, categoryName) => {
-      var categoryForm = createElement({
-        tag: "form",
-        attributes: [["class", "flexRow textAlignCenter"]],
-        children: [
-          createElement({
-            tag: "label",
-            text: "Category: ",
-            children: [ createElement({
-              tag: "input",
-              attributes: [["type", "text"], ["name", "name"], ["value", categoryName]],
-            }) ],
-          }),
-          createElement({
-            /*tag: "label",
-            text: "Color: ",
-            children: [ createElement({*/
-              tag: "input",
-              attributes: [["type", "color"], ["name", "color"], ["value", categoryInfo.color]],
-            //}) ],
-          }),
-          createElement({
-            tag: "button",
-            text: "Apply Changes",
-            attributes: [["type", "button"]],
-            eventListeners: [["click", (event) => {
-
-            }]],
-          })
-        ],
-      });
-      editCategoryElements.push(categoryForm);
-    });
-
-    document.getElementById("editCategoryDiv").appendChild(createElement({
-      tag: "form",
-      children: editCategoryElements,
-    }));
     
     /**
      * Generate a custom icon with the specified fill color.
@@ -271,10 +198,7 @@
       marker.setPopupContent(newContent);
     }
 
-    function getEditMarkerUI(latlng) {
-
-      // !!! account for case where marker doesn't yet exist?
-      const latlngString = JSON.stringify(latlng);
+    function getEditMarkerUI(latlngString) {
       let markerRecord = getMarkerRecord(latlngString);
 
       const labelInput = createElement({
@@ -285,19 +209,12 @@
         ],
       });
 
-      const options = [];
-      categories.forEach((categoryInfo, categoryName) => options.push(createElement({
-          tag: "option",
-          text: categoryName,
-          value: categoryName,
-          attributes: (categoryName === markerRecord.category) ? [["selected", ""]] : null,
-        })
-      ));
-
-      const categoryInput = createElement({
-        tag: "select",
-        attributes: [["name", "category"]],
-        children: options,
+      const colorInput = createElement({
+        tag: "input",
+        attributes: [
+          ["type", "color"], ["name", "color"],
+          ["value", markerRecord.color], // populate input with current color
+        ],
       });
 
       const descriptionInput = createElement({
@@ -321,7 +238,7 @@
         unsavedChanges = unsaved;
         unsavedNotification.style.visibility = unsaved ? "visible" : "hidden";
         if (!unsaved) {
-          for (const input of [labelInput, categoryInput, descriptionInput]) {
+          for (const input of [labelInput, colorInput, descriptionInput]) {
             // alert the user when there are unsaved changes (invoked at most once per element)
             input.addEventListener(
               "input",
@@ -343,7 +260,7 @@
         attributes: [["type", "button"]],
         eventListeners: [["click", () => {
           if ((!unsavedChanges) || window.confirm("Are you sure you want to close this popup? Your unsaved changes will be lost.")) {
-            updateMarkerPopupContent(markerRecord.markerReference, getEditMarkerUI(latlng));
+            updateMarkerPopupContent(markerRecord.markerReference, getEditMarkerUI(latlngString));
           }
         }]],
       });
@@ -369,22 +286,14 @@
         text: "Save Changes",
         attributes: [["type", "button"], ["class", "defaultOption"]],
         eventListeners: [["click", () => {
-          const oldCategory = markerRecord.category;
-          const newCategory = form.elements["category"].value;
-          markerRecord = setMarkerRecord(newCategory, latlngString, {
+          setMarkerRecord(latlngString, {
             markerReference: markerRecord.markerReference, // !!! edit this later to account for case where marker does not exist?
-            category: newCategory,
             label: form.elements["label"].value,
+            color: form.elements["color"].value,
             notes: form.elements["notes"].value,
           });
-          if (oldCategory !== newCategory) {
-            deleteMarkerRecord(oldCategory, latlngString);
-            categories.get(oldCategory).layerGroup.removeLayer(markerRecord.markerReference);
-            categories.get(newCategory).layerGroup.addLayer(markerRecord.markerReference);
-            markerRecord.markerReference.openPopup();
-          }
-          // update marker color based on selected category
-          markerRecord.markerReference.setIcon(generateIcon(categories.get(newCategory).color));
+          // update marker color
+          markerRecord.markerReference.setIcon(generateIcon(form.elements["color"].value));
           // reset unsaved changes notification and event listeners
           manageUnsavedNotification(false);
         }]],
@@ -408,15 +317,15 @@
               })
             ]
           }),
-          // input for editing category
+          // input for editing marker color
           createElement({
             tag: "p",
             children: [
               createElement({
                 tag: "label",
-                text: "Category: ",
+                text: "Color: ",
                 children: [
-                  categoryInput,
+                  colorInput,
                 ],
               })
             ]
@@ -450,46 +359,36 @@
       return form;
     }
 
-    function getDefaultMarkerRecord(markerReference) {
-      return {
-        markerReference: markerReference,
-        category: "Unsorted",
+    function createDefaultMarker(latlng) {
+      const latlngString = JSON.stringify(latlng);
+      const defaultColor = "#0000ff";
+      const popup = L.popup({
+        closeButton : false,
+        autoClose : false,
+        closeOnEscapeKey : false,
+        closeOnClick : false,
+      });
+      const marker = L.marker(latlng, {
+          icon : generateIcon(defaultColor),
+      });
+      setMarkerRecord(latlngString, {
+        markerReference: marker,
         label: "Unnamed Marker",
+        color: defaultColor,
         notes: "",
-      }
+      });
+      console.log(getMarkerRecord(latlngString) == undefined);
+      marker.bindPopup(popup)
+        .setPopupContent(getEditMarkerUI(latlngString))
+        .addTo(markerLayerGroup)
+        .openPopup();
     }
 
     /**
      * Function to run whenever the map is clicked.
      */
     function onMapClick(event) {
-      const latlngString = JSON.stringify(event.latlng);
-      // if a marker with these coordinates has already been added to the map, open its popup
-      // otherwise, add a marker to the map at these coordinates
-      /*const markerRecord = getMarkerRecord(latlngString);
-      if (markerRecord) {
-        markerRecord.markerReference.openPopup();
-      } else {*/
-        const popup = L.popup({
-          closeButton : false,
-          autoClose : false,
-          closeOnEscapeKey : false,
-          closeOnClick : false,
-        });
-        const defaultGroup = "Unsorted";
-        // create marker
-        const marker = L.marker(event.latlng, {
-          icon : generateIcon(categories.get(defaultGroup).color),
-        });
-        // add marker record
-        setMarkerRecord(defaultGroup, latlngString, getDefaultMarkerRecord(marker));
-        // add marker to map
-        popup.setContent(getEditMarkerUI(event.latlng));
-        marker
-          .bindPopup(popup)
-          .addTo(categories.get(defaultGroup).layerGroup)
-          .openPopup();
-      //}
+      createDefaultMarker(event.latlng);
     }
 
     // add click event listener to map
