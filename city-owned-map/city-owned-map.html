@@ -137,55 +137,86 @@
 
     const cluster = L.markerClusterGroup().addTo(map);
 
-    const sgm = L.layerGroup();
-    const ward20 = L.featureGroup.subGroup(cluster);
-    const zip60637 = L.featureGroup.subGroup(cluster);
-    const ward20_and_zip60637 = L.featureGroup.subGroup(cluster);
+    const sgm = {
+      label: "Sunshine Gospel Ministries",
+      group: L.layerGroup(),
+      color: "#000000",
+      markers: 0,
+    };
+
+    const ward20_and_zip60637 = {
+      label: "Ward 20, Zip Code 60637",
+      group: L.featureGroup.subGroup(cluster),
+      color: "#00ff00",
+      markers: 0,
+    };
+    
+    const ward20 = {
+      label: "Ward 20, Other Zip Codes",
+      group: L.featureGroup.subGroup(cluster),
+      color: "#0000ff",
+      markers: 0,
+    };
+
+    const zip60637 = {
+      label: "Other Wards, Zip Code 60637",
+      group: L.featureGroup.subGroup(cluster),
+      color: "#ff0000",
+      markers: 0,
+    };
 
     const layerControl = L.control.layers(
       {
         "OpenStreetMap" : osmtiles,
       },
-      {
-        "Sunshine Gospel Ministries" : sgm,
-        "Ward 20" : ward20,
-        "Zip Code 60637" : zip60637,
-        "Ward 20 and Zip Code 60637" : ward20_and_zip60637,
-      },
+      null,
       {
         collapsed : false,
       }
     ).addTo(map);
 
-    const defaultColor = "#0000ff";
-    const sgmColor = "#ff0000";
+    const markerGroups = [sgm, ward20_and_zip60637, ward20, zip60637];
+
+    for (const group of markerGroups) {
+      layerControl.addOverlay(group.group, `<span style='color: ${group.color}'>${group.label}</span>`);
+    };
 
     const sgmMarker = L.marker([sgmData.latitude, sgmData.longitude], {
-      icon: generateIcon(sgmColor),
+      icon: generateIcon(sgm.color),
     })
       .bindPopup("Sunshine Gospel Ministries")
-      .addTo(sgm);
+      .addTo(sgm.group);
 
     const sgmCircle = L.circle([sgmData.latitude, sgmData.longitude], {
       radius: 3218, // roughly 2 mi. radius
-      color: sgmColor,
-      fillOpacity: 0.2,
-    }).addTo(sgm);
+      color: sgm.color,
+      fillOpacity: 0.1,
+    }).addTo(sgm.group);
 
-    for (let i = 0; i < 10; i++) {
-      L.marker(L.latLng(data[i].latitude, data[i].longitude), {
-        icon: generateIcon(defaultColor)
-      })
-        .bindPopup("PIN: " + data[i].pin)
-        .addTo(ward20);
+    for (let i = 0; i < 15; i++) {
+      const datum = data[i];
+      const category = (datum.ward === 20 && datum.zipcode === 60637)
+        ? ward20_and_zip60637
+        : (datum.ward === 20)
+          ? ward20
+          : (datum.zipcode === 60637)
+            ? zip60637
+            : null;
+      if (category == null) {
+        console.log("Error: " + datum.pin + " could not be categorized.");
+      } else {
+        L.marker(L.latLng(datum.latitude, datum.longitude), {
+          icon: generateIcon(category.color)
+        })
+          .bindPopup("PIN: " + datum.pin + ", zip code: " + datum.zipcode + ", ward: " + datum.ward)
+          .addTo(category.group);
+      }
     }
 
-    sgm.addTo(map);
-    ward20.addTo(map);
-    zip60637.addTo(map);
-    ward20_and_zip60637.addTo(map);
-
-    console.log(JSON.stringify(data[0]));
+    sgm.group.addTo(map);
+    ward20.group.addTo(map);
+    zip60637.group.addTo(map);
+    ward20_and_zip60637.group.addTo(map);
 
   </script>   
 
