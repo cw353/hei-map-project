@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HEI-Relevant City-Owned PINs</title>
+
+  <!-- Leaflet CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+    integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+    crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+    integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+    crossorigin=""></script>
+
+  <!-- Leaflet.markercluster CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
+    integrity="sha512-RLEjtaFGdC4iQMJDbMzim/dOvAu+8Qp9sw7QE4wIMYcg2goVoivzwgSZq9CsIxp4xKAZPKh5J2f2lOko2Ze6FQ=="
+    crossorigin=""/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"
+    integrity="sha512-BBToHPBStgMiw0lD4AtkRIZmdndhB6aQbXpX7omcrXeG2PauGBl2lzq2xUZTxaLxYz5IDHlmneCZ1IJ+P3kYtQ=="
+    crossorigin=""/>
+  <!-- non-minified -->
+  <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster-src.js"
+    integrity="sha512-gu3GZbPnPGREFcXgxeWVbp9Oeq3Tdvskd5PaQ0q//PCDMsa0WSSABIqLDwF5ebaDBfJbcM+lamNEe8ln9dPWwA=="
+    crossorigin=""></script>
+  <!-- minified -->
+  <!--script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"
+    integrity="sha512-MQlyPV+ol2lp4KodaU/Xmrn+txc1TP15pOBF/2Sfre7MRsA/pB4Vy58bEqe9u7a7DczMLtU5wT8n7OblJepKbg=="
+    crossorigin=""></script-->
+
+  <!-- Leaflet.FeatureGroup.SubGroup CDN -->
+  <script src="https://unpkg.com/leaflet.featuregroup.subgroup@1.0.2/dist/leaflet.featuregroup.subgroup.js"
+    integrity="sha512-gUiI5CXREIHHGko8AdlPYADT5MHvcCuqee1pjKR4qVcw69zVI+WvrnJcCxwU8JajpJoBjpvPIAGfDVFoQJhDfw=="
+    crossorigin=""></script>
+
+  <!-- External files -->
+  <script src="data.js"></script>
+
+  <style>
+    #map {
+      position: relative;
+      width: 100%;
+      height: 500px;
+      left: 0;
+      top: 0;
+    }
+
+  </style>
+    
+</head>
+
+<body>
+
+  <div id="map"></div>
+
+  <script>
+
+    // create map
+    const map = L.map("map", {
+      center: [41.783, -87.621],
+      zoom: 12,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+    });
+
+    // add tiles to map
+    const osmtiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap"
+    }).addTo(map);;
+
+    /**
+     * Helper function to facilitate HTMLElement creation.
+     * @param element An object describing the element to create.
+     */
+    function createElement(element) {
+      const e = document.createElement(element.tag);
+      if (element.text) {
+        e.appendChild(document.createTextNode(element.text));
+      }
+      if (element.attributes) {
+        for (const attributePair of element.attributes) {
+          e.setAttribute(attributePair[0], attributePair[1]);
+        }
+      }
+      if (element.children) {
+        for (const child of element.children) {
+          if (child) {
+            e.appendChild(child);
+          }
+        }
+      }
+      if (element.eventListeners) {
+        for (const listener of element.eventListeners) {
+          if (listener.length > 2) {
+            e.addEventListener(listener[0], listener[1], listener[2]);
+          } else {
+            e.addEventListener(listener[0], listener[1]);
+          }
+        }
+      }
+      return e;
+    };
+      
+    /**
+     * Generate a custom icon with the specified fill color.
+     * The icon is based on https://commons.wikimedia.org/wiki/File:Octicons-location.svg (MIT license).
+     * Resources referenced: https://onestepcode.com/leaflet-markers-svg-icons/.
+     * @param color The fill color.
+     * @returns The custom icon with the specified fill color.
+     */
+     function generateIcon(color) {
+      const width = 24;
+      const height = 48;
+      return L.divIcon({
+        className: "custom_divicon",
+        iconSize: [width, height],
+        iconAnchor: [width/2, height],
+        popupAnchor: [0,-(height/5)*4],
+        html:
+          `<svg
+            width="${width}"
+            height="${height}"
+            viewBox="0 0 640 1024"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M320 0c-177 0-320 143-320 320s160 416 320 704c160-288 320-527 320-704s-143-320-320-320z m0 448c-71 0-128-57-128-128s57-128 128-128 128 57 128 128-57 128-128 128z"
+              fill=${color}
+              stroke=black
+              stroke-width=10px
+            />
+          </svg>`
+      });
+    }
+
+    const cluster = L.markerClusterGroup().addTo(map);
+
+    const sgm = L.layerGroup();
+    const ward20 = L.featureGroup.subGroup(cluster);
+    const zip60637 = L.featureGroup.subGroup(cluster);
+    const ward20_and_zip60637 = L.featureGroup.subGroup(cluster);
+
+    const layerControl = L.control.layers(
+      {
+        "OpenStreetMap" : osmtiles,
+      },
+      {
+        "Sunshine Gospel Ministries" : sgm,
+        "Ward 20" : ward20,
+        "Zip Code 60637" : zip60637,
+        "Ward 20 and Zip Code 60637" : ward20_and_zip60637,
+      },
+      {
+        collapsed : false,
+      }
+    ).addTo(map);
+
+    const defaultColor = "#0000ff";
+    const sgmColor = "#ff0000";
+
+    const sgmMarker = L.marker([sgmData.latitude, sgmData.longitude], {
+      icon: generateIcon(sgmColor),
+    })
+      .bindPopup("Sunshine Gospel Ministries")
+      .addTo(sgm);
+
+    const sgmCircle = L.circle([sgmData.latitude, sgmData.longitude], {
+      radius: 3218, // roughly 2 mi. radius
+      color: sgmColor,
+      fillOpacity: 0.2,
+    }).addTo(sgm);
+
+    for (let i = 0; i < 10; i++) {
+      L.marker(L.latLng(data[i].latitude, data[i].longitude), {
+        icon: generateIcon(defaultColor)
+      })
+        .bindPopup("PIN: " + data[i].pin)
+        .addTo(ward20);
+    }
+
+    sgm.addTo(map);
+    ward20.addTo(map);
+    zip60637.addTo(map);
+    ward20_and_zip60637.addTo(map);
+
+    console.log(JSON.stringify(data[0]));
+
+  </script>   
+
+</body>
+
+</html>
+
+<!-- references:
+  https://github.com/Leaflet/Leaflet/tree/main/docs/examples (BSD 2-Clause license)
+  https://github.com/Leaflet/Leaflet.markercluster (MIT license)
+  https://github.com/ghybs/Leaflet.FeatureGroup.SubGroup (BSD 2-Clause license)
+-->
