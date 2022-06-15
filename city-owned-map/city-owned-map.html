@@ -198,8 +198,8 @@
       });
     }
 
-    addMarkerLayer("sgm", "Sunshine Gospel Ministries", "#ff0000", false);
-    addMarkerLayer("sgm_circle", "2-Mile Radius Around Sunshine Gospel Ministries", "#ff0000", false);
+    addMarkerLayer("sunshineGospel", "Sunshine Gospel Ministries", "#ff0000", false);
+    addMarkerLayer("sunshineGospelCircle", "2-Mile Radius Around Sunshine Gospel Ministries", "#ff0000", false);
     addMarkerLayer("ward20_and_zip60637", "Ward 20, Zip Code 60637", "#9900cc", true);
     addMarkerLayer("ward20", "Ward 20, Other Zip Codes", "#0000ff", true);
     addMarkerLayer("zip60637", "Other Wards, Zip Code 60637", "#009900", true);
@@ -234,14 +234,14 @@
     }
 
     // add marker for Sunshine Gospel Ministries
-    //addMarker("sgm", [sgmData.latitude, sgmData.longitude], "Sunshine Gospel Ministries");
+    addMarker("sunshineGospel", [sunshineGospel.latitude, sunshineGospel.longitude], "Sunshine Gospel Ministries");
     
     // add circle of ~2 mi. radius centered at Sunshine Gospel Ministries
-    /*const sgmCircle = L.circle([sgmData.latitude, sgmData.longitude], {
+    L.circle([sunshineGospel.latitude, sunshineGospel.longitude], {
       radius: 3218, // roughly 2 mi. radius
-      color: markerLayers.get("sgm_circle").color,
+      color: markerLayers.get("sunshineGospelCircle").color,
       fillOpacity: 0.1,
-    }).addTo(markerLayers.get("sgm_circle").layer);*/
+    }).addTo(markerLayers.get("sunshineGospelCircle").layer);
 
     for (const pin of Object.keys(data)) {
       const datum = data[pin];
