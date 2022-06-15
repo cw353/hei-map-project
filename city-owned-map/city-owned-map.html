@@ -74,6 +74,16 @@
 
 <body>
 
+  <form id="sgmCircleForm">
+    <label>
+      Radius (in meters)
+      <input type="number" name="radiusInput"/>
+    </label>
+    <button type="button" name="applyChangesButton">
+      Apply Changes
+    </button>
+  </form>
+  
   <div id="map"></div>
 
   <script>
@@ -289,6 +299,18 @@
     // Add overlays to map and map layer control
     addOverlaysToMap(geoJSONLayers);
     addOverlaysToMap(markerLayers);
+
+    const sgmCircleForm = document.getElementById("sgmCircleForm");
+    sgmCircleForm.radiusInput.value = sgmCircle.getRadius();
+    sgmCircleForm.applyChangesButton.addEventListener("click", (event) => {
+      const newRadius = parseFloat(sgmCircleForm.radiusInput.value);
+      if (!isNaN(newRadius)) {
+        sgmCircleForm.radiusInput.style.backgroundColor = null;
+        sgmCircle.setRadius(newRadius);
+      } else {
+        sgmCircleForm.radiusInput.style.backgroundColor = "red";
+      }
+    });
 
   </script>   
 
