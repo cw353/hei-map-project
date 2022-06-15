@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
     integrity="sha512-RLEjtaFGdC4iQMJDbMzim/dOvAu+8Qp9sw7QE4wIMYcg2goVoivzwgSZq9CsIxp4xKAZPKh5J2f2lOko2Ze6FQ=="
     crossorigin=""/>
-  <!-- non-minified -->
+  <!-- non-minified - switch for deployment !!! -->
   <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster-src.js"
     integrity="sha512-gu3GZbPnPGREFcXgxeWVbp9Oeq3Tdvskd5PaQ0q//PCDMsa0WSSABIqLDwF5ebaDBfJbcM+lamNEe8ln9dPWwA=="
     crossorigin=""></script>
@@ -124,10 +124,9 @@
       });
     };
 
-    let ward20Feature = null;
-
+    /* Create ward boundary layers */
     const geoJSONLayers = new Map();
-
+    
     function addGeoJSONLayer(key, label, color, layer) {
       geoJSONLayers.set(key, {
         layer: layer,
@@ -135,13 +134,15 @@
         color: color,
       });
     };
-        
+       
+    /* Function to be run for each ward feature */
     const onEachWard = (feature, layer) => {
       if (feature.properties && feature.properties.ward) {
         layer.bindPopup("Ward " + feature.properties.ward);
       }
     };
 
+    // Add ward boundaries layer
     addGeoJSONLayer("wardBoundaries", "Ward Boundaries", "black", L.geoJSON(
       wardBoundaries,
       {
@@ -152,28 +153,25 @@
         },
         onEachFeature: (feature, layer) => {
           onEachWard(feature, layer);
+          // Add shaded layer for Ward 20
           if (feature.properties && feature.properties.ward === "20") {
-            ward20Feature = feature;
+            const ward20FillColor = "#e68a00";
+            addGeoJSONLayer("ward20Fill", "Ward 20 (shaded)", ward20FillColor, L.geoJSON(
+              feature,
+              {
+                style: {
+                  color: "black",
+                  weight: 2,
+                  fillColor: ward20FillColor,
+                  fillOpacity: 0.3,
+                },
+                onEachFeature: onEachWard,
+              }
+            ));
           }
         }
       }
     ));
-    
-    if (ward20Feature) {
-      const ward20FillColor = "#e68a00";
-      addGeoJSONLayer("ward20Fill", "Ward 20 (shaded)", ward20FillColor, L.geoJSON(
-        ward20Feature,
-        {
-          style: {
-            color: "black",
-            weight: 2,
-            fillColor: ward20FillColor,
-            fillOpacity: 0.3,
-          },
-          onEachFeature: onEachWard,
-        }
-      ));
-    }
 
     const parentCluster = L.markerClusterGroup({
       maxClusterRadius: 50,
@@ -237,7 +235,7 @@
     addMarker("sunshineGospel", [sunshineGospel.latitude, sunshineGospel.longitude], "Sunshine Gospel Ministries");
     
     // add circle of ~2 mi. radius centered at Sunshine Gospel Ministries
-    L.circle([sunshineGospel.latitude, sunshineGospel.longitude], {
+    const sunshineGospelCircle = L.circle([sunshineGospel.latitude, sunshineGospel.longitude], {
       radius: 3218, // roughly 2 mi. radius
       color: markerLayers.get("sunshineGospelCircle").color,
       fillOpacity: 0.1,
@@ -263,16 +261,21 @@
       }
     }
 
-    function addOverlaysToMap(overlayMap) {
-
+    /**
+     * Helper function to add all overlays in the specified Map data structure to the map and the map's layer control.
+    */
+    function addOverlays(overlayMap) {
+      // Helper function to generate the label for a layer
       function getOverlayLabel(layerInfo) {
-        let toReturn = `<span style='color: ${layerInfo.color}'>&#9724;</span> ${layerInfo.label}`;
+        // include the layer color and name in the overlay label
+        let label = `<span style='color: ${layerInfo.color}'>&#9724;</span> ${layerInfo.label}`;
+        // if the layer has a marker count greater than zero, include it in the overlay label
         if (layerInfo.markerCount && layerInfo.markerCount > 0) {
-          toReturn += ` (${layerInfo.markerCount} marker${layerInfo.markerCount > 1 ? "s" : ""})`;
+          label += ` (${layerInfo.markerCount} marker${layerInfo.markerCount > 1 ? "s" : ""})`;
         }
-        return toReturn;
+        return label;
       }
-
+      // add each overlay in overlayMap to the map and the map's layer control
       for (const [key, val] of overlayMap.entries()) {
         layerControl.addOverlay(
           val.layer,
@@ -283,6 +286,7 @@
 
     }
 
+    // Add overlays to map and map layer control
     addOverlaysToMap(geoJSONLayers);
     addOverlaysToMap(markerLayers);
 
