@@ -32,7 +32,7 @@
     integrity="sha512-gUiI5CXREIHHGko8AdlPYADT5MHvcCuqee1pjKR4qVcw69zVI+WvrnJcCxwU8JajpJoBjpvPIAGfDVFoQJhDfw=="
     crossorigin=""></script>
 
-  <!-- External files -->
+  <!-- External files for data -->
   <script src="data.js"></script>
   <script src="ward_boundaries_sp34-6z76.js"></script>
   
@@ -87,10 +87,21 @@
       doubleClickZoom: false,
     });
 
-    // add tiles to map
+    // add tiles to map - reference: https://leafletjs.com/examples/layers-control/
     const osmtiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap"
-    }).addTo(map);;
+      maxZoom: 19,
+      attribution: "&copy; <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a>"
+    }).addTo(map);
+
+    const mapboxURL = "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}";
+    const mapboxAttribution = "Map data &copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors, Imagery © <a href='https://www.mapbox.com/'>Mapbox</a>";
+
+    const mapboxStreets = L.tileLayer(mapboxURL, {
+      id: 'mapbox/streets-v11',
+      tileSize: 512,
+      zoomOffset: -1,
+      attribution: mapboxAttribution,
+    });
       
     /**
      * Generate a custom icon with the specified fill color.
@@ -124,23 +135,49 @@
       });
     };
 
+    let ward20Boundary = null;
+
     const wardLayer = L.geoJSON(
       wardBoundaries,
       {
         style: (feature) => {
           return {
             "color" : "black",
-            "fillOpacity" : feature.properties.ward === "20" ? 0.3 : 0,
+            /*"fillOpacity" : feature.properties.ward === "20" ? 0.3 : 0,*/
+            "fillOpacity" : 0,
             "weight" : 2,
           }
         },
         onEachFeature: (feature, layer) => {
           if (feature.properties.ward) {
             layer.bindPopup("Ward " + feature.properties.ward);
+            if (feature.properties.ward === "20") {
+              ward20Boundary = feature;
+            }
           }
         }
       }
     ).addTo(map);
+
+    if (ward20Boundary) {
+      const ward20Layer = L.geoJSON(
+        ward20Boundary,
+        {
+          style: (feature) => {
+            return {
+              "color" : "black",
+              "fillOpacity" : 0.3,
+              "weight" : 2,
+            }
+          },
+          onEachFeature: (feature, layer) => {
+            if (feature.properties.ward) {
+              layer.bindPopup("Ward " + feature.properties.ward);
+            }
+          }
+        }
+      ).addTo(map);
+    }
 
     const parentCluster = L.markerClusterGroup({
       maxClusterRadius: 50,
@@ -176,10 +213,11 @@
         "OpenStreetMap" : osmtiles,
       },
       {
-        "Ward Boundaries (Ward 20 Highlighted Grey)" : wardLayer,
+        "Ward Boundaries" : wardLayer,
       },
       {
         collapsed : false,
+        hideSingleBase : true,
       }
     ).addTo(map);
 
