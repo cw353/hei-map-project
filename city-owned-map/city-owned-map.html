@@ -124,9 +124,11 @@
       });
     };
 
-    let ward20Boundary = null;
+    let ward20Feature = null;
 
-    const wardLayer = L.geoJSON(
+    const geoJSONLayers = new Map();
+
+    geoJSONLayers.set("wardBoundaries", L.geoJSON(
       wardBoundaries,
       {
         style: (feature) => {
@@ -140,16 +142,16 @@
           if (feature.properties.ward) {
             layer.bindPopup("Ward " + feature.properties.ward);
             if (feature.properties.ward === "20") {
-              ward20Boundary = feature;
+              ward20Feature = feature;
             }
           }
         }
       }
-    ).addTo(map);
+    ));
 
-    if (ward20Boundary) {
-      const ward20Layer = L.geoJSON(
-        ward20Boundary,
+    if (ward20Feature) {
+      geoJSONLayers.set("ward20Fill", L.geoJSON(
+        ward20Feature,
         {
           style: (feature) => {
             return {
@@ -165,7 +167,7 @@
             }
           }
         }
-      ).addTo(map);
+      ));
     }
 
     const parentCluster = L.markerClusterGroup({
@@ -201,9 +203,7 @@
       {
         "OpenStreetMap" : osmtiles,
       },
-      {
-        "Ward Boundaries" : wardLayer,
-      },
+      null,
       {
         collapsed : false,
         hideSingleBase : true,
@@ -229,32 +229,41 @@
     }
 
     // add marker for Sunshine Gospel Ministries
-    addMarker("sgm", [sgmData.latitude, sgmData.longitude], "Sunshine Gospel Ministries");
+    //addMarker("sgm", [sgmData.latitude, sgmData.longitude], "Sunshine Gospel Ministries");
     
     // add circle of ~2 mi. radius centered at Sunshine Gospel Ministries
-    const sgmCircle = L.circle([sgmData.latitude, sgmData.longitude], {
+    /*const sgmCircle = L.circle([sgmData.latitude, sgmData.longitude], {
       radius: 3218, // roughly 2 mi. radius
       color: markerGroups.get("sgm_circle").color,
       fillOpacity: 0.1,
-    }).addTo(markerGroups.get("sgm_circle").group);
+    }).addTo(markerGroups.get("sgm_circle").group);*/
 
-    for (const datum of data) {
-      const groupKey = (datum.ward === 20 && datum.zipcode === 60637)
+    for (const pin of Object.keys(data)) {
+      const datum = data[pin];
+      const groupKey = (datum.ward === 20 && datum.property_zip.startsWith("60637"))
         ? "ward20_and_zip60637"
         : (datum.ward === 20)
           ? "ward20"
-          : (datum.zipcode === 60637)
+          : (datum.property_zip.startsWith("60637"))
             ? "zip60637"
             : null;
       if (!groupKey) {
-        console.log("Error: " + datum.pin + " could not be categorized.");
+        console.log(`Error: ${pin} could not be categorized.`);
       } else {
         addMarker(
           groupKey,
           [datum.latitude, datum.longitude],
-          "PIN: " + datum.pin + ", zip code: " + datum.zipcode + ", ward: " + datum.ward + ", address: " + datum.address,
+          `PIN: ${pin}, zip code: ${datum.property_zip}, ward: ${datum.ward}, address: ${datum.property_address}`,
         );
       }
+    }
+
+    for (const [key, val] of geoJSONLayers.entries()) {
+      layerControl.addOverlay(
+        val,
+        key,
+      );
+      val.addTo(map);
     }
 
     // reference: https://stackoverflow.com/a/63551124 (CC BY-SA 4.0 license)
