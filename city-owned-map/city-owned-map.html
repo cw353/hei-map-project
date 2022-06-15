@@ -42,7 +42,7 @@
     #map {
       position: relative;
       width: 100%;
-      height: 500px;
+      height: 600px;
       left: 0;
       top: 0;
     }
@@ -60,7 +60,7 @@
     // create map
     const map = L.map("map", {
       center: [41.783, -87.621],
-      zoom: 12,
+      zoom: 13,
       scrollWheelZoom: false,
       doubleClickZoom: false,
     });
@@ -135,35 +135,33 @@
       });
     }
 
-    const cluster = L.markerClusterGroup().addTo(map);
+    const cluster = L.markerClusterGroup({
+      maxClusterRadius: 50,
+    }).addTo(map);
 
-    const sgm = {
-      label: "Sunshine Gospel Ministries",
-      group: L.layerGroup(),
-      color: "#000000",
-      markers: 0,
-    };
+    // map of marker groups
+    const markerGroups = new Map();
 
-    const ward20_and_zip60637 = {
-      label: "Ward 20, Zip Code 60637",
-      group: L.featureGroup.subGroup(cluster),
-      color: "#00ff00",
-      markers: 0,
-    };
-    
-    const ward20 = {
-      label: "Ward 20, Other Zip Codes",
-      group: L.featureGroup.subGroup(cluster),
-      color: "#0000ff",
-      markers: 0,
-    };
+    /**
+     * Helper function to add a new marker group to markerGroups.
+     * @param key The key for the map entry.
+     * @param label The label to associate with the marker group.
+     * @param color The color to associate with the marker group.
+     * @param useCluster Whether or not to use marker clustering with this marker group. 
+     */
+    function addMarkerGroup(key, label, color, useCluster) {
+      markerGroups.set(key, {
+        group: useCluster ? L.featureGroup.subGroup(cluster) : L.layerGroup(),
+        label: label,
+        color: color,
+        markerCount: 0,
+      });
+    }
 
-    const zip60637 = {
-      label: "Other Wards, Zip Code 60637",
-      group: L.featureGroup.subGroup(cluster),
-      color: "#ff0000",
-      markers: 0,
-    };
+    addMarkerGroup("sgm", "Sunshine Gospel Ministries", "#000000", false);
+    addMarkerGroup("ward20_and_zip60637", "Ward 20, Zip Code 60637", "#9900cc", true);
+    addMarkerGroup("ward20", "Ward 20, Other Zip Codes", "#0000ff", true);
+    addMarkerGroup("zip60637", "Other Wards, Zip Code 60637", "#ff0000", true);
 
     const layerControl = L.control.layers(
       {
@@ -175,48 +173,60 @@
       }
     ).addTo(map);
 
-    const markerGroups = [sgm, ward20_and_zip60637, ward20, zip60637];
+    /**
+     * Add a marker to the specified marker group.
+     * @param groupKey The key for the marker group.
+     * @param latlng The coordinates for the marker.
+     * @param popupContent The content for the marker popup.
+     * Postcondition: The marker has been added to the specified marker group and the marker
+     * property for that group has been incremented by one.
+     */
+    function addMarker(groupKey, latlng, popupContent) {
+      const markerGroup = markerGroups.get(groupKey);
+      L.marker(latlng, {
+        icon: generateIcon(markerGroup.color)
+      })
+        .bindPopup(popupContent)
+        .addTo(markerGroup.group);
+      markerGroup.markerCount++;
+    }
 
-    for (const group of markerGroups) {
-      layerControl.addOverlay(group.group, `<span style='color: ${group.color}'>${group.label}</span>`);
-    };
-
-    const sgmMarker = L.marker([sgmData.latitude, sgmData.longitude], {
-      icon: generateIcon(sgm.color),
-    })
-      .bindPopup("Sunshine Gospel Ministries")
-      .addTo(sgm.group);
-
+    // add marker for Sunshine Gospel Ministries
+    addMarker("sgm", [sgmData.latitude, sgmData.longitude], "Sunshine Gospel Ministries", true);
+    
+    // add circle of ~2 mi. radius centered at Sunshine Gospel Ministries
     const sgmCircle = L.circle([sgmData.latitude, sgmData.longitude], {
       radius: 3218, // roughly 2 mi. radius
-      color: sgm.color,
+      color: markerGroups.get("sgm").color,
       fillOpacity: 0.1,
-    }).addTo(sgm.group);
+    }).addTo(map);
 
-    for (let i = 0; i < 15; i++) {
-      const datum = data[i];
-      const category = (datum.ward === 20 && datum.zipcode === 60637)
-        ? ward20_and_zip60637
+    for (const datum of data) {
+      const groupKey = (datum.ward === 20 && datum.zipcode === 60637)
+        ? "ward20_and_zip60637"
         : (datum.ward === 20)
-          ? ward20
+          ? "ward20"
           : (datum.zipcode === 60637)
-            ? zip60637
+            ? "zip60637"
             : null;
-      if (category == null) {
+      if (!groupKey) {
         console.log("Error: " + datum.pin + " could not be categorized.");
       } else {
-        L.marker(L.latLng(datum.latitude, datum.longitude), {
-          icon: generateIcon(category.color)
-        })
-          .bindPopup("PIN: " + datum.pin + ", zip code: " + datum.zipcode + ", ward: " + datum.ward)
-          .addTo(category.group);
+        addMarker(
+          groupKey,
+          [datum.latitude, datum.longitude],
+          "PIN: " + datum.pin + ", zip code: " + datum.zipcode + ", ward: " + datum.ward,
+        );
       }
     }
 
-    sgm.group.addTo(map);
-    ward20.group.addTo(map);
-    zip60637.group.addTo(map);
-    ward20_and_zip60637.group.addTo(map);
+    // reference: https://stackoverflow.com/a/63551124 (CC BY-SA 4.0 license)
+    for (const [key, val] of markerGroups.entries()) {
+      // color as circle
+      //layerControl.addOverlay(val.group, `${val.label} <span style='color: ${val.color}'>&#11044;</span>`);
+      layerControl.addOverlay(val.group, `<span style='color: ${val.color}'>&#9724;</span> ${val.label} (${val.markerCount} marker${val.markerCount > 1 ? "s" : ""})`);
+      val.group.addTo(map);
+    };
 
   </script>   
 
