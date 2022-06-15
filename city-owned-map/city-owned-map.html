@@ -45,30 +45,29 @@
       top: 0;
     }
 
-  </style>
-
-  <style>
-
     /* Modified from https://github.com/Leaflet/Leaflet.markercluster/blob/master/dist/MarkerCluster.Default.css (MIT license) */
     .marker-cluster {
       background-clip: padding-box;
       border-radius: 20px;
-      background-color: rgba(240, 194, 12, 0.6);
+      background-color: rgba(253, 156, 115, 0.6);
     }
+    
+    /* Modified from https://github.com/Leaflet/Leaflet.markercluster/blob/master/dist/MarkerCluster.Default.css (MIT license) */
     .marker-cluster div {
       width: 30px;
       height: 30px;
       margin-left: 5px;
       margin-top: 5px;
-      background-color: rgba(240, 194, 12, 0.6);
+      background-color: rgba(241, 128, 23, 0.6);
       text-align: center;
       border-radius: 15px;
       font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;
     }
+
+    /* Modified from https://github.com/Leaflet/Leaflet.markercluster/blob/master/dist/MarkerCluster.Default.css (MIT license) */
     .marker-cluster span {
       line-height: 30px;
     }
-
   </style>
     
 </head>
@@ -92,16 +91,6 @@
       maxZoom: 19,
       attribution: "&copy; <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a>"
     }).addTo(map);
-
-    const mapboxURL = "https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}";
-    const mapboxAttribution = "Map data &copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors, Imagery © <a href='https://www.mapbox.com/'>Mapbox</a>";
-
-    const mapboxStreets = L.tileLayer(mapboxURL, {
-      id: 'mapbox/streets-v11',
-      tileSize: 512,
-      zoomOffset: -1,
-      attribution: mapboxAttribution,
-    });
       
     /**
      * Generate a custom icon with the specified fill color.
@@ -110,7 +99,7 @@
      * @param color The fill color.
      * @returns The custom icon with the specified fill color.
      */
-     function generateIcon(color) {
+    function generateIcon(color) {
       const width = 24;
       const height = 48;
       return L.divIcon({
@@ -143,7 +132,6 @@
         style: (feature) => {
           return {
             "color" : "black",
-            /*"fillOpacity" : feature.properties.ward === "20" ? 0.3 : 0,*/
             "fillOpacity" : 0,
             "weight" : 2,
           }
@@ -166,6 +154,7 @@
           style: (feature) => {
             return {
               "color" : "black",
+              "fillColor" : "#e68a00",
               "fillOpacity" : 0.3,
               "weight" : 2,
             }
@@ -246,7 +235,7 @@
     const sgmCircle = L.circle([sgmData.latitude, sgmData.longitude], {
       radius: 3218, // roughly 2 mi. radius
       color: markerGroups.get("sgm_circle").color,
-      fillOpacity: 0.2,
+      fillOpacity: 0.1,
     }).addTo(markerGroups.get("sgm_circle").group);
 
     for (const datum of data) {
