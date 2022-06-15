@@ -128,44 +128,49 @@
 
     const geoJSONLayers = new Map();
 
-    geoJSONLayers.set("wardBoundaries", L.geoJSON(
+    function addGeoJSONLayer(key, label, color, layer) {
+      geoJSONLayers.set(key, {
+        layer: layer,
+        label: label,
+        color: color,
+      });
+    };
+        
+    const onEachWard = (feature, layer) => {
+      if (feature.properties && feature.properties.ward) {
+        layer.bindPopup("Ward " + feature.properties.ward);
+      }
+    };
+
+    addGeoJSONLayer("wardBoundaries", "Ward Boundaries", "black", L.geoJSON(
       wardBoundaries,
       {
-        style: (feature) => {
-          return {
-            "color" : "black",
-            "fillOpacity" : 0,
-            "weight" : 2,
-          }
+        style: {
+          color: "black",
+          weight: 2,
+          fillOpacity: 0,
         },
         onEachFeature: (feature, layer) => {
-          if (feature.properties.ward) {
-            layer.bindPopup("Ward " + feature.properties.ward);
-            if (feature.properties.ward === "20") {
-              ward20Feature = feature;
-            }
+          onEachWard(feature, layer);
+          if (feature.properties && feature.properties.ward === "20") {
+            ward20Feature = feature;
           }
         }
       }
     ));
-
+    
     if (ward20Feature) {
-      geoJSONLayers.set("ward20Fill", L.geoJSON(
+      const ward20FillColor = "#e68a00";
+      addGeoJSONLayer("ward20Fill", "Ward 20 (shaded)", ward20FillColor, L.geoJSON(
         ward20Feature,
         {
-          style: (feature) => {
-            return {
-              "color" : "black",
-              "fillColor" : "#e68a00",
-              "fillOpacity" : 0.3,
-              "weight" : 2,
-            }
+          style: {
+            color: "black",
+            weight: 2,
+            fillColor: ward20FillColor,
+            fillOpacity: 0.3,
           },
-          onEachFeature: (feature, layer) => {
-            if (feature.properties.ward) {
-              layer.bindPopup("Ward " + feature.properties.ward);
-            }
-          }
+          onEachFeature: onEachWard,
         }
       ));
     }
@@ -174,30 +179,30 @@
       maxClusterRadius: 50,
     }).addTo(map);
 
-    // map of marker groups
-    const markerGroups = new Map();
+    // map of marker layers
+    const markerLayers = new Map();
 
     /**
-     * Helper function to add a new marker group to markerGroups.
+     * Helper function to add a new marker layer to markerLayers.
      * @param key The key for the map entry.
-     * @param label The label to associate with the marker group.
-     * @param color The color to associate with the marker group.
-     * @param useCluster Whether or not to use marker clustering with this marker group. 
+     * @param label The label to associate with the marker layer.
+     * @param color The color to associate with the marker layer.
+     * @param useCluster Whether or not to use marker clustering with this marker layer. 
      */
-    function addMarkerGroup(key, label, color, useCluster) {
-      markerGroups.set(key, {
-        group: useCluster ? L.featureGroup.subGroup(parentCluster) : L.layerGroup(),
+    function addMarkerLayer(key, label, color, useCluster) {
+      markerLayers.set(key, {
+        layer: useCluster ? L.featureGroup.subGroup(parentCluster) : L.layerGroup(),
         label: label,
         color: color,
         markerCount: 0,
       });
     }
 
-    addMarkerGroup("sgm", "Sunshine Gospel Ministries", "#ff0000", false);
-    addMarkerGroup("sgm_circle", "2-Mile Radius Around Sunshine Gospel Ministries", "#ff0000", false);
-    addMarkerGroup("ward20_and_zip60637", "Ward 20, Zip Code 60637", "#9900cc", true);
-    addMarkerGroup("ward20", "Ward 20, Other Zip Codes", "#0000ff", true);
-    addMarkerGroup("zip60637", "Other Wards, Zip Code 60637", "#009900", true);
+    addMarkerLayer("sgm", "Sunshine Gospel Ministries", "#ff0000", false);
+    addMarkerLayer("sgm_circle", "2-Mile Radius Around Sunshine Gospel Ministries", "#ff0000", false);
+    addMarkerLayer("ward20_and_zip60637", "Ward 20, Zip Code 60637", "#9900cc", true);
+    addMarkerLayer("ward20", "Ward 20, Other Zip Codes", "#0000ff", true);
+    addMarkerLayer("zip60637", "Other Wards, Zip Code 60637", "#009900", true);
 
     const layerControl = L.control.layers(
       {
@@ -211,21 +216,21 @@
     ).addTo(map);
 
     /**
-     * Add a marker to the specified marker group.
-     * @param groupKey The key for the marker group.
+     * Add a marker to the specified marker layer.
+     * @param layerKey The key for the marker layer.
      * @param latlng The coordinates for the marker.
      * @param popupContent The content for the marker popup.
-     * Postcondition: The marker has been added to the specified marker group and the marker
-     * property for that group has been incremented by one.
+     * Postcondition: The marker has been added to the specified marker layer and the marker
+     * property for that layer has been incremented by one.
      */
-    function addMarker(groupKey, latlng, popupContent) {
-      const markerGroup = markerGroups.get(groupKey);
+    function addMarker(layerKey, latlng, popupContent) {
+      const markerLayer = markerLayers.get(layerKey);
       L.marker(latlng, {
-        icon: generateIcon(markerGroup.color)
+        icon: generateIcon(markerLayer.color)
       })
         .bindPopup(popupContent)
-        .addTo(markerGroup.group);
-      markerGroup.markerCount++;
+        .addTo(markerLayer.layer);
+      markerLayer.markerCount++;
     }
 
     // add marker for Sunshine Gospel Ministries
@@ -234,49 +239,52 @@
     // add circle of ~2 mi. radius centered at Sunshine Gospel Ministries
     /*const sgmCircle = L.circle([sgmData.latitude, sgmData.longitude], {
       radius: 3218, // roughly 2 mi. radius
-      color: markerGroups.get("sgm_circle").color,
+      color: markerLayers.get("sgm_circle").color,
       fillOpacity: 0.1,
-    }).addTo(markerGroups.get("sgm_circle").group);*/
+    }).addTo(markerLayers.get("sgm_circle").layer);*/
 
     for (const pin of Object.keys(data)) {
       const datum = data[pin];
-      const groupKey = (datum.ward === 20 && datum.property_zip.startsWith("60637"))
+      const layerKey = (datum.ward === 20 && datum.property_zip.startsWith("60637"))
         ? "ward20_and_zip60637"
         : (datum.ward === 20)
           ? "ward20"
           : (datum.property_zip.startsWith("60637"))
             ? "zip60637"
             : null;
-      if (!groupKey) {
+      if (!layerKey) {
         console.log(`Error: ${pin} could not be categorized.`);
       } else {
         addMarker(
-          groupKey,
+          layerKey,
           [datum.latitude, datum.longitude],
           `PIN: ${pin}, zip code: ${datum.property_zip}, ward: ${datum.ward}, address: ${datum.property_address}`,
         );
       }
     }
 
-    for (const [key, val] of geoJSONLayers.entries()) {
-      layerControl.addOverlay(
-        val,
-        key,
-      );
-      val.addTo(map);
+    function addOverlaysToMap(overlayMap) {
+
+      function getOverlayLabel(layerInfo) {
+        let toReturn = `<span style='color: ${layerInfo.color}'>&#9724;</span> ${layerInfo.label}`;
+        if (layerInfo.markerCount && layerInfo.markerCount > 0) {
+          toReturn += ` (${layerInfo.markerCount} marker${layerInfo.markerCount > 1 ? "s" : ""})`;
+        }
+        return toReturn;
+      }
+
+      for (const [key, val] of overlayMap.entries()) {
+        layerControl.addOverlay(
+          val.layer,
+          getOverlayLabel(val),
+        );
+        val.layer.addTo(map);
+      }
+
     }
 
-    // reference: https://stackoverflow.com/a/63551124 (CC BY-SA 4.0 license)
-    for (const [key, val] of markerGroups.entries()) {
-      // color as circle
-      //layerControl.addOverlay(val.group, `${val.label} <span style='color: ${val.color}'>&#11044;</span>`);
-      layerControl.addOverlay(
-        val.group,
-        `<span style='color: ${val.color}'>&#9724;</span> ${val.label}`
-          + (val.markerCount > 0 ? (` (${val.markerCount} marker${val.markerCount > 1 ? "s" : ""})`) : "")
-      );
-      val.group.addTo(map);
-    };
+    addOverlaysToMap(geoJSONLayers);
+    addOverlaysToMap(markerLayers);
 
   </script>   
 
