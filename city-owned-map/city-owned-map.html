@@ -235,7 +235,7 @@
     addMarker("sunshineGospel", [sunshineGospel.latitude, sunshineGospel.longitude], "Sunshine Gospel Ministries");
     
     // add circle of ~2 mi. radius centered at Sunshine Gospel Ministries
-    const sunshineGospelCircle = L.circle([sunshineGospel.latitude, sunshineGospel.longitude], {
+    const sgmCircle = L.circle([sunshineGospel.latitude, sunshineGospel.longitude], {
       radius: 3218, // roughly 2 mi. radius
       color: markerLayers.get("sunshineGospelCircle").color,
       fillOpacity: 0.1,
@@ -264,7 +264,7 @@
     /**
      * Helper function to add all overlays in the specified Map data structure to the map and the map's layer control.
     */
-    function addOverlays(overlayMap) {
+    function addOverlaysToMap(overlayMap) {
       // Helper function to generate the label for a layer
       function getOverlayLabel(layerInfo) {
         // include the layer color and name in the overlay label
