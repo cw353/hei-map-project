@@ -18,9 +18,6 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
     integrity="sha512-RLEjtaFGdC4iQMJDbMzim/dOvAu+8Qp9sw7QE4wIMYcg2goVoivzwgSZq9CsIxp4xKAZPKh5J2f2lOko2Ze6FQ=="
     crossorigin=""/>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"
-    integrity="sha512-BBToHPBStgMiw0lD4AtkRIZmdndhB6aQbXpX7omcrXeG2PauGBl2lzq2xUZTxaLxYz5IDHlmneCZ1IJ+P3kYtQ=="
-    crossorigin=""/>
   <!-- non-minified -->
   <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster-src.js"
     integrity="sha512-gu3GZbPnPGREFcXgxeWVbp9Oeq3Tdvskd5PaQ0q//PCDMsa0WSSABIqLDwF5ebaDBfJbcM+lamNEe8ln9dPWwA=="
@@ -37,7 +34,8 @@
 
   <!-- External files -->
   <script src="data.js"></script>
-
+  <script src="ward_boundaries_sp34-6z76.js"></script>
+  
   <style>
     #map {
       position: relative;
@@ -45,6 +43,30 @@
       height: 600px;
       left: 0;
       top: 0;
+    }
+
+  </style>
+
+  <style>
+
+    /* Modified from https://github.com/Leaflet/Leaflet.markercluster/blob/master/dist/MarkerCluster.Default.css (MIT license) */
+    .marker-cluster {
+      background-clip: padding-box;
+      border-radius: 20px;
+      background-color: rgba(240, 194, 12, 0.6);
+    }
+    .marker-cluster div {
+      width: 30px;
+      height: 30px;
+      margin-left: 5px;
+      margin-top: 5px;
+      background-color: rgba(240, 194, 12, 0.6);
+      text-align: center;
+      border-radius: 15px;
+      font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;
+    }
+    .marker-cluster span {
+      line-height: 30px;
     }
 
   </style>
@@ -69,39 +91,6 @@
     const osmtiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "© OpenStreetMap"
     }).addTo(map);;
-
-    /**
-     * Helper function to facilitate HTMLElement creation.
-     * @param element An object describing the element to create.
-     */
-    function createElement(element) {
-      const e = document.createElement(element.tag);
-      if (element.text) {
-        e.appendChild(document.createTextNode(element.text));
-      }
-      if (element.attributes) {
-        for (const attributePair of element.attributes) {
-          e.setAttribute(attributePair[0], attributePair[1]);
-        }
-      }
-      if (element.children) {
-        for (const child of element.children) {
-          if (child) {
-            e.appendChild(child);
-          }
-        }
-      }
-      if (element.eventListeners) {
-        for (const listener of element.eventListeners) {
-          if (listener.length > 2) {
-            e.addEventListener(listener[0], listener[1], listener[2]);
-          } else {
-            e.addEventListener(listener[0], listener[1]);
-          }
-        }
-      }
-      return e;
-    };
       
     /**
      * Generate a custom icon with the specified fill color.
@@ -133,9 +122,27 @@
             />
           </svg>`
       });
-    }
+    };
 
-    const cluster = L.markerClusterGroup({
+    const wardLayer = L.geoJSON(
+      wardBoundaries,
+      {
+        style: (feature) => {
+          return {
+            "color" : "black",
+            "fillOpacity" : feature.properties.ward === "20" ? 0.3 : 0,
+            "weight" : 2,
+          }
+        },
+        onEachFeature: (feature, layer) => {
+          if (feature.properties.ward) {
+            layer.bindPopup("Ward " + feature.properties.ward);
+          }
+        }
+      }
+    ).addTo(map);
+
+    const parentCluster = L.markerClusterGroup({
       maxClusterRadius: 50,
     }).addTo(map);
 
@@ -151,23 +158,26 @@
      */
     function addMarkerGroup(key, label, color, useCluster) {
       markerGroups.set(key, {
-        group: useCluster ? L.featureGroup.subGroup(cluster) : L.layerGroup(),
+        group: useCluster ? L.featureGroup.subGroup(parentCluster) : L.layerGroup(),
         label: label,
         color: color,
         markerCount: 0,
       });
     }
 
-    addMarkerGroup("sgm", "Sunshine Gospel Ministries", "#000000", false);
+    addMarkerGroup("sgm", "Sunshine Gospel Ministries", "#ff0000", false);
+    addMarkerGroup("sgm_circle", "2-Mile Radius Around Sunshine Gospel Ministries", "#ff0000", false);
     addMarkerGroup("ward20_and_zip60637", "Ward 20, Zip Code 60637", "#9900cc", true);
     addMarkerGroup("ward20", "Ward 20, Other Zip Codes", "#0000ff", true);
-    addMarkerGroup("zip60637", "Other Wards, Zip Code 60637", "#ff0000", true);
+    addMarkerGroup("zip60637", "Other Wards, Zip Code 60637", "#009900", true);
 
     const layerControl = L.control.layers(
       {
         "OpenStreetMap" : osmtiles,
       },
-      null,
+      {
+        "Ward Boundaries (Ward 20 Highlighted Grey)" : wardLayer,
+      },
       {
         collapsed : false,
       }
@@ -192,14 +202,14 @@
     }
 
     // add marker for Sunshine Gospel Ministries
-    addMarker("sgm", [sgmData.latitude, sgmData.longitude], "Sunshine Gospel Ministries", true);
+    addMarker("sgm", [sgmData.latitude, sgmData.longitude], "Sunshine Gospel Ministries");
     
     // add circle of ~2 mi. radius centered at Sunshine Gospel Ministries
     const sgmCircle = L.circle([sgmData.latitude, sgmData.longitude], {
       radius: 3218, // roughly 2 mi. radius
-      color: markerGroups.get("sgm").color,
-      fillOpacity: 0.1,
-    }).addTo(map);
+      color: markerGroups.get("sgm_circle").color,
+      fillOpacity: 0.2,
+    }).addTo(markerGroups.get("sgm_circle").group);
 
     for (const datum of data) {
       const groupKey = (datum.ward === 20 && datum.zipcode === 60637)
@@ -215,7 +225,7 @@
         addMarker(
           groupKey,
           [datum.latitude, datum.longitude],
-          "PIN: " + datum.pin + ", zip code: " + datum.zipcode + ", ward: " + datum.ward,
+          "PIN: " + datum.pin + ", zip code: " + datum.zipcode + ", ward: " + datum.ward + ", address: " + datum.address,
         );
       }
     }
@@ -224,7 +234,11 @@
     for (const [key, val] of markerGroups.entries()) {
       // color as circle
       //layerControl.addOverlay(val.group, `${val.label} <span style='color: ${val.color}'>&#11044;</span>`);
-      layerControl.addOverlay(val.group, `<span style='color: ${val.color}'>&#9724;</span> ${val.label} (${val.markerCount} marker${val.markerCount > 1 ? "s" : ""})`);
+      layerControl.addOverlay(
+        val.group,
+        `<span style='color: ${val.color}'>&#9724;</span> ${val.label}`
+          + (val.markerCount > 0 ? (` (${val.markerCount} marker${val.markerCount > 1 ? "s" : ""})`) : "")
+      );
       val.group.addTo(map);
     };
 
