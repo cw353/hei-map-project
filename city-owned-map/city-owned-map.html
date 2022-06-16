@@ -45,7 +45,7 @@
       top: 0;
     }
 
-    form {
+    .formDiv {
       margin: 10px;
     }
 
@@ -72,33 +72,42 @@
     .marker-cluster span {
       line-height: 30px;
     }
+
+    .validInput {
+      background-color: null;
+    }
+
+    .invalidInput {
+      background-color: pink;
+    }
+
   </style>
     
 </head>
 
 <body>
 
-  <form id="sgmCircleForm">
+  <div id="sgmRadiusForm" class="formDiv">
     <label>
       Radius around Sunshine Gospel Ministries (in meters):
-      <input type="number" name="radiusInput"/>
+      <input type="number" id="sgmRadiusInput" class="validInput"/>
     </label>
-    <button type="button" name="applyChangesButton">
+    <button type="button" id="sgmRadiusApplyButton">
       Apply Changes
     </button>
-  </form>
+    <span id="sgmRadiusMessage"></span>
+  </div>
 
-  <form id="pinZoomForm">
+  <div id="pinSearchForm" class="formDiv">
     <label>
       Search for city-owned PIN:
-      <input type="text" name="pinInput"/>
+      <input type="text" id="pinSearchInput" class="validInput"/>
     </label>
-    <button type="button" name="zoomButton">
+    <button type="button" id="pinSearchButton">
       Search
     </button>
-    <span id="pinZoomFormMessage">
-    </span>
-  </form>
+    <span id="pinSearchMessage"></span>
+  </div>
   
   <div id="map"></div>
 
@@ -280,7 +289,7 @@
             ? "zip60637"
             : null;
       if (!layerKey) {
-        console.log(`Error: the PIN ${pin} could not be categorized.`);
+        //console.log(`Error: the PIN ${pin} could not be categorized.`);
       } else {
         datum.marker = addMarker(
           layerKey,
@@ -320,30 +329,44 @@
     addOverlaysToMap(geoJSONLayers);
     addOverlaysToMap(markerLayers);
 
+    /**
+     * Helper function to display a message to the user.
+     * @param destination The element where the message should be displayed.
+     * @param message The message to display.
+     * @param color The color for the message.
+     */
+     function displayMessage(destination, message, color) {
+      destination.style.color = color;
+      destination.innerText = message;
+    }
+
     // allow the user to change the radius of sgmCircle
-    const sgmCircleForm = document.getElementById("sgmCircleForm");
-    sgmCircleForm.radiusInput.value = sgmCircle.getRadius();
-    sgmCircleForm.applyChangesButton.addEventListener("click", (event) => {
-      const newRadius = parseFloat(sgmCircleForm.radiusInput.value);
+    const sgmRadiusInput = document.getElementById("sgmRadiusInput");
+    const sgmRadiusMessage = document.getElementById("sgmRadiusMessage");
+    sgmRadiusInput.value = sgmCircle.getRadius();
+    document.getElementById("sgmRadiusApplyButton").addEventListener("click", (event) => {
+      const newRadius = parseFloat(sgmRadiusInput.value);
       if (!isNaN(newRadius)) {
         // valid float
-        sgmCircleForm.radiusInput.style.backgroundColor = null;
         sgmCircle.setRadius(newRadius);
+        sgmRadiusInput.classList.replace("invalidInput", "validInput");
+        displayMessage(sgmRadiusMessage, "Success!", "green");
       } else {
         // invalid float
-        sgmCircleForm.radiusInput.style.backgroundColor = "pink";
+        sgmRadiusInput.classList.replace("validInput", "invalidInput");
+        displayMessage(sgmRadiusMessage, "Error: input must be a valid number.", "red");
       }
     });
 
     // allow the user to zoom in on an inputted PIN
-    const pinZoomForm = document.getElementById("pinZoomForm");
-    pinZoomForm.zoomButton.addEventListener("click", (event) => {
+    const pinSearchInput = document.getElementById("pinSearchInput");
+    const pinSearchMessage = document.getElementById("pinSearchMessage");
+    document.getElementById("pinSearchButton").addEventListener("click", (event) => {
       // try to find PIN in list of city-owned PINs (ignoring '-' characters)
-      const pin = pinZoomForm.pinInput.value.replace(/-/g,'');
+      const pin = pinSearchInput.value.replace(/-/g,'');
       const pinData = data[pin];
       if (pinData) {
-        // if the PIN was found, zoom in, open the PIN's marker popup, and alert the user
-        pinZoomForm.pinInput.style.backgroundColor = null;
+        // if the PIN was found, zoom in, alert the user, and open the PIN's marker popup
         const pinLayer = markerLayers.get(pinData.layerName).layer;
         if (!map.hasLayer(pinLayer)) {
           pinLayer.addTo(map);
@@ -351,16 +374,15 @@
         parentCluster.zoomToShowLayer(
           pinData.marker,
           () => {
+            pinSearchInput.classList.replace("invalidInput", "validInput");
+            displayMessage(pinSearchMessage, "Success!", "green");
             pinData.marker.openPopup();
-            document.getElementById("pinZoomFormMessage").style.color = "green";
-            document.getElementById("pinZoomFormMessage").innerText = "Success!";
           },
         );
       } else {
         // if the PIN could not be found, alert the user
-        pinZoomForm.pinInput.style.backgroundColor = "pink";
-        document.getElementById("pinZoomFormMessage").style.color = "red";
-        document.getElementById("pinZoomFormMessage").innerText = "Error: the inputted PIN could not be found in the list of city-owned PINs on this map."
+        pinSearchInput.classList.replace("validInput", "invalidInput");
+        displayMessage(pinSearchMessage, "Error: the inputted PIN could not be found on the map.", "red");
       }
     });
 
