@@ -90,11 +90,11 @@
 
   <form id="pinZoomForm">
     <label>
-      Find city-owned PIN:
+      Search for city-owned PIN:
       <input type="text" name="pinInput"/>
     </label>
     <button type="button" name="zoomButton">
-      Find
+      Search
     </button>
     <span id="pinZoomFormMessage">
     </span>
@@ -360,7 +360,7 @@
         // if the PIN could not be found, alert the user
         pinZoomForm.pinInput.style.backgroundColor = "pink";
         document.getElementById("pinZoomFormMessage").style.color = "red";
-        document.getElementById("pinZoomFormMessage").innerText = "Error: the inputted PIN could not be found in the list of city-owned PINs."
+        document.getElementById("pinZoomFormMessage").innerText = "Error: the inputted PIN could not be found in the list of city-owned PINs on this map."
       }
     });
 
