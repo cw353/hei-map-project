@@ -176,39 +176,48 @@
         layer.bindPopup("Ward " + feature.properties.ward);
       }
     };
+    
+    let ward20Feature = null;
 
     // Add ward boundaries layer
-    addGeoJSONLayer("wardBoundaries", "Ward Boundaries", "black", L.geoJSON(
-      wardBoundaries,
-      {
-        style: {
-          color: "black",
-          weight: 2,
-          fillOpacity: 0,
-        },
-        onEachFeature: (feature, layer) => {
-          onEachWard(feature, layer);
-          // Add shaded layer for Ward 20
-          if (feature.properties && feature.properties.ward === "20") {
-            const ward20FillColor = "#e68a00";
-            addGeoJSONLayer("ward20Fill", "Ward 20 (shaded)", ward20FillColor, L.geoJSON(
-              feature,
-              {
-                style: {
-                  color: "black",
-                  weight: 2,
-                  fillColor: ward20FillColor,
-                  fillOpacity: 0.3,
-                },
-                onEachFeature: onEachWard,
-              }
-            ));
+    if (wardBoundaries) {
+      addGeoJSONLayer("wardBoundaries", "Ward Boundaries", "black", L.geoJSON(
+        wardBoundaries,
+        {
+          style: {
+            color: "black",
+            weight: 2,
+            fillOpacity: 0,
+          },
+          onEachFeature: (feature, layer) => {
+            onEachWard(feature, layer);
+            // Add shaded layer for Ward 20
+            if (feature.properties && feature.properties.ward === "20") {
+              ward20Feature = feature;
+            }
           }
         }
-      }
-    ));
+      ));
+    }
 
-    const parentCluster = L.markerClusterGroup({
+    // Add Ward 20 fill
+    if (ward20Feature) {
+      const ward20FillColor = "#e68a00";
+      addGeoJSONLayer("ward20Fill", "Ward 20 (shaded)", ward20FillColor, L.geoJSON(
+        ward20Feature,
+        {
+          style: {
+            color: "black",
+            weight: 2,
+            fillColor: ward20FillColor,
+            fillOpacity: 0.3,
+          },
+          onEachFeature: onEachWard,
+        }
+      ));
+    }
+
+    const parentMarkerCluster = L.markerClusterGroup({
       maxClusterRadius: 50,
     }).addTo(map);
 
@@ -224,18 +233,69 @@
      */
     function addMarkerLayer(key, label, color, useCluster) {
       markerLayers.set(key, {
-        layer: useCluster ? L.featureGroup.subGroup(parentCluster) : L.layerGroup(),
+        layer: useCluster ? L.featureGroup.subGroup(parentMarkerCluster) : L.layerGroup(),
         label: label,
         color: color,
         markerCount: 0,
       });
     }
 
+    /**
+     * Add a marker to the specified marker layer.
+     * @param layerName The name of the marker layer (used as a key to get the layer from
+     * markerLayers).
+     * @param data An object containing the data for the marker (must include latitude and
+     * longitude properties).
+     * @param popupContent The content for the marker popup.
+     * @return The marker.
+     * Postcondition: The marker has been added to the specified marker layer and the marker
+     * property for that layer has been incremented by one. The "marker" property of the data
+     * object now points to the marker, and the "layerName" property of the data object now
+     * holds the layer name.
+     */
+    function addMarker(layerName, data, popupContent) {
+      const markerLayer = markerLayers.get(layerName);
+      const marker = L.marker([data.latitude, data.longitude], {
+        icon: generateIcon(markerLayer.color),
+      })
+        .bindPopup(popupContent)
+        .addTo(markerLayer.layer);
+      markerLayer.markerCount++;
+      data.marker = marker;
+      data.layerName = layerName;
+    }
+
     addMarkerLayer("sunshineGospel", "Sunshine Gospel Ministries", "#ff0000", false);
     addMarkerLayer("sunshineGospelCircle", "Radius Around Sunshine Gospel Ministries", "#ff0000", false);
-    addMarkerLayer("ward20_and_zip60637", "Ward 20, Zip Code 60637", "#9900cc", true);
-    addMarkerLayer("ward20", "Ward 20, Other Zip Codes", "#0000ff", true);
-    addMarkerLayer("zip60637", "Other Wards, Zip Code 60637", "#009900", true);
+    addMarkerLayer("ward20", "City-Owned PINs in Ward 20", "#0000ff", true);
+    addMarkerLayer("otherWards", "City-Owned PINs in Other Wards", "#009900", true);
+
+    // add marker for Sunshine Gospel Ministries
+    addMarker("sunshineGospel", sunshineGospel, `Sunshine Gospel Ministries (PIN: ${sunshineGospel.pin})`);
+    
+    // add circle of ~2 mi. radius centered at Sunshine Gospel Ministries
+    const sgmCircle = L.circle([sunshineGospel.latitude, sunshineGospel.longitude], {
+      radius: 3218, // roughly 2 mi. radius
+      color: markerLayers.get("sunshineGospelCircle").color,
+      fillOpacity: 0.1,
+    }).addTo(markerLayers.get("sunshineGospelCircle").layer);
+
+    // add city-owned PINs to map
+    for (const pin of Object.keys(data)) {
+      const datum = data[pin];
+      const layerKey = (datum.ward > 0 && datum.ward <= 50)
+        ? (datum.ward === 20) ? "ward20" : "otherWards"
+        : null;
+      if (!layerKey) {
+        console.log(`Error: the PIN ${pin} could not be categorized.`);
+      } else {
+        addMarker(
+          layerKey,
+          datum,
+          `PIN: ${pin}, zip code: ${datum.property_zip}, ward: ${datum.ward}, address: ${datum.property_address}`,
+        );
+      }
+    }
 
     const layerControl = L.control.layers(
       {
@@ -247,58 +307,6 @@
         hideSingleBase : true,
       }
     ).addTo(map);
-
-    /**
-     * Add a marker to the specified marker layer.
-     * @param layerKey The key for the marker layer.
-     * @param latlng The coordinates for the marker.
-     * @param popupContent The content for the marker popup.
-     * @return The marker.
-     * Postcondition: The marker has been added to the specified marker layer and the marker
-     * property for that layer has been incremented by one.
-     */
-    function addMarker(layerKey, latlng, popupContent) {
-      const markerLayer = markerLayers.get(layerKey);
-      const marker = L.marker(latlng, {
-        icon: generateIcon(markerLayer.color)
-      })
-        .bindPopup(popupContent)
-        .addTo(markerLayer.layer);
-      markerLayer.markerCount++;
-      return marker;
-    }
-
-    // add marker for Sunshine Gospel Ministries
-    sunshineGospel.marker = addMarker("sunshineGospel", [sunshineGospel.latitude, sunshineGospel.longitude], `Sunshine Gospel Ministries (PIN: ${sunshineGospel.pin})`);
-    sunshineGospel.layerName = "sunshineGospel";
-    
-    // add circle of ~2 mi. radius centered at Sunshine Gospel Ministries
-    const sgmCircle = L.circle([sunshineGospel.latitude, sunshineGospel.longitude], {
-      radius: 3218, // roughly 2 mi. radius
-      color: markerLayers.get("sunshineGospelCircle").color,
-      fillOpacity: 0.1,
-    }).addTo(markerLayers.get("sunshineGospelCircle").layer);
-
-    for (const pin of Object.keys(data)) {
-      const datum = data[pin];
-      const layerKey = (datum.ward === 20 && datum.property_zip.startsWith("60637"))
-        ? "ward20_and_zip60637"
-        : (datum.ward === 20)
-          ? "ward20"
-          : (datum.property_zip.startsWith("60637"))
-            ? "zip60637"
-            : null;
-      if (!layerKey) {
-        //console.log(`Error: the PIN ${pin} could not be categorized.`);
-      } else {
-        datum.marker = addMarker(
-          layerKey,
-          [datum.latitude, datum.longitude],
-          `PIN: ${pin}, zip code: ${datum.property_zip}, ward: ${datum.ward}, address: ${datum.property_address}`,
-        );
-        datum.layerName = layerKey;
-      }
-    }
 
     /**
      * Helper function to add all overlays in the specified Map data structure to the map and the map's layer control.
@@ -371,7 +379,7 @@
         if (!map.hasLayer(pinLayer)) {
           pinLayer.addTo(map);
         }
-        parentCluster.zoomToShowLayer(
+        parentMarkerCluster.zoomToShowLayer(
           pinData.marker,
           () => {
             pinSearchInput.classList.replace("invalidInput", "validInput");
