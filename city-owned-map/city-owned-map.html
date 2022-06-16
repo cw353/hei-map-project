@@ -45,6 +45,10 @@
       top: 0;
     }
 
+    form {
+      margin: 10px;
+    }
+
     /* Modified from https://github.com/Leaflet/Leaflet.markercluster/blob/master/dist/MarkerCluster.Default.css (MIT license) */
     .marker-cluster {
       background-clip: padding-box;
@@ -76,12 +80,24 @@
 
   <form id="sgmCircleForm">
     <label>
-      Radius (in meters)
+      Radius around Sunshine Gospel Ministries (in meters):
       <input type="number" name="radiusInput"/>
     </label>
     <button type="button" name="applyChangesButton">
       Apply Changes
     </button>
+  </form>
+
+  <form id="pinZoomForm">
+    <label>
+      Find city-owned PIN:
+      <input type="text" name="pinInput"/>
+    </label>
+    <button type="button" name="zoomButton">
+      Find
+    </button>
+    <span id="pinZoomFormMessage">
+    </span>
   </form>
   
   <div id="map"></div>
@@ -207,7 +223,7 @@
     }
 
     addMarkerLayer("sunshineGospel", "Sunshine Gospel Ministries", "#ff0000", false);
-    addMarkerLayer("sunshineGospelCircle", "2-Mile Radius Around Sunshine Gospel Ministries", "#ff0000", false);
+    addMarkerLayer("sunshineGospelCircle", "Radius Around Sunshine Gospel Ministries", "#ff0000", false);
     addMarkerLayer("ward20_and_zip60637", "Ward 20, Zip Code 60637", "#9900cc", true);
     addMarkerLayer("ward20", "Ward 20, Other Zip Codes", "#0000ff", true);
     addMarkerLayer("zip60637", "Other Wards, Zip Code 60637", "#009900", true);
@@ -228,21 +244,24 @@
      * @param layerKey The key for the marker layer.
      * @param latlng The coordinates for the marker.
      * @param popupContent The content for the marker popup.
+     * @return The marker.
      * Postcondition: The marker has been added to the specified marker layer and the marker
      * property for that layer has been incremented by one.
      */
     function addMarker(layerKey, latlng, popupContent) {
       const markerLayer = markerLayers.get(layerKey);
-      L.marker(latlng, {
+      const marker = L.marker(latlng, {
         icon: generateIcon(markerLayer.color)
       })
         .bindPopup(popupContent)
         .addTo(markerLayer.layer);
       markerLayer.markerCount++;
+      return marker;
     }
 
     // add marker for Sunshine Gospel Ministries
-    addMarker("sunshineGospel", [sunshineGospel.latitude, sunshineGospel.longitude], "Sunshine Gospel Ministries");
+    sunshineGospel.marker = addMarker("sunshineGospel", [sunshineGospel.latitude, sunshineGospel.longitude], `Sunshine Gospel Ministries (PIN: ${sunshineGospel.pin})`);
+    sunshineGospel.layerName = "sunshineGospel";
     
     // add circle of ~2 mi. radius centered at Sunshine Gospel Ministries
     const sgmCircle = L.circle([sunshineGospel.latitude, sunshineGospel.longitude], {
@@ -261,13 +280,14 @@
             ? "zip60637"
             : null;
       if (!layerKey) {
-        console.log(`Error: ${pin} could not be categorized.`);
+        console.log(`Error: the PIN ${pin} could not be categorized.`);
       } else {
-        addMarker(
+        datum.marker = addMarker(
           layerKey,
           [datum.latitude, datum.longitude],
           `PIN: ${pin}, zip code: ${datum.property_zip}, ward: ${datum.ward}, address: ${datum.property_address}`,
         );
+        datum.layerName = layerKey;
       }
     }
 
@@ -300,15 +320,47 @@
     addOverlaysToMap(geoJSONLayers);
     addOverlaysToMap(markerLayers);
 
+    // allow the user to change the radius of sgmCircle
     const sgmCircleForm = document.getElementById("sgmCircleForm");
     sgmCircleForm.radiusInput.value = sgmCircle.getRadius();
     sgmCircleForm.applyChangesButton.addEventListener("click", (event) => {
       const newRadius = parseFloat(sgmCircleForm.radiusInput.value);
       if (!isNaN(newRadius)) {
+        // valid float
         sgmCircleForm.radiusInput.style.backgroundColor = null;
         sgmCircle.setRadius(newRadius);
       } else {
-        sgmCircleForm.radiusInput.style.backgroundColor = "red";
+        // invalid float
+        sgmCircleForm.radiusInput.style.backgroundColor = "pink";
+      }
+    });
+
+    // allow the user to zoom in on an inputted PIN
+    const pinZoomForm = document.getElementById("pinZoomForm");
+    pinZoomForm.zoomButton.addEventListener("click", (event) => {
+      // try to find PIN in list of city-owned PINs (ignoring '-' characters)
+      const pin = pinZoomForm.pinInput.value.replace(/-/g,'');
+      const pinData = data[pin];
+      if (pinData) {
+        // if the PIN was found, zoom in, open the PIN's marker popup, and alert the user
+        pinZoomForm.pinInput.style.backgroundColor = null;
+        const pinLayer = markerLayers.get(pinData.layerName).layer;
+        if (!map.hasLayer(pinLayer)) {
+          pinLayer.addTo(map);
+        }
+        parentCluster.zoomToShowLayer(
+          pinData.marker,
+          () => {
+            pinData.marker.openPopup();
+            document.getElementById("pinZoomFormMessage").style.color = "green";
+            document.getElementById("pinZoomFormMessage").innerText = "Success!";
+          },
+        );
+      } else {
+        // if the PIN could not be found, alert the user
+        pinZoomForm.pinInput.style.backgroundColor = "pink";
+        document.getElementById("pinZoomFormMessage").style.color = "red";
+        document.getElementById("pinZoomFormMessage").innerText = "Error: the inputted PIN could not be found in the list of city-owned PINs."
       }
     });
 
