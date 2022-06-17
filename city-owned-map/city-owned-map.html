@@ -142,7 +142,16 @@
       maxZoom: 19,
       attribution: "&copy; <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a>"
     }).addTo(map);
-      
+
+    // set of pins saved by user
+    const savedPinColor = "red";
+    const savedPins = new Set(
+        localStorage.getItem("city-owned-map-saved-pins")
+          ? JSON.parse(localStorage.getItem("city-owned-map-saved-pins"))
+          : null
+    );
+    updateSavedPinsButtons(); 
+
     /**
      * Generate a custom icon with the specified fill color.
      * The icon is based on https://commons.wikimedia.org/wiki/File:Octicons-location.svg (MIT license).
@@ -269,16 +278,16 @@
      * object now points to the marker, and the "layerName" property of the data object now
      * holds the layer name.
      */
-    function addMarker(layerName, data, popupContent) {
+    function addMarker(layerName, pin, pinData, popupContent) {
       const markerLayer = markerLayers.get(layerName);
-      const marker = L.marker([data.latitude, data.longitude], {
-        icon: generateIcon(markerLayer.color),
+      const marker = L.marker([pinData.latitude, pinData.longitude], {
+        icon: generateIcon(savedPins.has(pin) ? savedPinColor : markerLayer.color),
       })
         .bindPopup(popupContent)
         .addTo(markerLayer.layer);
       markerLayer.markerCount++;
-      data.marker = marker;
-      data.layerName = layerName;
+      pinData.marker = marker;
+      pinData.layerName = layerName;
     }
 
     /**
@@ -293,7 +302,7 @@
     }
 
     /* Helper function to update count of saved pins on exportSavedPinsButton. */
-    function updateExportSavedPinsButtonText() {
+    function updateSavedPinsButtons() {
       document.getElementById("exportSavedPinsButton").innerText = `Export ${savedPins.size} Saved PIN${(savedPins.size !== 1) ? "s" : ""}`;
     }
 
@@ -305,9 +314,8 @@
      */
     function addSavedPin(pin) {
       savedPins.add(pin);
-      updateExportSavedPinsButtonText();
-      data[pin].marker.setIcon(generateIcon("red"));
-
+      updateSavedPinsButtons();
+      data[pin].marker.setIcon(generateIcon(savedPinColor));
     }
 
     /**
@@ -318,7 +326,7 @@
      */
     function removeSavedPin(pin) {
       savedPins.delete(pin);
-      updateExportSavedPinsButtonText();
+      updateSavedPinsButtons();
       data[pin].marker.setIcon(generateIcon(markerLayers.get(data[pin].layerName).color));
     }
     
@@ -374,10 +382,6 @@
       downloadDataAsFile(toExport, `${exportFileName}`, "/application/json");
     }
 
-    // set of pins saved by user
-    const savedPins = new Set();
-    updateExportSavedPinsButtonText();
-
     function getMarkerPopupContent(pin, pinData) {
       // display info about pin
       const dataDisplay = document.createElement("p");
@@ -394,7 +398,7 @@
       // allow user to add or remove pin from saved pins
       const savedPinButton = document.createElement("button");
       savedPinButton.setAttribute("type", "button");
-      savedPinButton.innerText = "Add to Saved PINs";
+      savedPinButton.innerText = savedPins.has(pin) ? "Remove from Saved Pins" : "Add to Saved PINs";
       savedPinButton.addEventListener("click", (event) => {
         if (!savedPins.has(pin)) {
           addSavedPin(pin);
@@ -424,6 +428,7 @@
     // add marker for Sunshine Gospel Ministries
     addMarker(
       "sunshineGospel",
+      sunshineGospel.pin,
       sunshineGospel,
       "<a href='https://www.sunshinegospel.org/' target='_blank' rel='noopener'>Sunshine Gospel Ministries</a>"
     );
@@ -446,6 +451,7 @@
       } else {
         addMarker(
           layerKey,
+          pin,
           datum,
           getMarkerPopupContent(pin, datum),
         );
@@ -566,6 +572,10 @@
       + "property it represents, and add it to your Saved PINs list by selecting \"Add to Saved PINs\""
       + " (saved PINs are marked in red on the map and can be exported for use in other applications.)";
 
+      // store saved pins in local storage before unloading page
+      window.addEventListener("beforeunload", (event) => {
+        localStorage.setItem("city-owned-map-saved-pins", JSON.stringify([...savedPins]));
+      });
   </script>   
 
 </body>
