@@ -350,17 +350,17 @@
     // set of pins saved by user
     const savedPins = new Set();
 
-    function getMarkerPopupContent(pin, data) {
+    function getMarkerPopupContent(pin, pinData) {
       // display info about pin
       const dataDisplay = document.createElement("p");
       dataDisplay.setAttribute("class", "increasedLineHeight");
       dataDisplay.innerHTML = [
         `PIN: ${pin}`,
-        `Address: ${data.property_address}`,
-        `Zip Code: ${data.property_zip}`,
-        `Ward: ${data.ward}`,
-        `Property Status: ${data.property_status}`,
-        `Record Last Updated: ${data['last_update_aksk-kvfp']}`,
+        `Address: ${pinData.property_address}`,
+        `Zip Code: ${pinData.property_zip}`,
+        `Ward: ${pinData.ward}`,
+        `Property Status: ${pinData.property_status}`,
+        `Record Last Updated: ${pinData['last_update_aksk-kvfp']}`,
         `Property Details: <a href="https://www.cookcountyassessor.com/pin/${pin}" target="_blank" rel="noopener">Assessor's Office</a>`
       ].join("<br>");
       // allow user to add or remove pin from saved pins
@@ -371,10 +371,12 @@
         if (savedPins.has(pin)) {
           // remove pin from saved pins
           savedPins.delete(pin);
+          pinData.marker.setIcon(generateIcon(markerLayers.get(pinData.layerName).color)); // restore original color
           savedPinButton.innerText = "Add to Saved PINs";
         } else {
           // add pin to saved pins
           savedPins.add(pin);
+          pinData.marker.setIcon(generateIcon("red"));
           savedPinButton.innerText = "Remove from Saved PINs";
         }
       });
@@ -392,8 +394,8 @@
     // add marker layers
     addMarkerLayer("ward20", "City-Owned PINs in Ward 20", "#0000ff", true);
     addMarkerLayer("otherWards", "City-Owned PINs in Other Wards", "#9900cc", true);
-    addMarkerLayer("sunshineGospel", "Sunshine Gospel Ministries", "#ff0000", false);
-    addMarkerLayer("sunshineGospelCircle", "Circle around Sunshine Gospel Ministries", "#ff0000", false);
+    addMarkerLayer("sunshineGospel", "Sunshine Gospel Ministries", "#0099cc", false);
+    addMarkerLayer("sunshineGospelCircle", "Circle around Sunshine Gospel Ministries", "#00ace6", false);
 
     // add marker for Sunshine Gospel Ministries
     addMarker(
@@ -406,7 +408,7 @@
     const sgmCircle = L.circle([sunshineGospel.latitude, sunshineGospel.longitude], {
       radius: 3000,
       color: markerLayers.get("sunshineGospelCircle").color,
-      fillOpacity: 0.15,
+      fillOpacity: 0.2,
     }).addTo(markerLayers.get("sunshineGospelCircle").layer);
 
     // add city-owned PINs to map
@@ -523,9 +525,9 @@
     document.getElementById("exportSavedPinsButton").addEventListener("click", (event) => {
       if (savedPins.size > 0) {
         exportSavedPins(exportFileName);
-        displayMessage(exportSavedPinsMessage, `Success! The saved PINs have been exported as "${exportFileName}".`, "green");
+        displayMessage(exportSavedPinsMessage, `Success! Your Saved PINs list has been exported as "${exportFileName}".`, "green");
       } else {
-        displayMessage(exportSavedPinsMessage, "There are no saved PINs to export. You can save a PIN by clicking on its marker on the map and selecting \"Add to Saved PINs\".", "red");
+        displayMessage(exportSavedPinsMessage, "Your Saved PINs list is empty. You can save a PIN by clicking on its marker on the map and selecting \"Add to Saved PINs\".", "red");
       }
     });
 
@@ -537,7 +539,8 @@
       + " and Cook County's "
       + `<a href="https://datacatalog.cookcountyil.gov/Property-Taxation/Assessor-Archived-05-11-2022-Property-Locations/c49d-89sn" target="_blank" rel="noopener">Property Locations dataset</a>`
       + ` (accessed on ${accessDateTime}). Click on each marker to view more information about the `
-      + "property it represents.";
+      + "property it represents, and add it to your Saved PINs list by selecting \"Add to Saved PINs\""
+      + " (saved PINs are marked in red on the map and can be exported for use in other applications.)";
 
   </script>   
 
