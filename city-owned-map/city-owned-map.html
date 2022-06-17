@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="author" content="Claire Wagner (Summer 2022 Wheaton College Research Team)"
+  <meta name="author" content="Claire Wagner (Summer 2022 Wheaton College Research Team)">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Map of City-Owned Properties</title>
 
@@ -63,6 +63,14 @@
 
     .invalidInput {
       background-color: pink;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .increasedLineHeight {
+      line-height: 1.5;
     }
 
     #sgmRadiusInput {
@@ -263,15 +271,44 @@
       data.layerName = layerName;
     }
 
+    const savedPins = new Set();
+
     function getMarkerPopupContent(pin, data) {
-      return [
-        `PIN: <strong>${pin}</strong>`,
+      // display info about pin
+      const dataDisplay = document.createElement("p");
+      dataDisplay.setAttribute("class", "increasedLineHeight");
+      dataDisplay.innerHTML = [
+        `PIN: ${pin}`,
         `Address: ${data.property_address}`,
         `Ward: ${data.ward}`,
         `Property Status: ${data.property_status}`,
         `Record Last Updated: ${data['last_update_aksk-kvfp']}`,
         `Property Details: <a href="https://www.cookcountyassessor.com/pin/${pin}" target="_blank" rel="noopener">Assessor's Office</a>`
       ].join("<br>");
+      // allow user to add or remove pin from saved pins
+      const savedPinButton = document.createElement("button");
+      savedPinButton.setAttribute("type", "button");
+      savedPinButton.innerText = "Add to Saved PINs";
+      savedPinButton.addEventListener("click", (event) => {
+        if (savedPins.has(pin)) {
+          // remove pin from saved pins
+          savedPins.delete(pin);
+          savedPinButton.innerText = "Add to Saved PINs";
+        } else {
+          // add pin to saved pins
+          savedPins.add(pin);
+          savedPinButton.innerText = "Remove from Saved PINs";
+        }
+      });
+      // center savedPinButton
+      const savedPinButtonDiv = document.createElement("div");
+      savedPinButtonDiv.setAttribute("class", "center");
+      savedPinButtonDiv.appendChild(savedPinButton);
+      // return div with dataDisplay and savedPinButton
+      const popupDiv = document.createElement("div");
+      popupDiv.appendChild(dataDisplay);
+      popupDiv.appendChild(savedPinButtonDiv);
+      return popupDiv;
     }
 
     addMarkerLayer("ward20", "City-Owned PINs in Ward 20", "#0000ff", true);
@@ -337,12 +374,12 @@
         return label;
       }
       // add each overlay in overlayMap to the map and the map's layer control
-      for (const [key, val] of overlayMap.entries()) {
+      for (const overlay of overlayMap.values()) {
         layerControl.addOverlay(
-          val.layer,
-          getOverlayLabel(val),
+          overlay.layer,
+          getOverlayLabel(overlay),
         );
-        val.layer.addTo(map);
+        overlay.layer.addTo(map);
       }
 
     }
