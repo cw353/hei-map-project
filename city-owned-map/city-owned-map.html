@@ -37,21 +37,6 @@
   <script src="ward_boundaries_sp34-6z76.js"></script>
   
   <style>
-    #map {
-      width: 100%;
-      height: 600px;
-      left: 0;
-      top: 0;
-    }
-
-    #pageHeader {
-      text-align: center;
-      font-size: 12px;
-    }
-
-    #mapDescription {
-      font-style: italic;
-    }
 
     .formDiv {
       margin: 10px;
@@ -73,8 +58,28 @@
       line-height: 1.5;
     }
 
+    .message {
+      margin: 3px;
+    }
+
+    #map {
+      width: 100%;
+      height: 600px;
+      left: 0;
+      top: 0;
+    }
+
+    #pageHeader {
+      text-align: center;
+      font-size: 12px;
+    }
+
+    #mapDescription {
+      font-style: italic;
+    }
+
     #sgmRadiusInput {
-      width: 3em;
+      width: 3.5em;
     }
 
     #pinSearchInput {
@@ -93,6 +98,13 @@
 
   <p id="mapDescription"></p-->
 
+  <div id="exportSavedPinsForm" class="formDiv">
+    <button type="button" id="exportSavedPinsButton">
+      Export Saved PINs
+    </button>
+    <span id="exportSavedPinsMessage" class="message"></span>
+  </div>
+
   <div id="pinSearchForm" class="formDiv">
     <label>
       Search for city-owned PIN on map:
@@ -101,7 +113,7 @@
     <button type="button" id="pinSearchButton">
       Search
     </button>
-    <span id="pinSearchMessage"></span>
+    <span id="pinSearchMessage" class="message"></span>
   </div>
 
   <div id="sgmRadiusForm" class="formDiv">
@@ -112,7 +124,7 @@
     <button type="button" id="sgmRadiusSetButton">
       Set Radius
     </button>
-    <span id="sgmRadiusMessage"></span>
+    <span id="sgmRadiusMessage" class="message"></span>
   </div>
 
   <div id="map"></div>
@@ -271,6 +283,7 @@
       data.layerName = layerName;
     }
 
+    // set of pins saved by user
     const savedPins = new Set();
 
     function getMarkerPopupContent(pin, data) {
@@ -343,7 +356,6 @@
           layerKey,
           datum,
           getMarkerPopupContent(pin, datum),
-          //`PIN: ${pin}, zip code: ${datum.property_zip}, ward: ${datum.ward}, address: ${datum.property_address}`,
         );
       }
     }
@@ -413,7 +425,7 @@
           sgmCircleLayer.addTo(map);
         }
         sgmRadiusInput.classList.replace("invalidInput", "validInput");
-        displayMessage(sgmRadiusMessage, "Success!", "green");
+        displayMessage(sgmRadiusMessage, `Success! The radius has been set to ${newRadius} km.`, "green");
       } else {
         // invalid float
         sgmRadiusInput.classList.replace("validInput", "invalidInput");
@@ -438,7 +450,7 @@
           pinData.marker,
           () => {
             pinSearchInput.classList.replace("invalidInput", "validInput");
-            displayMessage(pinSearchMessage, "Success!", "green");
+            displayMessage(pinSearchMessage, "Success! The results for your search have been displayed on the map.", "green");
             pinData.marker.openPopup();
           },
         );
@@ -446,6 +458,16 @@
         // if the PIN could not be found, alert the user
         pinSearchInput.classList.replace("validInput", "invalidInput");
         displayMessage(pinSearchMessage, "Error: the inputted PIN could not be found on the map.", "red");
+      }
+    });
+
+    const exportSavedPinsMessage = document.getElementById("exportSavedPinsMessage");
+    const exportFileName = "saved_pins.json";
+    document.getElementById("exportSavedPinsButton").addEventListener("click", (event) => {
+      if (savedPins.size > 0) {
+        displayMessage(exportSavedPinsMessage, `Success! The saved PINs have been exported as "${exportFileName}".`, "green");
+      } else {
+        displayMessage(exportSavedPinsMessage, "There are no saved PINs to export. You can save a PIN by clicking on its marker on the map and selecting \"Add to Saved PINs\".", "red");
       }
     });
 
@@ -457,6 +479,7 @@
       + `<a href="https://datacatalog.cookcountyil.gov/Property-Taxation/Assessor-Archived-05-11-2022-Property-Locations/c49d-89sn" target="_blank" rel="noopener">Property Locations dataset</a>`
       + ` (accessed on ${accessDateTime}). Click on each marker to view more information about the `
       + "property it represents.";
+
   </script>   
 
 </body>
