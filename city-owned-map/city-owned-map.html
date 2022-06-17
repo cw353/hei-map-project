@@ -99,9 +99,7 @@
   <p id="mapDescription"></p-->
 
   <div id="exportSavedPinsForm" class="formDiv">
-    <button type="button" id="exportSavedPinsButton">
-      Export Saved PINs
-    </button>
+    <button type="button" id="exportSavedPinsButton"></button>
     <span id="exportSavedPinsMessage" class="message"></span>
   </div>
 
@@ -283,18 +281,47 @@
       data.layerName = layerName;
     }
 
-        /**
+    /**
      * Helper function to display a message to the user.
      * @param destination The element where the message should be displayed.
      * @param message The message to display.
      * @param color The color for the message.
      */
-     function displayMessage(destination, message, color) {
+    function displayMessage(destination, message, color) {
       destination.style.color = color;
       destination.innerText = message;
     }
 
+    /* Helper function to update count of saved pins on exportSavedPinsButton. */
+    function updateExportSavedPinsButtonText() {
+      document.getElementById("exportSavedPinsButton").innerText = `Export ${savedPins.size} Saved PIN${(savedPins.size !== 1) ? "s" : ""}`;
+    }
 
+    /**
+     * Helper function to add pin to Saved Pins list.
+     * @param pin The pin to add.
+     * Postcondition: The pin has been added to the Saved Pins list, and the color of its marker
+     * has been set accordingly.
+     */
+    function addSavedPin(pin) {
+      savedPins.add(pin);
+      updateExportSavedPinsButtonText();
+      data[pin].marker.setIcon(generateIcon("red"));
+
+    }
+
+    /**
+     * Helper function to remove a pin from the Saved Pins list.
+     * @param pin The pin to add.
+     * Postcondition: The pin has been removed from the Saved Pins list, and the color of its marker
+     * has been reset to its original value.
+     */
+    function removeSavedPin(pin) {
+      savedPins.delete(pin);
+      updateExportSavedPinsButtonText();
+      data[pin].marker.setIcon(generateIcon(markerLayers.get(data[pin].layerName).color));
+    }
+    
     /**
      * Helper function to download data as file.
      * Based on https://stackoverflow.com/a/30832210 (CC BY-SA 3.0 license).
@@ -349,6 +376,7 @@
 
     // set of pins saved by user
     const savedPins = new Set();
+    updateExportSavedPinsButtonText();
 
     function getMarkerPopupContent(pin, pinData) {
       // display info about pin
@@ -368,16 +396,12 @@
       savedPinButton.setAttribute("type", "button");
       savedPinButton.innerText = "Add to Saved PINs";
       savedPinButton.addEventListener("click", (event) => {
-        if (savedPins.has(pin)) {
-          // remove pin from saved pins
-          savedPins.delete(pin);
-          pinData.marker.setIcon(generateIcon(markerLayers.get(pinData.layerName).color)); // restore original color
-          savedPinButton.innerText = "Add to Saved PINs";
-        } else {
-          // add pin to saved pins
-          savedPins.add(pin);
-          pinData.marker.setIcon(generateIcon("red"));
+        if (!savedPins.has(pin)) {
+          addSavedPin(pin);
           savedPinButton.innerText = "Remove from Saved PINs";
+        } else {
+          removeSavedPin(pin);
+          savedPinButton.innerText = "Add to Saved PINs";
         }
       });
       // center savedPinButton
@@ -442,7 +466,7 @@
 
     /**
      * Helper function to add all overlays in the specified Map data structure to the map and the map's layer control.
-    */
+     */
     function addOverlaysToMap(overlayMap) {
       // Helper function to generate the label for a layer
       function getOverlayLabel(layerInfo) {
