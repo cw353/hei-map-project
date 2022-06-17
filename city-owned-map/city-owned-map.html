@@ -283,6 +283,70 @@
       data.layerName = layerName;
     }
 
+        /**
+     * Helper function to display a message to the user.
+     * @param destination The element where the message should be displayed.
+     * @param message The message to display.
+     * @param color The color for the message.
+     */
+     function displayMessage(destination, message, color) {
+      destination.style.color = color;
+      destination.innerText = message;
+    }
+
+
+    /**
+     * Helper function to download data as file.
+     * Based on https://stackoverflow.com/a/30832210 (CC BY-SA 3.0 license).
+     * @param data The data to include in the file.
+     * @param filename The name of the file to download.
+     * @param type The MIME type of the data.
+     */
+     function downloadDataAsFile(data, filename, type) {
+      const file = new Blob([data], {type: type});
+      const downloadLink = document.createElement("a");
+      const url = URL.createObjectURL(file);
+      downloadLink.href = url;
+      downloadLink.download = filename;
+      downloadLink.click();
+      setTimeout(function() {
+        URL.revokeObjectURL(url);  
+      }, 0);
+    }
+
+    /**
+     * Helper function to export saved pins as JSON.
+     * @param filename The name of the exported JSON.
+     */
+    function exportSavedPins(filename) {
+      // which fields to include in the exported data
+      const fieldsToExport = [
+        "pin",
+        "property_address",
+        "property_zip",
+        "ward",
+        "sq_ft",
+        "property_status",
+        "managing_organization",
+        "date_of_acquisition",
+        "date_of_disposition",
+        "last_update",
+        "tract_geoid",
+        "latitude",
+        "longitude",
+      ];
+      // create JSON
+      let counter = 0;
+      let toExport = "[";
+      savedPins.forEach((pin) => {
+        toExport += JSON.stringify(data[pin], fieldsToExport);
+        toExport += (counter++ < savedPins.size-1) ? "," : "";
+      });
+      toExport += "]";
+      // download JSON
+      downloadDataAsFile(toExport, `${exportFileName}`, "/application/json");
+    }
+
     // set of pins saved by user
     const savedPins = new Set();
 
@@ -293,6 +357,7 @@
       dataDisplay.innerHTML = [
         `PIN: ${pin}`,
         `Address: ${data.property_address}`,
+        `Zip Code: ${data.property_zip}`,
         `Ward: ${data.ward}`,
         `Property Status: ${data.property_status}`,
         `Record Last Updated: ${data['last_update_aksk-kvfp']}`,
@@ -324,6 +389,7 @@
       return popupDiv;
     }
 
+    // add marker layers
     addMarkerLayer("ward20", "City-Owned PINs in Ward 20", "#0000ff", true);
     addMarkerLayer("otherWards", "City-Owned PINs in Other Wards", "#9900cc", true);
     addMarkerLayer("sunshineGospel", "Sunshine Gospel Ministries", "#ff0000", false);
@@ -360,6 +426,7 @@
       }
     }
 
+    // add layer control
     const layerControl = L.control.layers(
       {
         "OpenStreetMap" : osmtiles,
@@ -399,17 +466,6 @@
     // Add overlays to map and map layer control
     addOverlaysToMap(markerLayers);
     addOverlaysToMap(geoJSONLayers);
-
-    /**
-     * Helper function to display a message to the user.
-     * @param destination The element where the message should be displayed.
-     * @param message The message to display.
-     * @param color The color for the message.
-     */
-     function displayMessage(destination, message, color) {
-      destination.style.color = color;
-      destination.innerText = message;
-    }
 
     // allow the user to change the radius of sgmCircle
     const sgmRadiusInput = document.getElementById("sgmRadiusInput");
@@ -461,16 +517,19 @@
       }
     });
 
+    // allow user to export saved pins
     const exportSavedPinsMessage = document.getElementById("exportSavedPinsMessage");
     const exportFileName = "saved_pins.json";
     document.getElementById("exportSavedPinsButton").addEventListener("click", (event) => {
       if (savedPins.size > 0) {
+        exportSavedPins(exportFileName);
         displayMessage(exportSavedPinsMessage, `Success! The saved PINs have been exported as "${exportFileName}".`, "green");
       } else {
         displayMessage(exportSavedPinsMessage, "There are no saved PINs to export. You can save a PIN by clicking on its marker on the map and selecting \"Add to Saved PINs\".", "red");
       }
     });
 
+    // add map description
     document.getElementById("mapDescription").innerHTML = "This is a map of properties owned by the "
       + "City of Chicago that may be for sale and of interest to Sunshine Gospel Ministries' Housing "
       + "Equity Initiative. The data for this map comes from the Chicago Data Portal's "
