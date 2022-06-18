@@ -1,4 +1,9 @@
 /**
+ * Functions for use with city-owned-map.html
+ * @author Claire Wagner (Summer 2022 Wheaton College Research Team)
+ */
+
+/**
  * Generate a custom icon with the specified fill color.
  * The icon is based on https://commons.wikimedia.org/wiki/File:Octicons-location.svg (MIT license).
  * Resources referenced: https://onestepcode.com/leaflet-markers-svg-icons/.
