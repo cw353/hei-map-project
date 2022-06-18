@@ -98,9 +98,10 @@
 
   <p id="mapDescription"></p-->
 
-  <div id="exportSavedPinsForm" class="formDiv">
+  <div id="savedPinsForm" class="formDiv">
+    <button type="button" id="clearSavedPinsButton"></button>
     <button type="button" id="exportSavedPinsButton"></button>
-    <span id="exportSavedPinsMessage" class="message"></span>
+    <span id="savedPinsMessage" class="message"></span>
   </div>
 
   <div id="pinSearchForm" class="formDiv">
@@ -269,7 +270,8 @@
      * Add a marker to the specified marker layer.
      * @param layerName The name of the marker layer (used as a key to get the layer from
      * markerLayers).
-     * @param data An object containing the data for the marker (must include latitude and
+     * @param pin The pin to which the marker corresponds.
+     * @param pinData An object containing the data for the marker (must include latitude and
      * longitude properties).
      * @param popupContent The content for the marker popup.
      * @return The marker.
@@ -303,6 +305,7 @@
 
     /* Helper function to update count of saved pins on exportSavedPinsButton. */
     function updateSavedPinsButtons() {
+      document.getElementById("clearSavedPinsButton").innerText = `Clear ${savedPins.size} Saved PIN${(savedPins.size !== 1) ? "s" : ""}`;
       document.getElementById("exportSavedPinsButton").innerText = `Export ${savedPins.size} Saved PIN${(savedPins.size !== 1) ? "s" : ""}`;
     }
 
@@ -328,6 +331,24 @@
       savedPins.delete(pin);
       updateSavedPinsButtons();
       data[pin].marker.setIcon(generateIcon(markerLayers.get(data[pin].layerName).color));
+    }
+
+    /**
+     * Helper function to clear all saved pins.
+     * Postcondition: savedPins has been cleared and the colors and popup contents of all markers
+     * corresponding to previously saved pins have been restored to their original values (but
+     * the list of saved pins in local storage has not been updated).
+     */
+     function clearSavedPins() {
+      const tmp = [...savedPins];
+      savedPins.clear();
+      for (const pin of tmp) {
+        // restore marker popup content
+        data[pin].marker.setPopupContent(getMarkerPopupContent(pin));
+        // restore original marker color
+        data[pin].marker.setIcon(generateIcon(markerLayers.get(data[pin].layerName).color));
+      }
+      updateSavedPinsButtons();
     }
     
     /**
@@ -382,8 +403,13 @@
       downloadDataAsFile(toExport, `${exportFileName}`, "/application/json");
     }
 
-    function getMarkerPopupContent(pin, pinData) {
+    /**
+     * Helper function to generate popup content for a marker based on the PIN it represents.
+     * @param pin The pin.
+     */
+    function getMarkerPopupContent(pin) {
       // display info about pin
+      const pinData = data[pin];
       const dataDisplay = document.createElement("p");
       dataDisplay.setAttribute("class", "increasedLineHeight");
       dataDisplay.innerHTML = [
@@ -417,6 +443,32 @@
       popupDiv.appendChild(dataDisplay);
       popupDiv.appendChild(savedPinButtonDiv);
       return popupDiv;
+    }
+
+
+    /**
+     * Helper function to add all overlays in the specified Map data structure to the map and the map's layer control.
+     */
+     function addOverlaysToMap(overlayMap) {
+      // Helper function to generate the label for a layer
+      function getOverlayLabel(layerInfo) {
+        // include the layer color and name in the overlay label
+        let label = `<span style='color: ${layerInfo.color}'>&#9724;</span> ${layerInfo.label}`;
+        // if the layer has a marker count greater than zero, include it in the overlay label
+        if (layerInfo.markerCount && layerInfo.markerCount > 0) {
+          label += ` (${layerInfo.markerCount} marker${layerInfo.markerCount > 1 ? "s" : ""})`;
+        }
+        return label;
+      }
+      // add each overlay in overlayMap to the map and the map's layer control
+      for (const overlay of overlayMap.values()) {
+        layerControl.addOverlay(
+          overlay.layer,
+          getOverlayLabel(overlay),
+        );
+        overlay.layer.addTo(map);
+      }
+
     }
 
     // add marker layers
@@ -453,7 +505,7 @@
           layerKey,
           pin,
           datum,
-          getMarkerPopupContent(pin, datum),
+          getMarkerPopupContent(pin),
         );
       }
     }
@@ -469,31 +521,6 @@
         hideSingleBase : true,
       }
     ).addTo(map);
-
-    /**
-     * Helper function to add all overlays in the specified Map data structure to the map and the map's layer control.
-     */
-    function addOverlaysToMap(overlayMap) {
-      // Helper function to generate the label for a layer
-      function getOverlayLabel(layerInfo) {
-        // include the layer color and name in the overlay label
-        let label = `<span style='color: ${layerInfo.color}'>&#9724;</span> ${layerInfo.label}`;
-        // if the layer has a marker count greater than zero, include it in the overlay label
-        if (layerInfo.markerCount && layerInfo.markerCount > 0) {
-          label += ` (${layerInfo.markerCount} marker${layerInfo.markerCount > 1 ? "s" : ""})`;
-        }
-        return label;
-      }
-      // add each overlay in overlayMap to the map and the map's layer control
-      for (const overlay of overlayMap.values()) {
-        layerControl.addOverlay(
-          overlay.layer,
-          getOverlayLabel(overlay),
-        );
-        overlay.layer.addTo(map);
-      }
-
-    }
 
     // Add overlays to map and map layer control
     addOverlaysToMap(markerLayers);
@@ -561,6 +588,13 @@
       }
     });
 
+    // allow user to clear saved pins
+    document.getElementById("clearSavedPinsButton").addEventListener("click", (event) => {
+      if (savedPins.size > 0 && window.confirm("Are you sure you want to remove all saved PINs? This action cannot be undone.")) {
+        clearSavedPins();
+      }
+    });
+
     // add map description
     document.getElementById("mapDescription").innerHTML = "This is a map of properties owned by the "
       + "City of Chicago that may be for sale and of interest to Sunshine Gospel Ministries' Housing "
@@ -570,7 +604,8 @@
       + `<a href="https://datacatalog.cookcountyil.gov/Property-Taxation/Assessor-Archived-05-11-2022-Property-Locations/c49d-89sn" target="_blank" rel="noopener">Property Locations dataset</a>`
       + ` (accessed on ${accessDateTime}). Click on each marker to view more information about the `
       + "property it represents, and add it to your Saved PINs list by selecting \"Add to Saved PINs\""
-      + " (saved PINs are marked in red on the map and can be exported for use in other applications.)";
+      + ` (saved PINs are marked in ${savedPinColor} on the map and can be exported for use in other`
+      + " applications.)";
 
       // store saved pins in local storage before unloading page
       window.addEventListener("beforeunload", (event) => {
