@@ -100,6 +100,7 @@
   <p id="mapDescription"></p-->
 
   <div id="savedPinsForm" class="formDiv">
+    <button type="button" id="showOnlySavedPinsButton">Hide Non-Saved PINs</button>
     <button type="button" id="clearSavedPinsButton"></button>
     <button type="button" id="exportSavedPinsButton"></button>
     <span id="exportSavedPinsMessage" class="message"></span>
@@ -152,7 +153,8 @@
           ? JSON.parse(localStorage.getItem("city-owned-map-saved-pins"))
           : null
     );
-    updateSavedPinsButtons(); 
+    const savedPinsLayer = L.layerGroup();
+    updateSavedPinsButtons();
 
     /* Create ward boundary layers */
     const geoJSONLayers = new Map();
@@ -225,8 +227,9 @@
      */
     function addSavedPin(pin) {
       savedPins.add(pin);
-      updateSavedPinsButtons();
+      savedPinsLayer.addLayer(data[pin].marker);
       data[pin].marker.setIcon(generateIcon(savedPinColor));
+      updateSavedPinsButtons();
     }
 
     /**
@@ -237,8 +240,9 @@
      */
     function removeSavedPin(pin) {
       savedPins.delete(pin);
-      updateSavedPinsButtons();
+      savedPinsLayer.removeLayer(data[pin].marker);
       data[pin].marker.setIcon(generateIcon(markerLayers.get(data[pin].layerName).color));
+      updateSavedPinsButtons();
     }
 
     /**
@@ -250,6 +254,7 @@
     function clearSavedPins() {
       const tmp = [...savedPins];
       savedPins.clear();
+      savedPinsLayer.clearLayers();
       for (const pin of tmp) {
         // restore marker popup content
         data[pin].marker.setPopupContent(getMarkerPopupContent(pin, data[pin]));
@@ -381,7 +386,7 @@
       },
       null,
       {
-        collapsed : true,
+        collapsed : false,
         hideSingleBase : true,
       }
     ).addTo(map);
@@ -457,6 +462,18 @@
       if (savedPins.size > 0 && window.confirm("Are you sure you want to remove all saved PINs? This action cannot be undone.")) {
         clearSavedPins();
       }
+    });
+
+    document.getElementById("showOnlySavedPinsButton").addEventListener("click", (event) => {
+      for (const layerObject of markerLayers.values()) {
+        if (map.hasLayer(layerObject.layer)) {
+          map.removeLayer(layerObject.layer);
+        }
+      }
+      if (map.hasLayer(savedPinsLayer)) {
+        map.removeLayer(savedPinsLayer);
+      }
+      map.addLayer(savedPinsLayer);
     });
 
     // add map description
