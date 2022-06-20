@@ -468,14 +468,15 @@
     // add map description
     document.getElementById("mapDescription").innerHTML = "This is a map of properties owned by the "
       + "City of Chicago that may be for sale and of interest to Sunshine Gospel Ministries' Housing "
-      + "Equity Initiative. The data for this map comes from the Chicago Data Portal's "
+      + "Equity Initiative. The data for the markers on this map comes from the Chicago Data Portal's "
       + `<a href="https://data.cityofchicago.org/Community-Economic-Development/City-Owned-Land-Inventory/aksk-kvfp" target="_blank" rel="noopener">City-Owned Land Inventory dataset</a>`
-      + " and "
-      + `<a href="https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-Wards-2015-/sp34-6z76" target="_blank" rel="noopener">Ward Boundaries dataset</a>`
-      + "and Cook County's "
+      + " and Cook County's "
       + `<a href="https://datacatalog.cookcountyil.gov/Property-Taxation/Assessor-Archived-05-11-2022-Property-Locations/c49d-89sn" target="_blank" rel="noopener">Property Locations dataset</a>`
-      + ` (accessed on ${accessDateTime}). Click on each marker to view more information about the `
-      + "property it represents, and add it to your Saved PINs list by selecting \"Add to Saved PINs\""
+      + ` (accessed on ${accessDateTime}). The ward boundaries data comes from the Chicago Data Portal's `
+      + `<a href="https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-Wards-2015-/sp34-6z76" target="_blank" rel="noopener">Ward Boundaries dataset</a>`
+      + ` (accessed on ${wardBoundariesAccessTime}).`
+      + " Click on each marker to view more information about the property it represents,"
+      + " and add it to your Saved PINs list by selecting \"Add to Saved PINs\""
       + ` (saved PINs are marked in ${savedPinColor} on the map and can be exported for use in other`
       + " applications.)";
 
