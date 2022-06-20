@@ -38,16 +38,16 @@ function generateIcon(color) {
 /**
  * Helper function to create a new marker layer and add it to the specified marker layer Map.
  * @param key The key for the map entry.
- * @param label The label to associate with the marker layer.
+ * @param name The name to associate with the marker layer.
  * @param color The color to associate with the marker layer.
  * @param parentMarkerCluster The marker cluster group to use as the parent (or null
  * if the markers in this layer should not be clustered).
  * @param markerLayerMap The Map of marker layers to which to add this layer.
  */
-function addMarkerLayer(key, label, color, parentMarkerCluster, markerLayerMap) {
+function addMarkerLayer(key, name, color, parentMarkerCluster, markerLayerMap) {
   markerLayerMap.set(key, {
     layer: parentMarkerCluster ? L.featureGroup.subGroup(parentMarkerCluster) : L.layerGroup(),
-    label: label,
+    name: name,
     color: color,
     markerCount: 0,
   });
@@ -56,15 +56,15 @@ function addMarkerLayer(key, label, color, parentMarkerCluster, markerLayerMap) 
 /**
  * Helper function to add a new GeoJSON layer to the specified GeoJSON layer Map.
  * @param key The key for the map entry.
- * @param label The label to associate with the layer.
+ * @param name The name to associate with the layer.
  * @param color The color to associate with the layer.
  * @param geoJSONLayerMap The Map of GeoJSON layers to which to add this layer.
  * @param layer The layer to add.
  */
-function addGeoJSONLayer(key, label, color, geoJSONLayerMap, layer) {
+function addGeoJSONLayer(key, name, color, geoJSONLayerMap, layer) {
   geoJSONLayerMap.set(key, {
     layer: layer,
-    label: label,
+    name: name,
     color: color,
   });
 }
@@ -72,28 +72,27 @@ function addGeoJSONLayer(key, label, color, geoJSONLayerMap, layer) {
 
 /**
  * Add a marker to the specified marker layer.
- * @param layerName The name of the marker layer (used as a key to get the layer from
- * markerLayers).
- * @param pin The pin to which the marker corresponds.
- * @param pinData An object containing the data for the marker (must include latitude and
+ * @param layerName The name of the marker layer object.
+ * @param markerData An object containing the data for the marker (must include latitude and
  * longitude properties).
+ * @param icon The icon for the marker.
+ * @param markerLayer The layer object representing the layer to which to add the marker.
  * @param popupContent The content for the marker popup.
  * @return The marker.
- * Postcondition: The marker has been added to the specified marker layer and the marker
+ * Postcondition: The marker has been added to the specified marker layer and the markerCount
  * property for that layer has been incremented by one. The "marker" property of the data
  * object now points to the marker, and the "layerName" property of the data object now
  * holds the layer name.
  */
-function addMarker(layerName, pin, pinData, markerLayerMap, popupContent) {
-  const markerLayer = markerLayerMap.get(layerName);
-  const marker = L.marker([pinData.latitude, pinData.longitude], {
-    icon: generateIcon(savedPins.has(pin) ? savedPinColor : markerLayer.color),
+function addMarker(layerName, markerData, icon, markerLayer, popupContent) {
+  const marker = L.marker([markerData.latitude, markerData.longitude], {
+    icon: icon,
   })
     .bindPopup(popupContent)
     .addTo(markerLayer.layer);
   markerLayer.markerCount++;
-  pinData.marker = marker;
-  pinData.layerName = layerName;
+  markerData.marker = marker;
+  markerData.layerName = layerName;
 }
 
 /**
@@ -115,16 +114,16 @@ function getOverlayLabel(color, name, markerCount) {
 /**
  * Helper function to add all overlays in the specified Map of overlays to the map and to
  * the map's layer control.
- * @param overlayMap The Map of overlays.
+ * @param overlays An iterable containing objects representing the overlays to add.
  * @param layerControl The layer control to which to add the overlays.
  * @param map The map to which to add the overlays.
  */
-function addOverlaysToMap(overlayMap, layerControl, map) {
+function addOverlaysToMap(overlays, layerControl, map) {
   // add each overlay in overlayMap to the map and the map's layer control
-  for (const overlay of overlayMap.values()) {
+  for (const overlay of overlays) {
     layerControl.addOverlay(
       overlay.layer,
-      getOverlayLabel(overlay.color, overlay.label, overlay.markerCount),
+      getOverlayLabel(overlay.color, overlay.name, overlay.markerCount),
     );
     overlay.layer.addTo(map);
   }

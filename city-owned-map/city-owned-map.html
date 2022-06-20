@@ -100,7 +100,6 @@
   <p id="mapDescription"></p-->
 
   <div id="savedPinsForm" class="formDiv">
-    <button type="button" id="showOnlySavedPinsButton">Hide Non-Saved PINs</button>
     <button type="button" id="clearSavedPinsButton"></button>
     <button type="button" id="exportSavedPinsButton"></button>
     <span id="exportSavedPinsMessage" class="message"></span>
@@ -153,7 +152,6 @@
           ? JSON.parse(localStorage.getItem("city-owned-map-saved-pins"))
           : null
     );
-    const savedPinsLayer = L.layerGroup();
     updateSavedPinsButtons();
 
     /* Create ward boundary layers */
@@ -210,8 +208,11 @@
       maxClusterRadius: 50,
     }).addTo(map);
 
-    // map of marker layers
-    const markerLayers = new Map();
+    // city-owned marker layers
+    const cityOwnedLayers = new Map();
+
+    // Sunshine Gospel Ministries-related layers
+    const sunshineGospelLayers = new Map();
 
     /* Helper function to update count of saved pins on exportSavedPinsButton. */
     function updateSavedPinsButtons() {
@@ -227,7 +228,6 @@
      */
     function addSavedPin(pin) {
       savedPins.add(pin);
-      savedPinsLayer.addLayer(data[pin].marker);
       data[pin].marker.setIcon(generateIcon(savedPinColor));
       updateSavedPinsButtons();
     }
@@ -240,8 +240,7 @@
      */
     function removeSavedPin(pin) {
       savedPins.delete(pin);
-      savedPinsLayer.removeLayer(data[pin].marker);
-      data[pin].marker.setIcon(generateIcon(markerLayers.get(data[pin].layerName).color));
+      data[pin].marker.setIcon(generateIcon(cityOwnedLayers.get(data[pin].layerName).color));
       updateSavedPinsButtons();
     }
 
@@ -254,12 +253,11 @@
     function clearSavedPins() {
       const tmp = [...savedPins];
       savedPins.clear();
-      savedPinsLayer.clearLayers();
       for (const pin of tmp) {
         // restore marker popup content
         data[pin].marker.setPopupContent(getMarkerPopupContent(pin, data[pin]));
         // restore original marker color
-        data[pin].marker.setIcon(generateIcon(markerLayers.get(data[pin].layerName).color));
+        data[pin].marker.setIcon(generateIcon(cityOwnedLayers.get(data[pin].layerName).color));
       }
       updateSavedPinsButtons();
     }
@@ -339,26 +337,26 @@
     }
 
     // add marker layers
-    addMarkerLayer("ward20", "City-Owned PINs in Ward 20", "#0000ff", parentMarkerCluster, markerLayers);
-    addMarkerLayer("otherWards", "City-Owned PINs in Other Wards", "#9900cc", parentMarkerCluster, markerLayers);
-    addMarkerLayer("sunshineGospel", "Sunshine Gospel Ministries", "#0099cc", null, markerLayers);
-    addMarkerLayer("sunshineGospelCircle", "Circle around Sunshine Gospel Ministries", "#00ace6", null, markerLayers);
+    addMarkerLayer("ward20", "City-Owned PINs in Ward 20", "#0000ff", parentMarkerCluster, cityOwnedLayers);
+    addMarkerLayer("otherWards", "City-Owned PINs in Other Wards", "#9900cc", parentMarkerCluster, cityOwnedLayers);
+    addMarkerLayer("sunshineGospelPin", "Sunshine Gospel Ministries", "#0099cc", null, sunshineGospelLayers);
+    addMarkerLayer("sunshineGospelCircle", "Circle around Sunshine Gospel Ministries", "#00ace6", null, sunshineGospelLayers);
 
     // add marker for Sunshine Gospel Ministries
     addMarker(
-      "sunshineGospel",
-      sunshineGospel.pin,
+      "sunshineGospelPin",
       sunshineGospel,
-      markerLayers,
+      generateIcon(sunshineGospelLayers.get("sunshineGospelPin").color),
+      sunshineGospelLayers.get("sunshineGospelPin"),
       "<a href='https://www.sunshinegospel.org/' target='_blank' rel='noopener'>Sunshine Gospel Ministries</a>"
     );
     
     // add circle of ~2 mi. radius centered at Sunshine Gospel Ministries
     const sgmCircle = L.circle([sunshineGospel.latitude, sunshineGospel.longitude], {
       radius: 3000,
-      color: markerLayers.get("sunshineGospelCircle").color,
+      color: sunshineGospelLayers.get("sunshineGospelCircle").color,
       fillOpacity: 0.2,
-    }).addTo(markerLayers.get("sunshineGospelCircle").layer);
+    }).addTo(sunshineGospelLayers.get("sunshineGospelCircle").layer);
 
     // add city-owned PINs to map
     for (const pin of Object.keys(data)) {
@@ -369,15 +367,17 @@
       if (!layerKey) {
         console.log(`Error: the PIN ${pin} could not be categorized.`);
       } else {
+        const layerObject = cityOwnedLayers.get(layerKey);
         addMarker(
           layerKey,
-          pin,
           datum,
-          markerLayers,
+          generateIcon(savedPins.has(pin) ? savedPinColor : layerObject.color),
+          layerObject,
           getMarkerPopupContent(pin, data[pin]),
         );
       }
     }
+    updateSavedPinsButtons();
 
     // add layer control
     const layerControl = L.control.layers(
@@ -392,8 +392,9 @@
     ).addTo(map);
 
     // Add overlays to map and map layer control
-    addOverlaysToMap(markerLayers, layerControl, map);
-    addOverlaysToMap(geoJSONLayers, layerControl, map);
+    addOverlaysToMap(cityOwnedLayers.values(), layerControl, map);
+    addOverlaysToMap(sunshineGospelLayers.values(), layerControl, map);
+    addOverlaysToMap(geoJSONLayers.values(), layerControl, map);
 
     // allow the user to change the radius of sgmCircle
     const sgmRadiusInput = document.getElementById("sgmRadiusInput");
@@ -404,7 +405,7 @@
       if (!isNaN(newRadius)) {
         // valid float
         sgmCircle.setRadius(newRadius * 1000); // kilometers to meters
-        const sgmCircleLayer = markerLayers.get("sunshineGospelCircle").layer;
+        const sgmCircleLayer = sunshineGospelLayers.get("sunshineGospelCircle").layer;
         if (!map.hasLayer(sgmCircleLayer)) {
           sgmCircleLayer.addTo(map);
         }
@@ -426,7 +427,7 @@
       const pinData = data[pin];
       if (pinData) {
         // if the PIN was found, zoom in, alert the user, and open the PIN's marker popup
-        const pinLayer = markerLayers.get(pinData.layerName).layer;
+        const pinLayer = cityOwnedLayers.get(pinData.layerName).layer;
         if (!map.hasLayer(pinLayer)) {
           pinLayer.addTo(map);
         }
@@ -462,18 +463,6 @@
       if (savedPins.size > 0 && window.confirm("Are you sure you want to remove all saved PINs? This action cannot be undone.")) {
         clearSavedPins();
       }
-    });
-
-    document.getElementById("showOnlySavedPinsButton").addEventListener("click", (event) => {
-      for (const layerObject of markerLayers.values()) {
-        if (map.hasLayer(layerObject.layer)) {
-          map.removeLayer(layerObject.layer);
-        }
-      }
-      if (map.hasLayer(savedPinsLayer)) {
-        map.removeLayer(savedPinsLayer);
-      }
-      map.addLayer(savedPinsLayer);
     });
 
     // add map description
