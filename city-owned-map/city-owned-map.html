@@ -107,6 +107,7 @@
   <p id="mapDescription"></p-->
 
   <div id="savedPinsForm" class="formDiv">
+    <button type="button" id="viewSavedPinsButton">View Saved PINs</button>
     <button type="button" id="clearSavedPinsButton"></button>
     <button type="button" id="exportSavedPinsButton"></button>
     <span id="exportSavedPinsMessage" class="message"></span>
@@ -470,6 +471,20 @@
       if (savedPins.size > 0 && window.confirm("Are you sure you want to remove all saved PINs? This action cannot be undone.")) {
         clearSavedPins();
       }
+    });
+
+    let savedPinsTab = null;
+
+    // allow user to view saved pins in separate window
+    // reference: https://developer.mozilla.org/en-US/docs/Web/API/Window/open (public domain)
+    document.getElementById("viewSavedPinsButton").addEventListener("click", (event) => {
+      if (savedPinsTab == null || savedPinsTab.closed) {
+        savedPinsTab = window.open("", "View Saved PINs");
+        savedPinsTab.document.title = "View Saved PINs";
+      }
+      savedPinsTab.document.write(`<p>You have ${savedPins.size} saved PINs.`);
+      savedPinsTab.document.close();
+      savedPinsTab.focus();
     });
 
     // add map description
