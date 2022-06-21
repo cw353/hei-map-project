@@ -154,7 +154,6 @@
     }).addTo(map);
 
     // set of pins saved by user
-    const savedPinColor = "red";
     const savedPins = new Set(
         localStorage.getItem("city-owned-map-saved-pins")
           ? JSON.parse(localStorage.getItem("city-owned-map-saved-pins"))
@@ -236,7 +235,7 @@
      */
     function addSavedPin(pin) {
       savedPins.add(pin);
-      data[pin].marker.setIcon(generateIcon(savedPinColor));
+      data[pin].marker.setIcon(generateIconNew(cityOwnedLayers.get(data[pin].layerName).color, pin));
       updateSavedPinsButtons();
     }
 
@@ -248,7 +247,7 @@
      */
     function removeSavedPin(pin) {
       savedPins.delete(pin);
-      data[pin].marker.setIcon(generateIcon(cityOwnedLayers.get(data[pin].layerName).color));
+      data[pin].marker.setIcon(generateIconNew(cityOwnedLayers.get(data[pin].layerName).color, pin));
       updateSavedPinsButtons();
     }
 
@@ -265,7 +264,7 @@
         // restore marker popup content
         data[pin].marker.setPopupContent(getMarkerPopupContent(pin, data[pin]));
         // restore original marker color
-        data[pin].marker.setIcon(generateIcon(cityOwnedLayers.get(data[pin].layerName).color));
+        data[pin].marker.setIcon(generateIconNew(cityOwnedLayers.get(data[pin].layerName).color, pin));
       }
       updateSavedPinsButtons();
     }
@@ -354,7 +353,7 @@
     addMarker(
       "sunshineGospelPin",
       sunshineGospel,
-      generateIcon(sunshineGospelLayers.get("sunshineGospelPin").color),
+      generateIconNew(sunshineGospelLayers.get("sunshineGospelPin").color, sunshineGospel.pin),
       sunshineGospelLayers.get("sunshineGospelPin"),
       "<a href='https://www.sunshinegospel.org/' target='_blank' rel='noopener'>Sunshine Gospel Ministries</a>"
     );
@@ -379,7 +378,7 @@
         addMarker(
           layerKey,
           datum,
-          generateIcon(savedPins.has(pin) ? savedPinColor : layerObject.color),
+          generateIconNew(layerObject.color, pin),
           layerObject,
           getMarkerPopupContent(pin, data[pin]),
         );
@@ -499,7 +498,7 @@
       + ` (accessed on ${wardBoundariesAccessTime}).`
       + " Click on each marker to view more information about the property it represents,"
       + " and add it to your Saved PINs list by selecting \"Add to Saved PINs\""
-      + ` (saved PINs are marked in ${savedPinColor} on the map and can be exported for use in other`
+      + ` (saved PINs are marked with a checkmark on the map and can be exported for use in other`
       + " applications.)";
 
       // store saved pins in local storage before unloading page
