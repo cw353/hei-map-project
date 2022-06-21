@@ -108,8 +108,8 @@
 
   <div id="savedPinsForm" class="formDiv">
     <button type="button" id="viewSavedPinsButton">View Saved PINs</button>
-    <button type="button" id="clearSavedPinsButton"></button>
-    <button type="button" id="exportSavedPinsButton"></button>
+    <button type="button" id="clearSavedPinsButton">Clear Saved PINs</button>
+    <button type="button" id="exportSavedPinsButton">Export Saved PINs</button>
     <span id="exportSavedPinsMessage" class="message"></span>
   </div>
 
@@ -159,7 +159,6 @@
           ? JSON.parse(localStorage.getItem("city-owned-map-saved-pins"))
           : null
     );
-    updateSavedPinsButtons();
 
     /* Create ward boundary layers */
     const geoJSONLayers = new Map();
@@ -221,12 +220,6 @@
     // Sunshine Gospel Ministries-related layers
     const sunshineGospelLayers = new Map();
 
-    /* Helper function to update count of saved pins on exportSavedPinsButton. */
-    function updateSavedPinsButtons() {
-      document.getElementById("clearSavedPinsButton").innerText = `Clear ${savedPins.size} Saved PIN${(savedPins.size !== 1) ? "s" : ""}`;
-      document.getElementById("exportSavedPinsButton").innerText = `Export ${savedPins.size} Saved PIN${(savedPins.size !== 1) ? "s" : ""}`;
-    }
-
     /**
      * Helper function to add pin to Saved Pins list.
      * @param pin The pin to add.
@@ -236,7 +229,6 @@
     function addSavedPin(pin) {
       savedPins.add(pin);
       data[pin].marker.setIcon(generateIconNew(cityOwnedLayers.get(data[pin].layerName).color, pin));
-      updateSavedPinsButtons();
     }
 
     /**
@@ -248,7 +240,6 @@
     function removeSavedPin(pin) {
       savedPins.delete(pin);
       data[pin].marker.setIcon(generateIconNew(cityOwnedLayers.get(data[pin].layerName).color, pin));
-      updateSavedPinsButtons();
     }
 
     /**
@@ -266,7 +257,6 @@
         // restore original marker color
         data[pin].marker.setIcon(generateIconNew(cityOwnedLayers.get(data[pin].layerName).color, pin));
       }
-      updateSavedPinsButtons();
     }
 
     /**
@@ -384,7 +374,6 @@
         );
       }
     }
-    updateSavedPinsButtons();
 
     // add layer control
     const layerControl = L.control.layers(
