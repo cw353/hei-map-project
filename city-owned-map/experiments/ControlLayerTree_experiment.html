@@ -32,19 +32,18 @@
     crossorigin=""></script-->
 
   <!-- Local copies of scripts and stylesheets -->
-  <link rel="stylesheet" href="leaflet/leaflet.css"/>
-  <script src="leaflet/leaflet-src.js"></script>
-  <link rel="stylesheet" href="leaflet/plugins/MarkerCluster/MarkerCluster.css"/>
-  <link rel="stylesheet" href="leaflet/plugins/MarkerCluster/MarkerCluster.Default.css"/>
-  <script src="leaflet/plugins/MarkerCluster/leaflet.markercluster-src.js"></script>
-  <script src="leaflet/plugins/FeatureGroupSubGroup/leaflet.featuregroup.subgroup-src.js"></script>
-  <link rel="stylesheet" href="leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
-  <script src="leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
+  <link rel="stylesheet" href="../leaflet/leaflet.css"/>
+  <script src="../leaflet/leaflet-src.js"></script>
+  <link rel="stylesheet" href="../leaflet/plugins/MarkerCluster/MarkerCluster.css"/>
+  <link rel="stylesheet" href="../leaflet/plugins/MarkerCluster/MarkerCluster.Default.css"/>
+  <script src="../leaflet/plugins/MarkerCluster/leaflet.markercluster-src.js"></script>
+  <script src="../leaflet/plugins/FeatureGroupSubGroup/leaflet.featuregroup.subgroup-src.js"></script>
+  <link rel="stylesheet" href="../leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
+  <script src="../leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
 
   <!-- External files for functions and data -->
-  <script src="data/data.js"></script>
-  <script src="data/ward_boundaries_sp34-6z76.js"></script>
-  <script src="functions/city_owned_map_functions.js"></script>
+  <script src="../data/data.js"></script>
+  <script src="../data/ward_boundaries_sp34-6z76.js"></script>
   
   <style>
 
@@ -157,7 +156,7 @@
     // create map
     const map = L.map("map", {
       center: [41.783, -87.621],
-      zoom: 10,
+      zoom: 13,
       scrollWheelZoom: false,
       doubleClickZoom: false,
     });
@@ -172,12 +171,13 @@
       maxClusterRadius: 50,
     }).addTo(map);
 
-    const ward20MarkerGroup = L.featureGroup.subGroup(parentMarkerCluster);
-    const otherWardsMarkerGroup = L.featureGroup.subGroup(parentMarkerCluster);
+    const ward20MarkerGroup = L.featureGroup.subGroup(parentMarkerCluster).addTo(map);
+    const otherWardsMarkerGroup = L.featureGroup.subGroup(parentMarkerCluster).addTo(map);
 
-    const cityOwnedPins = Object.keys(data);
-    const ward20Marker = L.marker([data[cityOwnedPins[1]].latitude, data[cityOwnedPins[1]].longitude]);
-    const otherWardsMarker = L.marker([data[cityOwnedPins[0]].latitude, data[cityOwnedPins[0]].longitude]);
+    for (const pin of Object.keys(data)) {
+      ((data[pin].ward === 20) ? ward20MarkerGroup : otherWardsMarkerGroup)
+        .addLayer(L.marker([data[pin].latitude, data[pin].longitude]));
+    }
 
     const baseTree = {
       label: "Base Layers",
@@ -211,9 +211,6 @@
       ]
     };
 
-    ward20MarkerGroup.addTo(map);
-    otherWardsMarkerGroup.addTo(map);
-
     const layerControlTree = L.control.layers.tree(
       baseTree,
       overlayTree,
@@ -222,9 +219,6 @@
         hideSingleBase: true,
       }
     ).addTo(map);
-
-    ward20MarkerGroup.addLayer(ward20Marker);
-    otherWardsMarkerGroup.addLayer(otherWardsMarker);
 
     // add map description
     document.getElementById("mapDescription").innerHTML = "This is a map of properties owned by the "
