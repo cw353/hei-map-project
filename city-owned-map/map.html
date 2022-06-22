@@ -8,15 +8,15 @@
   <title>Map of Properties of Interest to HEI</title>
 
   <!-- Leaflet CDN -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+  <!--link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
     integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
     crossorigin=""/>
   <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
     integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
-    crossorigin=""></script>
+    crossorigin=""></script-->
 
   <!-- Leaflet.markercluster CDN -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
+  <!--link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
     integrity="sha512-RLEjtaFGdC4iQMJDbMzim/dOvAu+8Qp9sw7QE4wIMYcg2goVoivzwgSZq9CsIxp4xKAZPKh5J2f2lOko2Ze6FQ=="
     crossorigin=""/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"
@@ -24,14 +24,20 @@
     crossorigin=""/>
   <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"
     integrity="sha512-MQlyPV+ol2lp4KodaU/Xmrn+txc1TP15pOBF/2Sfre7MRsA/pB4Vy58bEqe9u7a7DczMLtU5wT8n7OblJepKbg=="
-    crossorigin=""></script>
+    crossorigin=""></script-->
 
   <!-- Leaflet.FeatureGroup.SubGroup CDN -->
-  <script src="https://unpkg.com/leaflet.featuregroup.subgroup@1.0.2/dist/leaflet.featuregroup.subgroup.js"
+  <!--script src="https://unpkg.com/leaflet.featuregroup.subgroup@1.0.2/dist/leaflet.featuregroup.subgroup.js"
     integrity="sha512-gUiI5CXREIHHGko8AdlPYADT5MHvcCuqee1pjKR4qVcw69zVI+WvrnJcCxwU8JajpJoBjpvPIAGfDVFoQJhDfw=="
-    crossorigin=""></script>
+    crossorigin=""></script-->
 
   <!-- Local copies of Leaflet plugin scripts and stylesheets -->
+  <link rel="stylesheet" href="leaflet/leaflet.css"/>
+  <script src="leaflet/leaflet-src.js"></script>
+  <link rel="stylesheet" href="leaflet/plugins/MarkerCluster/MarkerCluster.css"/>
+  <link rel="stylesheet" href="leaflet/plugins/MarkerCluster/MarkerCluster.Default.css"/>
+  <script src="leaflet/plugins/MarkerCluster/leaflet.markercluster-src.js"></script>
+  <script src="leaflet/plugins/FeatureGroupSubGroup/leaflet.featuregroup.subgroup-src.js"></script>
   <link rel="stylesheet" href="leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
   <script src="leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
 
@@ -40,7 +46,6 @@
   <script src="data/city-owned/city_owned_data.js"></script>
   <script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
   <script src="data/ward_boundaries_sp34-6z76.js"></script>
-  <script src="code/city_owned_map_functions.js"></script>
     
 </head>
 
@@ -357,7 +362,7 @@
           collapsed: true,
           children: [
             getOverlay(cityOwnedWard20, true),
-            getOverlay(cityOwnedOtherWards, true),
+            getOverlay(cityOwnedOtherWards, false),
           ]
         },
         {
