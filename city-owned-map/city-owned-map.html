@@ -177,7 +177,7 @@
      */
     function addSavedPin(pin) {
       savedPins.add(pin);
-      data[pin].marker.setIcon(generateIconNew(cityOwnedLayers.get(data[pin].layerName).color, pin));
+      data[pin].marker.setIcon(generateIconNewVer2(cityOwnedLayers.get(data[pin].layerName).color, pin));
     }
 
     /**
@@ -188,7 +188,7 @@
      */
     function removeSavedPin(pin) {
       savedPins.delete(pin);
-      data[pin].marker.setIcon(generateIconNew(cityOwnedLayers.get(data[pin].layerName).color, pin));
+      data[pin].marker.setIcon(generateIconNewVer2(cityOwnedLayers.get(data[pin].layerName).color, pin));
     }
 
     /**
@@ -204,7 +204,7 @@
         // restore marker popup content
         data[pin].marker.setPopupContent(getMarkerPopupContent(pin, data[pin]));
         // restore original marker color
-        data[pin].marker.setIcon(generateIconNew(cityOwnedLayers.get(data[pin].layerName).color, pin));
+        data[pin].marker.setIcon(generateIconNewVer2(cityOwnedLayers.get(data[pin].layerName).color, pin));
       }
     }
 
@@ -292,7 +292,7 @@
     addMarker(
       "sunshineGospelPin",
       sunshineGospel,
-      generateIconNew(sunshineGospelLayers.get("sunshineGospelPin").color, sunshineGospel.pin),
+      generateIconNewVer2(sunshineGospelLayers.get("sunshineGospelPin").color, sunshineGospel.pin),
       sunshineGospelLayers.get("sunshineGospelPin"),
       "<a href='https://www.sunshinegospel.org/' target='_blank' rel='noopener'>Sunshine Gospel Ministries</a>"
     );
@@ -317,7 +317,7 @@
         addMarker(
           layerKey,
           datum,
-          generateIconNew(layerObject.color, pin),
+          generateIconNewVer2(layerObject.color, pin),
           layerObject,
           getMarkerPopupContent(pin, data[pin]),
         );

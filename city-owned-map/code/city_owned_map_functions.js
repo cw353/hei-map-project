@@ -47,6 +47,47 @@ function generateIconNew(color, pin) {
   });
 }
 
+function generateIconNewVer2(color, pin) {
+  // Icon modified from https://www.onlinewebfonts.com/icon/467018 (CC BY 3.0 license)
+  const width = 35;
+  const height = 35;
+  let svg = 
+    `<svg
+      version="1.1"
+      x="0px" y="0px"
+      width="${width}" height="${height}"
+      viewBox="0 0 1000 1000"
+      enable-background="new 0 0 1000 1000"
+      xml:space="preserve"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <metadata> Modified from https://www.onlinewebfonts.com/icon/467018 (CC BY 3.0 license) </metadata>
+      <g><g transform="translate(0.000000,511.000000) scale(0.100000,-0.100000)">
+        <path
+          fill="${color}"
+          stroke="black"
+          stroke-width="100px"
+          d="M4411.4,4972.2c-1453.1-245.6-2599.2-1353.3-2903.6-2806.4c-148.4-708.6-69.1-1261.2,307-2133.6C2265-1021.7,3311.3-2641.1,4600.7-4286l396.5-504l71.7,87c40.9,46,243,304.4,450.2,570.5c1596.3,2044,2668.2,3850.1,2965,5001.4c184.2,713.8,38.4,1611.7-378.6,2340.8c-542.4,944-1448,1578.4-2527.6,1765.2C5311.9,5023.4,4692.8,5020.8,4411.4,4972.2z M5488.4,3401.5c1317.5-337.7,1928.9-1834.3,1225.4-2995.7c-199.5-324.9-524.4-608.9-887.7-775.1c-624.2-286.5-1391.7-220-1957.1,166.3C3482.7,63,3175.7,503,3050.4,971.2c-66.5,255.8-61.4,747,12.8,1007.9c199.6,701,747,1240.7,1440.3,1422.4C4769.5,3470.6,5217.2,3470.6,5488.4,3401.5z"
+        />`;
+  if (savedPins.has(pin)) {
+    svg += `<path
+          fill="red"
+          stroke="black"
+          stroke-width="100px"
+          d="M4764.4,2611c-189.3-394-245.6-488.6-294.2-498.9c-84.4-20.5-949.1-143.3-992.6-143.3c-20.5,0,138.1-176.5,353-391.4l388.9-388.9L4130,664.2c-48.6-286.5-87-524.4-81.9-527c2.6-2.5,217.5,107.5,478.4,245.6l473.3,250.7l319.8-166.3c176.5-92.1,391.4-207.2,480.9-255.8c87-48.6,158.6-79.3,158.6-66.5c0,10.2-40.9,250.7-89.5,532.1l-87,511.7l388.9,391.4c212.3,212.3,370.9,388.9,350.5,388.9c-71.6,2.6-1023.3,145.8-1033.5,156c-5.1,5.1-117.7,227.7-250.7,491.2l-240.5,483.5L4764.4,2611z"
+        />`;
+  }
+  svg += `</g></g>
+    </svg>`;
+  return L.divIcon({
+    className: "custom_divicon",
+    iconSize: [width, height],
+    iconAnchor: [width/2, height],
+    popupAnchor: [0,-(height/5)*4],
+    html: svg,
+  });
+}
+
 function getDefaultIcon(color, width, height) {
   // Modified from https://www.onlinewebfonts.com/icon/467222 (CC BY 3.0 license)
   return (
