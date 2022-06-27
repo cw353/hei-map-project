@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="author" content="Claire Wagner (Summer 2022 Wheaton College Research Team)">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Map of Properties of Interest to HEI</title>
+
+  <!-- Leaflet CDN -->
+  <!--link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+    integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+    crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+    integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+    crossorigin=""></script-->
+
+  <!-- Leaflet.markercluster CDN -->
+  <!--link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
+    integrity="sha512-RLEjtaFGdC4iQMJDbMzim/dOvAu+8Qp9sw7QE4wIMYcg2goVoivzwgSZq9CsIxp4xKAZPKh5J2f2lOko2Ze6FQ=="
+    crossorigin=""/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"
+    integrity="sha512-BBToHPBStgMiw0lD4AtkRIZmdndhB6aQbXpX7omcrXeG2PauGBl2lzq2xUZTxaLxYz5IDHlmneCZ1IJ+P3kYtQ=="
+    crossorigin=""/>
+  <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"
+    integrity="sha512-MQlyPV+ol2lp4KodaU/Xmrn+txc1TP15pOBF/2Sfre7MRsA/pB4Vy58bEqe9u7a7DczMLtU5wT8n7OblJepKbg=="
+    crossorigin=""></script-->
+
+  <!-- Leaflet.FeatureGroup.SubGroup CDN -->
+  <!--script src="https://unpkg.com/leaflet.featuregroup.subgroup@1.0.2/dist/leaflet.featuregroup.subgroup.js"
+    integrity="sha512-gUiI5CXREIHHGko8AdlPYADT5MHvcCuqee1pjKR4qVcw69zVI+WvrnJcCxwU8JajpJoBjpvPIAGfDVFoQJhDfw=="
+    crossorigin=""></script-->
+
+  <!-- Local copies of Leaflet plugin scripts and stylesheets -->
+  <link rel="stylesheet" href="libraries/leaflet/leaflet.css"/>
+  <script src="libraries/leaflet/leaflet-src.js"></script>
+  <link rel="stylesheet" href="libraries/leaflet/plugins/MarkerCluster/MarkerCluster.css"/>
+  <link rel="stylesheet" href="libraries/leaflet/plugins/MarkerCluster/MarkerCluster.Default.css"/>
+  <script src="libraries/leaflet/plugins/MarkerCluster/leaflet.markercluster-src.js"></script>
+  <script src="libraries/leaflet/plugins/FeatureGroupSubGroup/leaflet.featuregroup.subgroup-src.js"></script>
+  <link rel="stylesheet" href="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
+  <script src="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
+
+  <!-- External files for stylesheets, functions, and data -->
+  <link rel="stylesheet" href="code/city-owned-map.css"/>
+  <script src="data/city-owned/city_owned_data.js"></script>
+  <script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
+  <script src="data/ward_boundaries_sp34-6z76.js"></script>
+    
+</head>
+
+<body>
+
+  <div id="pageHeader">
+    <h1>Map of City-Owned Properties</h1>
+  </div>
+
+  <p id="mapDescription"></p-->
+
+  <div id="pinSearchForm" class="formDiv">
+    <label>
+      Search for PIN
+    </label>
+    <input type="text" id="pinSearchInput" class="validInput"/>
+    <button type = "button" id="pinSearchButton">
+      Search
+    </button>
+    <span id="pinSearchMessage" class="message"></span>
+  </div>
+
+  <div id="sgmRadiusForm" class="formDiv">
+    <label>
+      Set radius of circle around Sunshine Gospel Ministries (in kilometers):
+      <input type="number" id="sgmRadiusInput" class="validInput"/>
+    </label>
+    <button type="button" id="sgmRadiusSetButton">
+      Set Radius
+    </button>
+    <span id="sgmRadiusMessage" class="message"></span>
+  </div>
+
+  <div id="map"></div>
+
+  <script>
+
+    // create map
+    const map = L.map("map", {
+      center: [41.783, -87.621],
+      zoom: 13,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+    });
+
+    // add tiles to map - reference: https://leafletjs.com/examples/layers-control/
+    const osmtiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a>"
+    }).addTo(map);
+
+    // marker cluster group that serves as the parent for all clusterable markers
+    const parentMarkerCluster = L.markerClusterGroup({
+      maxClusterRadius: 50,
+    }).addTo(map);
+
+    const cityOwnedWard20 = {
+      name: "Ward 20",
+      color: "#0000ff",
+      layer: L.featureGroup.subGroup(parentMarkerCluster),
+      markerCount: 0,
+    };
+
+    const cityOwnedOtherWards = {
+      name: "Other Wards",
+      color: "#9900cc",
+      layer: L.featureGroup.subGroup(parentMarkerCluster),
+      markerCount: 0,
+    };
+
+    const taxSaleVacant = {
+      name: "Vacant Land",
+      color: "#ff6600",
+      layer: L.featureGroup.subGroup(parentMarkerCluster),
+      markerCount: 0,
+    };
+
+    const taxSaleResidential = {
+      name: "Residential",
+      color: "#ff33cc",
+      layer: L.featureGroup.subGroup(parentMarkerCluster),
+      markerCount: 0,
+    };
+
+    const taxSaleCommercial = {
+      name: "Commercial/Industrial",
+      color: "#666699",
+      layer: L.featureGroup.subGroup(parentMarkerCluster),
+      markerCount: 0,
+    };
+
+    const sunshineGospelPin = {
+      name: "Sunshine Gospel Ministries",
+      color: "#0099cc",
+      layer: L.layerGroup(),
+      markerCount: 0,
+    };
+
+    const sunshineGospelCircle = {
+      name: "Circle around Sunshine Gospel Ministries",
+      color: "#00ace6",
+      layer: L.layerGroup(),
+    };
+
+    const customMarkers = {
+      name: "Custom Markers",
+      color: "red",
+      layer: L.featureGroup.subGroup(parentMarkerCluster),
+      pins: new Set(),
+    };
+
+    function getCityOwnedMarkerPopupContent(pinData) {
+      // display info about pin
+      const dataDisplay = document.createElement("p");
+      dataDisplay.setAttribute("class", "increasedLineHeight");
+      dataDisplay.innerHTML = [
+        `PIN: ${pinData.pin}`,
+        `Address: ${pinData.property_address}`,
+        `Zip Code: ${pinData.property_zip}`,
+        `Ward: ${pinData.ward}`,
+        `Property Status: ${pinData.property_status}`,
+        `Record Last Updated: ${pinData['last_update']}`,
+        `Property Details: <a href="https://www.cookcountyassessor.com/pin/${pinData.pin}" target="_blank" rel="noopener">Assessor's Office</a>`
+      ].join("<br>");
+      const popupDiv = document.createElement("div");
+      popupDiv.appendChild(dataDisplay);
+      return popupDiv;
+    }
+
+    function getTaxSaleMarkerPopupContent(pinData) {
+      // display info about pin
+      const dataDisplay = document.createElement("p");
+      dataDisplay.setAttribute("class", "increasedLineHeight");
+      dataDisplay.innerHTML = [
+        `PIN: ${pinData.pin}`,
+        `Address: ${pinData.property_address}`,
+        `Zip Code: ${pinData.property_zip}`,
+        `Ward: ${pinData.ward}`,
+        `Classification: ${pinData.classification}`,
+        `2019 Tax Due (Including Interest): $${pinData.total_due_including_interest}`,
+        `2019 Tax Due (Excluding Interest): $${pinData.total_tax_due}`,
+        `Property Details: <a href="https://www.cookcountyassessor.com/pin/${pinData.pin}" target="_blank" rel="noopener">Assessor's Office</a>`
+      ].join("<br>");
+      const popupDiv = document.createElement("div");
+      popupDiv.appendChild(dataDisplay);
+      return popupDiv;
+    }
+
+    function generateIcon(color) {
+      const width = 40;
+      const height = 40;
+      return L.divIcon({
+        className: "custom_divicon",
+        iconSize: [width, height],
+        iconAnchor: [width/2, height],
+        popupAnchor: [0,-(height/5)*4],
+        html:
+          `<svg
+            width="${width}"
+            height="${height}"
+            viewBox="0 0 640 1024"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M320 0c-177 0-320 143-320 320s160 416 320 704c160-288 320-527 320-704s-143-320-320-320z m0 448c-71 0-128-57-128-128s57-128 128-128 128 57 128 128-57 128-128 128z"
+              fill=${color}
+              stroke=black
+              stroke-width=10px
+            />
+          </svg>`
+      });
+    };
+
+    function addMarker(markerData, layerInfo, popupContent) {
+      layerInfo.layer.addLayer(L.marker(
+        [markerData.latitude, markerData.longitude],
+        {
+          icon: generateIcon(layerInfo.color),
+        }
+      ).bindPopup(popupContent));
+      if (layerInfo.markerCount != null) {
+        layerInfo.markerCount++;
+      }
+    }
+
+    for (const pin of Object.keys(city_owned_data)) {
+      const pinData = city_owned_data[pin];
+      addMarker(
+        pinData,
+        (pinData.ward === 20) ? cityOwnedWard20 : cityOwnedOtherWards,
+        getCityOwnedMarkerPopupContent(pinData),
+      );
+    }
+
+    for (const pin of Object.keys(taxsale_ward20_data)) {
+      const pinData = taxsale_ward20_data[pin];
+      const layerInfo = (pinData.classification === "Vacant Land")
+        ? taxSaleVacant
+        : (pinData.classification === "Residential")
+          ? taxSaleResidential
+          : (pinData.classification === "Commercial/Industrial")
+            ? taxSaleCommercial
+            : null;
+      if (layerInfo !== null) {
+        addMarker(
+          pinData,
+          layerInfo,
+          getTaxSaleMarkerPopupContent(pinData),
+        );
+      } else {
+        console.log(`tax sale pin ${pin} could not be classified (classification is ${pinData.classification})`);
+      }
+    }
+
+    addMarker(
+      sunshineGospel,
+      sunshineGospelPin,
+      "<a href='https://www.sunshinegospel.org/' target='_blank' rel='noopener'>Sunshine Gospel Ministries</a>"
+    );
+
+    const sgmCircle = L.circle([sunshineGospel.latitude, sunshineGospel.longitude], {
+      radius: 3000,
+      color: sunshineGospelCircle.color,
+      fillOpacity: 0.2,
+    }).addTo(sunshineGospelCircle.layer);
+
+    // function to be run for each ward feature
+    const onEachWard = (feature, layer) => {
+      if (feature.properties && feature.properties.ward) {
+        layer.bindPopup("Ward " + feature.properties.ward);
+      }
+    };
+
+    // add ward boundaries
+    let ward20Feature = null;
+    const wardBoundaryOutlines = {
+      name: "Ward Boundaries",
+      color: "black",
+      layer: L.geoJSON(
+        wardBoundaries,
+        {
+          style: {
+            color: "black",
+            weight: 2,
+            fillOpacity: 0,
+          },
+          onEachFeature: (feature, layer) => {
+            onEachWard(feature, layer);
+            // Add shaded layer for Ward 20
+            if (feature.properties && feature.properties.ward === "20") {
+              ward20Feature = feature;
+            }
+          }
+        }
+      ).addTo(map),
+    };
+
+    // Add Ward 20 fill
+    const ward20FillColor = "#e9ac3c";
+    const ward20Fill = {
+      name: "Ward 20 (shaded)",
+      color: ward20FillColor,
+      layer: L.geoJSON(
+        ward20Feature,
+        {
+          style: {
+            color: "black",
+            weight: 2,
+            fillColor: ward20FillColor,
+            fillOpacity: 0.4,
+          },
+          onEachFeature: onEachWard,
+        }
+      ).addTo(map),
+    };
+
+    // add layer control
+
+    const baseTree = {
+      label: "Base Layers",
+      children: [
+        { label: "Open StreetMap", layer: osmtiles },
+      ]
+    };
+
+    function getParentOverlayLabel(name) {
+      return (
+        `<span class='parentLayer'>${name}</span>`
+      );
+    }
+
+    function getLeafOverlayLabel(layerInfo) {
+      let label = `<span style='color: ${layerInfo.color}'>&#9724;</span><span class='leafLayer'> ${layerInfo.name}`;
+      if (layerInfo.markerCount != null && layerInfo.markerCount > 0) {
+        label += ` (${layerInfo.markerCount}  markers)`;
+      }
+      label += "</span>";
+      return label;
+    }
+
+    function getOverlay(layerInfo, addToMap) {
+      if (addToMap) {
+        layerInfo.layer.addTo(map);
+      }
+      return { label: getLeafOverlayLabel(layerInfo), layer: layerInfo.layer };
+    }
+
+    const overlayTree = {
+      label: getParentOverlayLabel("Map Layers"),
+      children: [
+        {
+          label: getParentOverlayLabel("Sunshine Gospel Ministries"),
+          selectAllCheckbox: true,
+          collapsed: true,
+          children: [
+            getOverlay(sunshineGospelPin, false),
+            getOverlay(sunshineGospelCircle, false),
+          ]
+        },
+        {
+          label: getParentOverlayLabel("Ward Geography"),
+          selectAllCheckbox: true,
+          collapsed: true,
+          children: [
+            getOverlay(wardBoundaryOutlines, true),
+            getOverlay(ward20Fill, true),
+          ]
+        },
+        {
+          label: getParentOverlayLabel("City-Owned PINs"),
+          selectAllCheckbox: true,
+          collapsed: true,
+          children: [
+            getOverlay(cityOwnedWard20, false),
+            getOverlay(cityOwnedOtherWards, false),
+          ]
+        },
+        {
+          label: getParentOverlayLabel("Tax Sale (Ward 20, Tax Year 2019)"),
+          selectAllCheckbox: true,
+          collapsed: true,
+          children: [
+            getOverlay(taxSaleVacant, false),
+            getOverlay(taxSaleResidential, false),
+            getOverlay(taxSaleCommercial, false),
+          ]
+        },
+        getOverlay(customMarkers, false),
+      ]
+    };
+
+    const layerControlTree = L.control.layers.tree(
+      baseTree,
+      overlayTree,
+      {
+        collapsed : false,
+        hideSingleBase: true,
+      }
+    ).addTo(map);
+
+    // add map description
+    document.getElementById("mapDescription").innerHTML = "This is a map of properties that may be "
+      + "of interest to Sunshine Gospel Ministries' Housing Equity Initiative. Click on each marker "
+      + "to view more information about the property it represents.";
+
+    function displayMessage(destination, message, color) {
+      destination.style.color = color;
+      destination.innerText = message;
+    }
+
+    // allow the user to change the radius of sgmCircle
+    const sgmRadiusInput = document.getElementById("sgmRadiusInput");
+    const sgmRadiusMessage = document.getElementById("sgmRadiusMessage");
+    sgmRadiusInput.value = sgmCircle.getRadius() / 1000; // meters to kilometers
+    document.getElementById("sgmRadiusSetButton").addEventListener("click", (event) => {
+      const newRadius = parseFloat(sgmRadiusInput.value);
+      if (!isNaN(newRadius)) {
+        // valid float
+        sgmCircle.setRadius(newRadius * 1000); // kilometers to meters
+        sgmRadiusInput.classList.replace("invalidInput", "validInput");
+        displayMessage(sgmRadiusMessage, `Success! The radius has been set to ${newRadius} km.`, "green");
+      } else {
+        // invalid float
+        sgmRadiusInput.classList.replace("validInput", "invalidInput");
+        displayMessage(sgmRadiusMessage, "Error: input must be a valid number.", "red");
+      }
+    });
+
+    const xhr = new XMLHttpRequest();
+    const pinSearchInput = document.getElementById("pinSearchInput");
+    const pinSearchMessage = document.getElementById("pinSearchMessage");
+
+    function processResponse(pin, response) {
+      console.log(`Data for PIN ${pin}:`, response);
+      const responseJSON = JSON.parse(response);
+      if (responseJSON.length < 1) {
+        displayMessage(pinSearchMessage, "No data could be found for this PIN.", "red");
+      } else {
+        const pinData = responseJSON[0];
+        customMarkers.pins.add(pin);
+        addMarker(pinData, customMarkers, `Custom marker for PIN ${pin}`);
+        displayMessage(pinSearchMessage, "A marker for this PIN has been added to the map.", "green");
+      }
+    }
+
+    function getPinDataAjax(pin) {
+      displayMessage(pinSearchMessage, "Fetching PIN information...", "green");
+        const apiQuery = `SELECT property_address, ward, longitude, latitude, indicator_has_latlon WHERE pin = '${pin}' LIMIT 1`;
+        // reference: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/readystatechange_event (public domain)
+        xhr.open(
+          "GET",
+          `https://datacatalog.cookcountyil.gov/resource/c49d-89sn.json?$query=${encodeURI(apiQuery)}`,
+          true
+        );
+        xhr.onreadystatechange = function() {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+          const status = xhr.status;
+          if (status === 0 || (status >= 200 && status < 400)) {
+            processResponse(pin, xhr.responseText);
+          } else {
+            console.error(xhr.statusText);
+            displayMessage(pinSearchMessage, "The data for this PIN could not be fetched because of an error.", "red");
+          }
+        }
+      };
+      xhr.send();
+    }
+
+    document.getElementById("pinSearchButton").addEventListener("click", (event) => {
+      const pin = pinSearchInput.value.replace(/-/g,'');
+      if (pin.length === 14 && !isNaN(parseInt(pin))) {
+        pinSearchInput.classList.replace("invalidInput", "validInput");
+        if (pin in city_owned_data || pin in taxsale_ward20_data || customMarkers.pins.has(pin)) {
+          displayMessage(pinSearchMessage, "The PIN is already on the map.", "green");
+        } else {
+          getPinDataAjax(pin);
+        }
+      } else {
+        pinSearchInput.classList.replace("validInput", "invalidInput");
+        displayMessage(pinSearchMessage, "Please enter a valid 14-digit PIN.", "red");
+      }
+    });
+
+    console.log("Inline script has finished executing.");
+    
+  </script>   
+
+</body>
+
+</html>
+
+<!-- references:
+  https://github.com/Leaflet/Leaflet/tree/main/docs/examples (BSD 2-Clause license)
+  https://github.com/Leaflet/Leaflet.markercluster (MIT license)
+  https://github.com/ghybs/Leaflet.FeatureGroup.SubGroup (BSD 2-Clause license)
+-->
