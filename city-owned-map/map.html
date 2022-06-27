@@ -32,14 +32,14 @@
     crossorigin=""></script-->
 
   <!-- Local copies of Leaflet plugin scripts and stylesheets -->
-  <link rel="stylesheet" href="leaflet/leaflet.css"/>
-  <script src="leaflet/leaflet-src.js"></script>
-  <link rel="stylesheet" href="leaflet/plugins/MarkerCluster/MarkerCluster.css"/>
-  <link rel="stylesheet" href="leaflet/plugins/MarkerCluster/MarkerCluster.Default.css"/>
-  <script src="leaflet/plugins/MarkerCluster/leaflet.markercluster-src.js"></script>
-  <script src="leaflet/plugins/FeatureGroupSubGroup/leaflet.featuregroup.subgroup-src.js"></script>
-  <link rel="stylesheet" href="leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
-  <script src="leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
+  <link rel="stylesheet" href="libraries/leaflet/leaflet.css"/>
+  <script src="libraries/leaflet/leaflet-src.js"></script>
+  <link rel="stylesheet" href="libraries/leaflet/plugins/MarkerCluster/MarkerCluster.css"/>
+  <link rel="stylesheet" href="libraries/leaflet/plugins/MarkerCluster/MarkerCluster.Default.css"/>
+  <script src="libraries/leaflet/plugins/MarkerCluster/leaflet.markercluster-src.js"></script>
+  <script src="libraries/leaflet/plugins/FeatureGroupSubGroup/leaflet.featuregroup.subgroup-src.js"></script>
+  <link rel="stylesheet" href="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
+  <script src="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
 
   <!-- External files for stylesheets, functions, and data -->
   <link rel="stylesheet" href="code/city-owned-map.css"/>
@@ -322,7 +322,7 @@
     function getLeafOverlayLabel(layerInfo) {
       let label = `<span style='color: ${layerInfo.color}'>&#9724;</span><span class='leafLayer'> ${layerInfo.name}`;
       if (layerInfo.markerCount != null && layerInfo.markerCount > 0) {
-        label += ` (${layerInfo.markerCount}  markers)`;
+        label += ` (${layerInfo.markerCount}  marker${layerInfo.markerCount > 1 ? "s" : ""})`;
       }
       label += "</span>";
       return label;
