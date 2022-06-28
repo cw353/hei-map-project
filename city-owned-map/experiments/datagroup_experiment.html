@@ -58,7 +58,7 @@
 
   <p id="mapDescription"></p-->
 
-  <div id="sgmRadiusForm" class="formDiv">
+  <!--div id="sgmRadiusForm" class="formDiv">
     <label>
       Set radius of circle around Sunshine Gospel Ministries (in kilometers):
       <input type="number" id="sgmRadiusInput" class="validInput"/>
@@ -67,7 +67,7 @@
       Set Radius
     </button>
     <span id="sgmRadiusMessage" class="message"></span>
-  </div>
+  </div-->
 
   <div id="map"></div>
 
@@ -100,7 +100,8 @@
       this.getPopupContent = getPopupContent;
     }
 
-    function LayerInfo(color, trackMarkerCount, parentMarkerClusterGroup) {
+    function LayerInfo(datagroup, color, trackMarkerCount, parentMarkerClusterGroup) {
+      this.datagroup = datagroup;
       this.color = color;
       if (trackMarkerCount) {
         this.markerCount = 0;
@@ -121,28 +122,44 @@
 
     const datagroups = [
       new Datagroup(
-        "Sunshine Gospel Ministries",
-        sunshineGospel,
-        null,
-        null,
-      ),
-      new Datagroup(
         "City-Owned PINs",
         city_owned_data,
         (data) => { return ("ward" in data) && (data.ward === 20) ? "Ward 20" : "Other Wards" },
-        (data) => { return `Marker for city-owned PIN ${data.pin}` },
+        (category, pinData) => {return getMarkerPopupContent(category, [
+          ["PIN", pinData.pin],
+          ["Address", pinData.property_address],
+          ["Ward", pinData.ward],
+          ["Property Status", pinData.property_status],
+          ["Record Last Updated", pinData.last_update],
+          ["Property Details", getPropertyDetailsLink(pinData.pin)],
+        ])},
       ),
       new Datagroup(
         "Tax Sale (Ward 20, Tax Year 2019)",
         taxsale_ward20_data,
         (data) => { return "classification" in data ? data.classification : "Unclassified" },
-        (data) => { return `Marker for tax sale PIN ${data.pin}` },
+        (category, pinData) => {return getMarkerPopupContent(category, [
+          ["PIN", pinData.pin],
+          ["Address", pinData.property_address],
+          ["Ward", pinData.ward],
+          ["2019 Tax Due (Including Interest)", `$${pinData.total_due_including_interest}`],
+          ["2019 Tax Due (Excluding Interest)", `$${pinData.total_tax_due}`],
+          ["Property Details", getPropertyDetailsLink(pinData.pin)],
+        ])},
       ),
       new Datagroup(
         "Scavenger Sale 2022",
         scavenger_sale_data,
         (data) => { return "property_code_class" in data ? data.property_code_class : "Unclassified" },
-        (data) => { return `Marker for scavenger sale PIN ${data.pin}` },
+        (category, pinData) => {return getMarkerPopupContent(category, [
+          ["PIN", pinData.pin],
+          ["Address", pinData.property_address],
+          ["Ward", pinData.ward],
+          ["Classification", pinData.property_code_meaning],
+          ["Delinquent Tax", `$${pinData.delinquent_tax}`],
+          ["Delinquent Interest", `$${pinData.delinquent_interest}`],
+          ["Property Details", getPropertyDetailsLink(pinData.pin)],
+        ])},
       ),
     ];
 
@@ -156,96 +173,42 @@
         if (!(childLayers.has(layerInfoKey))) {
           childLayers.set(
             layerInfoKey,
-            new LayerInfo(colors[nextColor++ % colors.length], trackMarkerCount, parentMarkerClusterGroup)
+            new LayerInfo(datagroup, colors[nextColor++ % colors.length], trackMarkerCount, parentMarkerClusterGroup)
           );
         }
         addMarkerToLayer(data, childLayers.get(layerInfoKey));
       }
     }
 
-    /*const cityOwnedWard20 = {
-      name: "Ward 20",
-      color: "#0000ff",
-      layer: L.featureGroup.subGroup(parentMarkerCluster),
-      markerCount: 0,
-    };
-
-    const cityOwnedOtherWards = {
-      name: "Other Wards",
-      color: "#9900cc",
-      layer: L.featureGroup.subGroup(parentMarkerCluster),
-      markerCount: 0,
-    };
-
-    const taxSaleVacant = {
-      name: "Vacant Land",
-      color: "#ff6600",
-      layer: L.featureGroup.subGroup(parentMarkerCluster),
-      markerCount: 0,
-    };
-
-    const taxSaleResidential = {
-      name: "Residential",
-      color: "#ff33cc",
-      layer: L.featureGroup.subGroup(parentMarkerCluster),
-      markerCount: 0,
-    };
-
-    const taxSaleCommercial = {
-      name: "Commercial/Industrial",
-      color: "#666699",
-      layer: L.featureGroup.subGroup(parentMarkerCluster),
-      markerCount: 0,
-    };
-
-    const sunshineGospelPin = {
-      name: "Sunshine Gospel Ministries",
-      color: "#0099cc",
-      layer: L.layerGroup(),
-      markerCount: 0,
-    };
-
-    const sunshineGospelCircle = {
-      name: "Circle around Sunshine Gospel Ministries",
-      color: "#00ace6",
-      layer: L.layerGroup(),
-    };*/
-
-    function getCityOwnedMarkerPopupContent(pinData) {
-      // display info about pin
+    function getMarkerPopupContent(category, dataToDisplay) {
+      const popupDiv = document.createElement("div");
+      // category
+      const categoryDiv = document.createElement("div");
+      categoryDiv.setAttribute("class", "center underlined");
+      categoryDiv.innerText = category;
+      popupDiv.appendChild(categoryDiv);
+      // data
       const dataDisplay = document.createElement("p");
       dataDisplay.setAttribute("class", "increasedLineHeight");
-      dataDisplay.innerHTML = [
-        `PIN: ${pinData.pin}`,
-        `Address: ${pinData.property_address}`,
-        `Zip Code: ${pinData.property_zip}`,
-        `Ward: ${pinData.ward}`,
-        `Property Status: ${pinData.property_status}`,
-        `Record Last Updated: ${pinData['last_update']}`,
-        `Property Details: <a href="https://www.cookcountyassessor.com/pin/${pinData.pin}" target="_blank" rel="noopener">Assessor's Office</a>`
-      ].join("<br>");
-      const popupDiv = document.createElement("div");
+      let dataList = [];
+      for (const [label, data] of dataToDisplay) {
+        dataList.push(`<b>${label}</b>: ${data}`);
+      }
+      dataDisplay.innerHTML = dataList.join("<br>");
       popupDiv.appendChild(dataDisplay);
+      // save pin button
+      /*const savedPinButton = document.createElement("button");
+      savedPinButton.setAttribute("type", "button");
+      savedPinButton.innerText = "Add to Saved PINs";
+      const savedPinButtonDiv = document.createElement("div");
+      savedPinButtonDiv.setAttribute("class", "center");
+      savedPinButtonDiv.appendChild(savedPinButton);
+      popupDiv.appendChild(savedPinButtonDiv);*/
       return popupDiv;
     }
 
-    function getTaxSaleMarkerPopupContent(pinData) {
-      // display info about pin
-      const dataDisplay = document.createElement("p");
-      dataDisplay.setAttribute("class", "increasedLineHeight");
-      dataDisplay.innerHTML = [
-        `PIN: ${pinData.pin}`,
-        `Address: ${pinData.property_address}`,
-        `Zip Code: ${pinData.property_zip}`,
-        `Ward: ${pinData.ward}`,
-        `Classification: ${pinData.classification}`,
-        `2019 Tax Due (Including Interest): $${pinData.total_due_including_interest}`,
-        `2019 Tax Due (Excluding Interest): $${pinData.total_tax_due}`,
-        `Property Details: <a href="https://www.cookcountyassessor.com/pin/${pinData.pin}" target="_blank" rel="noopener">Assessor's Office</a>`
-      ].join("<br>");
-      const popupDiv = document.createElement("div");
-      popupDiv.appendChild(dataDisplay);
-      return popupDiv;
+    function getPropertyDetailsLink(pin) {
+      return `<a href="https://www.cookcountyassessor.com/pin/${pin}" target="_blank" rel="noopener">Assessor's Office</a>`;
     }
 
     function generateIcon(color) {
@@ -291,52 +254,11 @@
         {
           icon: generateIcon(layerInfo.color),
         }
-      ).bindPopup(markerData.pin));
+      ).bindPopup(layerInfo.datagroup.getPopupContent(layerInfo.datagroup.name, markerData)));
       if (layerInfo.markerCount != null) {
         layerInfo.markerCount++;
       }
     }
-
-    /*for (const pin of Object.keys(city_owned_data)) {
-      const pinData = city_owned_data[pin];
-      addMarker(
-        pinData,
-        (pinData.ward === 20) ? cityOwnedWard20 : cityOwnedOtherWards,
-        getCityOwnedMarkerPopupContent(pinData),
-      );
-    }
-
-    for (const pin of Object.keys(taxsale_ward20_data)) {
-      const pinData = taxsale_ward20_data[pin];
-      const layerInfo = (pinData.classification === "Vacant Land")
-        ? taxSaleVacant
-        : (pinData.classification === "Residential")
-          ? taxSaleResidential
-          : (pinData.classification === "Commercial/Industrial")
-            ? taxSaleCommercial
-            : null;
-      if (layerInfo !== null) {
-        addMarker(
-          pinData,
-          layerInfo,
-          getTaxSaleMarkerPopupContent(pinData),
-        );
-      } else {
-        console.log(`tax sale pin ${pin} could not be classified (classification is ${pinData.classification})`);
-      }
-    }
-
-    addMarker(
-      sunshineGospel,
-      sunshineGospelPin,
-      "<a href='https://www.sunshinegospel.org/' target='_blank' rel='noopener'>Sunshine Gospel Ministries</a>"
-    );
-
-    const sgmCircle = L.circle([sunshineGospel.latitude, sunshineGospel.longitude], {
-      radius: 3000,
-      color: sunshineGospelCircle.color,
-      fillOpacity: 0.2,
-    }).addTo(sunshineGospelCircle.layer);
 
     // function to be run for each ward feature
     const onEachWard = (feature, layer) => {
@@ -366,7 +288,7 @@
             }
           }
         }
-      ).addTo(map),
+      ),
     };
 
     // Add Ward 20 fill
@@ -385,8 +307,8 @@
           },
           onEachFeature: onEachWard,
         }
-      ).addTo(map),
-    };*/
+      ),
+    };
 
     // add layer control
 
@@ -449,22 +371,13 @@
       };
     }
 
+    addDatagroupToMap(datagroups[0], true, parentMarkerCluster);
     addDatagroupToMap(datagroups[1], true, parentMarkerCluster);
     addDatagroupToMap(datagroups[2], true, parentMarkerCluster);
-    addDatagroupToMap(datagroups[3], true, parentMarkerCluster);
 
     const overlayTree = {
       label: getParentOverlayLabel("Map Layers"),
       children: [
-        /*{
-          label: getParentOverlayLabel("Sunshine Gospel Ministries"),
-          selectAllCheckbox: true,
-          collapsed: true,
-          children: [
-            getOverlay(sunshineGospelPin, true),
-            getOverlay(sunshineGospelCircle, true),
-          ]
-        },
         {
           label: getParentOverlayLabel("Ward Geography"),
           selectAllCheckbox: true,
@@ -474,28 +387,9 @@
             getOverlay(ward20Fill, true),
           ]
         },
-        {
-          label: getParentOverlayLabel("City-Owned PINs"),
-          selectAllCheckbox: true,
-          collapsed: true,
-          children: [
-            getOverlay(cityOwnedWard20, true),
-            getOverlay(cityOwnedOtherWards, false),
-          ]
-        },
-        {
-          label: getParentOverlayLabel("Tax Sale (Ward 20, Tax Year 2019)"),
-          selectAllCheckbox: true,
-          collapsed: true,
-          children: [
-            getOverlay(taxSaleVacant, true),
-            getOverlay(taxSaleResidential, true),
-            getOverlay(taxSaleCommercial, true),
-          ]
-        },*/
-        getDatagroupOverlaySubtree(datagroups[1], true, false, (a, b) => { return a === "Ward 20" ? -1 : b === "Ward 20" ? 1 : a < b ? -1 : a > b ? 1 : 0 } ),
+        getDatagroupOverlaySubtree(datagroups[0], true, false, (a, b) => { return a === "Ward 20" ? -1 : b === "Ward 20" ? 1 : a < b ? -1 : a > b ? 1 : 0 } ),
+        getDatagroupOverlaySubtree(datagroups[1], true, false),
         getDatagroupOverlaySubtree(datagroups[2], true, false),
-        getDatagroupOverlaySubtree(datagroups[3], true, false),
       ]
     };
 
@@ -517,24 +411,6 @@
       destination.style.color = color;
       destination.innerText = message;
     }
-
-    // allow the user to change the radius of sgmCircle
-    /*const sgmRadiusInput = document.getElementById("sgmRadiusInput");
-    const sgmRadiusMessage = document.getElementById("sgmRadiusMessage");
-    sgmRadiusInput.value = sgmCircle.getRadius() / 1000; // meters to kilometers
-    document.getElementById("sgmRadiusSetButton").addEventListener("click", (event) => {
-      const newRadius = parseFloat(sgmRadiusInput.value);
-      if (!isNaN(newRadius)) {
-        // valid float
-        sgmCircle.setRadius(newRadius * 1000); // kilometers to meters
-        sgmRadiusInput.classList.replace("invalidInput", "validInput");
-        displayMessage(sgmRadiusMessage, `Success! The radius has been set to ${newRadius} km.`, "green");
-      } else {
-        // invalid float
-        sgmRadiusInput.classList.replace("validInput", "invalidInput");
-        displayMessage(sgmRadiusMessage, "Error: input must be a valid number.", "red");
-      }
-    });*/
 
   console.log("Inline script has finished executing.");
     
