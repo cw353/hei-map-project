@@ -32,20 +32,20 @@
     crossorigin=""></script-->
 
   <!-- Local copies of Leaflet plugin scripts and stylesheets -->
-  <link rel="stylesheet" href="libraries/leaflet/leaflet.css"/>
-  <script src="libraries/leaflet/leaflet-src.js"></script>
-  <link rel="stylesheet" href="libraries/leaflet/plugins/MarkerCluster/MarkerCluster.css"/>
-  <link rel="stylesheet" href="libraries/leaflet/plugins/MarkerCluster/MarkerCluster.Default.css"/>
-  <script src="libraries/leaflet/plugins/MarkerCluster/leaflet.markercluster-src.js"></script>
-  <script src="libraries/leaflet/plugins/FeatureGroupSubGroup/leaflet.featuregroup.subgroup-src.js"></script>
-  <link rel="stylesheet" href="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
-  <script src="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
+  <link rel="stylesheet" href="../libraries/leaflet/leaflet.css"/>
+  <script src="../libraries/leaflet/leaflet-src.js"></script>
+  <link rel="stylesheet" href="../libraries/leaflet/plugins/MarkerCluster/MarkerCluster.css"/>
+  <link rel="stylesheet" href="../libraries/leaflet/plugins/MarkerCluster/MarkerCluster.Default.css"/>
+  <script src="../libraries/leaflet/plugins/MarkerCluster/leaflet.markercluster-src.js"></script>
+  <script src="../libraries/leaflet/plugins/FeatureGroupSubGroup/leaflet.featuregroup.subgroup-src.js"></script>
+  <link rel="stylesheet" href="../libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
+  <script src="../libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
 
   <!-- External files for stylesheets, functions, and data -->
-  <link rel="stylesheet" href="code/city-owned-map.css"/>
-  <script src="data/city-owned/city_owned_data.js"></script>
-  <script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
-  <script src="data/ward_boundaries_sp34-6z76.js"></script>
+  <link rel="stylesheet" href="../code/city-owned-map.css"/>
+  <script src="../data/city-owned/city_owned_data.js"></script>
+  <script src="../data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
+  <script src="../data/ward_boundaries_sp34-6z76.js"></script>
     
 </head>
 
@@ -260,7 +260,7 @@
               d="M320 0c-177 0-320 143-320 320s160 416 320 704c160-288 320-527 320-704s-143-320-320-320z m0 448c-71 0-128-57-128-128s57-128 128-128 128 57 128 128-57 128-128 128z"
               fill=${color}
               stroke=black
-              stroke-width=10px
+              stroke-width=20px
             />
           </svg>`
       });
@@ -284,7 +284,7 @@
         {
           icon: generateIcon(layerInfo.color),
         }
-      ).bindPopup("Test"));
+      ).bindPopup(markerData.pin));
       if (layerInfo.markerCount != null) {
         layerInfo.markerCount++;
       }
@@ -383,8 +383,6 @@
 
     // add layer control
 
-    addDatagroupToMap(datagroups[1], false, parentMarkerCluster);
-
     const baseTree = {
       label: "Base Layers",
       children: [
@@ -422,11 +420,6 @@
       }
       return { label: getLeafOverlayLabel(layerInfo), layer: layerInfo.layer };
     }
-
-    const childTest = [];
-    datagroups[1].childLayers.forEach((val, key) => {
-      childTest.push(getOverlayNew(val, key, false));
-    });
     
     function getOverlayNew(layerInfo, name, addToMap) {
       if (addToMap) {
@@ -435,11 +428,12 @@
       return { label: getLeafOverlayLabelNew(layerInfo, name), layer: layerInfo.layer };
     }
 
-    function getDatagroupOverlaySubtree(datagroup, selectAllCheckbox, collapsed) {
+    function getDatagroupOverlaySubtree(datagroup, selectAllCheckbox, collapsed, sortFunction) {
       const children = [];
-      datagroup.childLayers.forEach((val, key) => {
-        children.push(getOverlayNew(val, key, false));
-      });
+      const childLayers = datagroup.childLayers;
+      for (const key of [...childLayers.keys()].sort(sortFunction)) {
+        children.push(getOverlayNew(childLayers.get(key), key, false));
+      }
       return {
         label: getParentOverlayLabel(datagroup.name),
         selectAllCheckbox: selectAllCheckbox,
@@ -447,6 +441,9 @@
         children: children,
       };
     }
+
+    addDatagroupToMap(datagroups[1], false, parentMarkerCluster);
+    addDatagroupToMap(datagroups[2], false, parentMarkerCluster);
 
     const overlayTree = {
       label: getParentOverlayLabel("Map Layers"),
@@ -488,7 +485,8 @@
             getOverlay(taxSaleCommercial, true),
           ]
         },*/
-        getDatagroupOverlaySubtree(datagroups[1], true, false),
+        getDatagroupOverlaySubtree(datagroups[1], true, false, (a, b) => { return a === "Ward 20" ? -1 : b === "Ward 20" ? 1 : a < b ? -1 : a > b ? 1 : 0 } ),
+        getDatagroupOverlaySubtree(datagroups[2], true, false),
       ]
     };
 
