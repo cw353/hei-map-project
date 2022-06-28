@@ -45,6 +45,7 @@
   <link rel="stylesheet" href="../code/city-owned-map.css"/>
   <script src="../data/city-owned/city_owned_data.js"></script>
   <script src="../data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
+  <script src="../data/scavenger-sale/scavenger_data.js"></script>
   <script src="../data/ward_boundaries_sp34-6z76.js"></script>
     
 </head>
@@ -137,6 +138,12 @@
         (data) => { return "classification" in data ? data.classification : "Unclassified" },
         (data) => { return `Marker for tax sale PIN ${data.pin}` },
       ),
+      new Datagroup(
+        "Scavenger Sale 2022",
+        scavenger_sale_data,
+        (data) => { return "property_code_class" in data ? data.property_code_class : "Unclassified" },
+        (data) => { return `Marker for scavenger sale PIN ${data.pin}` },
+      ),
     ];
 
     function addDatagroupToMap(datagroup, trackMarkerCount, parentMarkerClusterGroup) {
@@ -156,7 +163,7 @@
       }
     }
 
-    const cityOwnedWard20 = {
+    /*const cityOwnedWard20 = {
       name: "Ward 20",
       color: "#0000ff",
       layer: L.featureGroup.subGroup(parentMarkerCluster),
@@ -202,7 +209,7 @@
       name: "Circle around Sunshine Gospel Ministries",
       color: "#00ace6",
       layer: L.layerGroup(),
-    };
+    };*/
 
     function getCityOwnedMarkerPopupContent(pinData) {
       // display info about pin
@@ -442,8 +449,9 @@
       };
     }
 
-    addDatagroupToMap(datagroups[1], false, parentMarkerCluster);
-    addDatagroupToMap(datagroups[2], false, parentMarkerCluster);
+    addDatagroupToMap(datagroups[1], true, parentMarkerCluster);
+    addDatagroupToMap(datagroups[2], true, parentMarkerCluster);
+    addDatagroupToMap(datagroups[3], true, parentMarkerCluster);
 
     const overlayTree = {
       label: getParentOverlayLabel("Map Layers"),
@@ -487,6 +495,7 @@
         },*/
         getDatagroupOverlaySubtree(datagroups[1], true, false, (a, b) => { return a === "Ward 20" ? -1 : b === "Ward 20" ? 1 : a < b ? -1 : a > b ? 1 : 0 } ),
         getDatagroupOverlaySubtree(datagroups[2], true, false),
+        getDatagroupOverlaySubtree(datagroups[3], true, false),
       ]
     };
 
