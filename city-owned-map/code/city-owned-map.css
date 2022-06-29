@@ -36,7 +36,40 @@
   font-style: italic;
 }
 
-/* reference: https://stackoverflow.com/questions/35353003/how-can-i-hide-tail-triangle-on-popup */
+.radiusInput {
+  width: 3.5em;
+}
+
+/* reference: https://leafletjs.com/examples/choropleth/ */
+.legend {
+  padding: 6px 8px;
+  background: rgba(255,255,255);
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  border-radius: 5px;
+  border: 0.5px solid rgb(78, 78, 78, 0.7);
+}
+
+/* reference: https://leafletjs.com/examples/choropleth/ */
+.legend header {
+  margin: 0 0 5px;
+  font-size: 1.15em;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* reference: https://leafletjs.com/examples/choropleth/ */
+.legend i {
+  width: 18px;
+  height: 18px;
+  float: left;
+  margin-right: 8px;
+  border-color: black;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 50%;
+  opacity: 1;  
+}
+
 .tooltip {
   color: white;
   background-color: #262626;
@@ -57,10 +90,6 @@
 
 #mapDescription {
   font-style: italic;
-}
-
-#sgmRadiusInput {
-  width: 3.5em;
 }
 
 #pinSearchInput {

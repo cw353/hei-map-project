@@ -5,18 +5,18 @@
   <meta charset="utf-8">
   <meta name="author" content="Claire Wagner (Summer 2022 Wheaton College Research Team)">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Map of Properties of Interest to HEI</title>
+  <title>City-Owned Properties in Ward 20</title>
 
   <!-- Leaflet CDN -->
-  <!--link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
     integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
     crossorigin=""/>
   <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
     integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
-    crossorigin=""></script-->
+    crossorigin=""></script>
 
   <!-- Leaflet.markercluster CDN -->
-  <!--link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
     integrity="sha512-RLEjtaFGdC4iQMJDbMzim/dOvAu+8Qp9sw7QE4wIMYcg2goVoivzwgSZq9CsIxp4xKAZPKh5J2f2lOko2Ze6FQ=="
     crossorigin=""/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"
@@ -24,54 +24,46 @@
     crossorigin=""/>
   <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"
     integrity="sha512-MQlyPV+ol2lp4KodaU/Xmrn+txc1TP15pOBF/2Sfre7MRsA/pB4Vy58bEqe9u7a7DczMLtU5wT8n7OblJepKbg=="
-    crossorigin=""></script-->
+    crossorigin=""></script>
 
   <!-- Leaflet.FeatureGroup.SubGroup CDN -->
-  <!--script src="https://unpkg.com/leaflet.featuregroup.subgroup@1.0.2/dist/leaflet.featuregroup.subgroup.js"
+  <script src="https://unpkg.com/leaflet.featuregroup.subgroup@1.0.2/dist/leaflet.featuregroup.subgroup.js"
     integrity="sha512-gUiI5CXREIHHGko8AdlPYADT5MHvcCuqee1pjKR4qVcw69zVI+WvrnJcCxwU8JajpJoBjpvPIAGfDVFoQJhDfw=="
-    crossorigin=""></script-->
+    crossorigin=""></script>
 
   <!-- Local copies of Leaflet plugin scripts and stylesheets -->
-  <link rel="stylesheet" href="../libraries/leaflet/leaflet.css"/>
-  <script src="../libraries/leaflet/leaflet-src.js"></script>
-  <link rel="stylesheet" href="../libraries/leaflet/plugins/MarkerCluster/MarkerCluster.css"/>
-  <link rel="stylesheet" href="../libraries/leaflet/plugins/MarkerCluster/MarkerCluster.Default.css"/>
-  <script src="../libraries/leaflet/plugins/MarkerCluster/leaflet.markercluster-src.js"></script>
-  <script src="../libraries/leaflet/plugins/FeatureGroupSubGroup/leaflet.featuregroup.subgroup-src.js"></script>
-  <link rel="stylesheet" href="../libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
-  <script src="../libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
+  <link rel="stylesheet" href="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
+  <script src="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
 
   <!-- External files for stylesheets, functions, and data -->
-  <link rel="stylesheet" href="../code/city-owned-map.css"/>
-  <script src="../data/city-owned/city_owned_data.js"></script>
-  <script src="../data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
-  <script src="../data/geojson/ward_boundaries_sp34-6z76.js"></script>
+  <link rel="stylesheet" href="code/city-owned-map.css"/>
+  <script src="data/city-owned/city_owned_data.js"></script>
+  <script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
+  <script src="data/geojson/ward_boundaries_sp34-6z76.js"></script>
     
 </head>
 
 <body>
 
-  <div id="pageHeader">
-    <h1>Map of City-Owned Properties</h1>
-  </div>
+  <div id="pageHeader"></div>
 
   <p id="mapDescription"></p-->
 
-  <div id="pinSearchForm" class="formDiv">
+  <div id="ward20OfficeRadiusForm" class="formDiv">
     <label>
-      Search for PIN
+      Set radius of circle around Ward 20 Alderwoman's Office (in kilometers):
+      <input type="number" id="ward20OfficeRadiusInput" class="radiusInput validInput"/>
     </label>
-    <input type="text" id="pinSearchInput" class="validInput"/>
-    <button type = "button" id="pinSearchButton">
-      Search
+    <button type="button" id="ward20OfficeRadiusSetButton">
+      Set Radius
     </button>
-    <span id="pinSearchMessage" class="message"></span>
+    <span id="ward20OfficeRadiusMessage" class="message"></span>
   </div>
 
   <div id="sgmRadiusForm" class="formDiv">
     <label>
       Set radius of circle around Sunshine Gospel Ministries (in kilometers):
-      <input type="number" id="sgmRadiusInput" class="validInput"/>
+      <input type="number" id="sgmRadiusInput" class="radiusInput validInput"/>
     </label>
     <button type="button" id="sgmRadiusSetButton">
       Set Radius
@@ -83,12 +75,17 @@
 
   <script>
 
+    // !!!
+    document.getElementById("pageHeader").innerHTML = `<h1>${document.title}</h1>`;
+
     // create map
     const map = L.map("map", {
       center: [41.783, -87.621],
-      zoom: 13,
+      zoom: 13.4,
       scrollWheelZoom: false,
       doubleClickZoom: false,
+      zoomDelta: 0.1,
+      zoomSnap: 0,
     });
 
     // add tiles to map - reference: https://leafletjs.com/examples/layers-control/
@@ -99,8 +96,12 @@
 
     // marker cluster group that serves as the parent for all clusterable markers
     const parentMarkerCluster = L.markerClusterGroup({
-      maxClusterRadius: 50,
+      maxClusterRadius: 60,
     }).addTo(map);
+
+    map.attributionControl.addAttribution("&copy; <a href='https://data.cityofchicago.org/'>Chicago Data Portal</a>");
+    map.attributionControl.addAttribution("&copy; <a href='https://datacatalog.cookcountyil.gov/'>Cook County Open Data</a>");
+    map.attributionControl.addAttribution("&copy; <a href='https://www.cookcountytreasurer.com/'>Cook County Treasurer</a>");
 
     const cityOwnedWard20 = {
       name: "Ward 20",
@@ -125,7 +126,7 @@
 
     const taxSaleResidential = {
       name: "Residential",
-      color: "#ff33cc",
+      color: "#669900",
       layer: L.featureGroup.subGroup(parentMarkerCluster),
       markerCount: 0,
     };
@@ -139,22 +140,28 @@
 
     const sunshineGospelPin = {
       name: "Sunshine Gospel Ministries",
-      color: "#0099cc",
+      color: "#ff66ff",
       layer: L.layerGroup(),
       markerCount: 0,
     };
 
     const sunshineGospelCircle = {
       name: "Circle around Sunshine Gospel Ministries",
-      color: "#00ace6",
+      color: "#ff80ff",
       layer: L.layerGroup(),
     };
 
-    const customMarkers = {
-      name: "Custom Markers",
-      color: "red",
-      layer: L.featureGroup.subGroup(parentMarkerCluster),
-      pins: new Set(),
+    const ward20OfficePin = {
+      name: "Ward 20 Office",
+      color: "#0099ff",
+      layer: L.layerGroup(),
+      markerCount: 0,
+    };
+
+    const ward20OfficeCircle = {
+      name: "Circle around Ward 20 Office",
+      color: "#00ace6",
+      layer: L.layerGroup(),
     };
 
     function getCityOwnedMarkerPopupContent(pinData) {
@@ -195,26 +202,33 @@
     }
 
     function generateIcon(color) {
-      const width = 40;
-      const height = 40;
+      // based on an icon created by Naomi Wagner based on https://www.onlinewebfonts.com/icon/467018 (CC BY license)
+      const divisor = 25;
+      const width = 1920 / divisor;
+      const height = 1080 / divisor;
       return L.divIcon({
         className: "custom_divicon",
         iconSize: [width, height],
         iconAnchor: [width/2, height],
         popupAnchor: [0,-(height/5)*4],
         html:
-          `<svg
-            width="${width}"
-            height="${height}"
-            viewBox="0 0 640 1024"
-            xmlns="http://www.w3.org/2000/svg"
+          `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+            x="0px" y="0px" viewBox="0 0 1920 1080" style="enable-background:new 0 0 1920 1080;"
+            xml:space="preserve"
           >
-            <path
-              d="M320 0c-177 0-320 143-320 320s160 416 320 704c160-288 320-527 320-704s-143-320-320-320z m0 448c-71 0-128-57-128-128s57-128 128-128 128 57 128 128-57 128-128 128z"
-              fill=${color}
-              stroke=black
-              stroke-width=10px
-            />
+            <style type="text/css">
+              .svgIconStyle{stroke:#000000;stroke-width:30;stroke-miterlimit:10;}
+            </style>
+            <g>
+              <path class="svgIconStyle" fill="${color}"" d="M939,50.7c9.8-0.7,19.6-1.2,29.7-0.9c17.9,0.5,35.8,1.8,53.4,5.2c104.3,20.6,185.6,75.2,242.1,165.4
+                c32.8,52.4,49.8,110,51.9,171.9c1.2,36.3-5.6,71.1-17.6,105.2c-19.1,54.4-44.9,105.6-73.3,155.5c-53,93.3-114.1,181.1-178.6,266.6
+                c-3.7,4.9-7.4,9.8-11.1,14.6c-12.4,16.2-24.8,32.3-37.4,48.3c-6.3,8-12.6,16-19,24c-3.2,4-6.3,8-9.5,12c-3.1,3.8-6,8.4-9.5,11.8
+                c-1.4-0.8-2.8-2.6-3.8-3.8c-36.7-46.6-73.3-93.2-108.2-141.1c-54-74.1-105.6-149.9-151.5-229.4c-26.5-45.9-50.7-92.8-69.2-142.6
+                c-10.7-28.9-19.2-58.5-22.3-89.3c-3.4-34.2-0.2-67.9,8.6-101C646.8,199.2,723,114.2,843.5,69.5c24.5-9.1,50-14.9,76.2-17.1
+                C926.2,51.8,932.6,51.2,939,50.7z"/>
+              <path class="svgIconStyle" fill="#f4f4f4" fill-opacity="0.9" d="M810.6,407.3c-3,65.9,53.7,149,150.2,148.9c76.8-0.1,149.4-61.6,149.7-149.2c0.3-86.1-70.6-150.5-150.7-150.8
+                C881.2,255.7,808.2,323.6,810.6,407.3z"/>
+            </g>
           </svg>`
       });
     };
@@ -269,8 +283,23 @@
     const sgmCircle = L.circle([sunshineGospel.latitude, sunshineGospel.longitude], {
       radius: 3000,
       color: sunshineGospelCircle.color,
-      fillOpacity: 0.2,
+      fillOpacity: 0.15,
     }).addTo(sunshineGospelCircle.layer);
+
+    // source: https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Ward-Offices/htai-wnw4
+    const ward20OfficeCoords = { latitude: 41.7905, longitude : -87.630388 };
+
+    addMarker(
+      ward20OfficeCoords,
+      ward20OfficePin,
+      "Ward 20 Office",
+    );
+
+    const ward20OfficeCircleMarker = L.circle([ward20OfficeCoords.latitude, ward20OfficeCoords.longitude], {
+      radius: 3000,
+      color: ward20OfficeCircle.color,
+      fillOpacity: 0.15,
+    }).addTo(ward20OfficeCircle.layer);
 
     // function to be run for each ward feature
     const onEachWard = (feature, layer) => {
@@ -340,7 +369,7 @@
     function getLeafOverlayLabel(layerInfo) {
       let label = `<span style='color: ${layerInfo.color}'>&#9724;</span><span class='leafLayer'> ${layerInfo.name}`;
       if (layerInfo.markerCount != null && layerInfo.markerCount > 0) {
-        label += ` (${layerInfo.markerCount}  markers)`;
+        label += ` (${layerInfo.markerCount}  marker${layerInfo.markerCount > 1 ? "s" : ""})`;
       }
       label += "</span>";
       return label;
@@ -357,43 +386,51 @@
       label: getParentOverlayLabel("Map Layers"),
       children: [
         {
-          label: getParentOverlayLabel("Sunshine Gospel Ministries"),
-          selectAllCheckbox: true,
-          collapsed: true,
-          children: [
-            getOverlay(sunshineGospelPin, false),
-            getOverlay(sunshineGospelCircle, false),
-          ]
-        },
-        {
           label: getParentOverlayLabel("Ward Geography"),
           selectAllCheckbox: true,
-          collapsed: true,
+          collapsed: false,
           children: [
             getOverlay(wardBoundaryOutlines, true),
             getOverlay(ward20Fill, true),
           ]
         },
         {
-          label: getParentOverlayLabel("City-Owned PINs"),
+          label: getParentOverlayLabel("Ward 20 Alderwoman's Office"),
           selectAllCheckbox: true,
-          collapsed: true,
+          collapsed: false,
           children: [
-            getOverlay(cityOwnedWard20, false),
+            getOverlay(ward20OfficePin, true),
+            getOverlay(ward20OfficeCircle, true),
+          ]
+        },
+        {
+          label: getParentOverlayLabel("Sunshine Gospel Ministries"),
+          selectAllCheckbox: true,
+          collapsed: false,
+          children: [
+            getOverlay(sunshineGospelPin, true),
+            getOverlay(sunshineGospelCircle, false),
+          ]
+        },
+        {
+          label: getParentOverlayLabel("City-Owned PINs (Possibly for Sale)"),
+          selectAllCheckbox: true,
+          collapsed: false,
+          children: [
+            getOverlay(cityOwnedWard20, true),
             getOverlay(cityOwnedOtherWards, false),
           ]
         },
         {
           label: getParentOverlayLabel("Tax Sale (Ward 20, Tax Year 2019)"),
           selectAllCheckbox: true,
-          collapsed: true,
+          collapsed: false,
           children: [
             getOverlay(taxSaleVacant, false),
             getOverlay(taxSaleResidential, false),
             getOverlay(taxSaleCommercial, false),
           ]
         },
-        getOverlay(customMarkers, false),
       ]
     };
 
@@ -407,87 +444,65 @@
     ).addTo(map);
 
     // add map description
-    document.getElementById("mapDescription").innerHTML = "This is a map of properties that may be "
-      + "of interest to Sunshine Gospel Ministries' Housing Equity Initiative. Click on each marker "
-      + "to view more information about the property it represents.";
+    document.getElementById("mapDescription").innerHTML = "This is a map of city-owned properties"
+      + " that may be for sale in Ward 20, prepared for Alderwoman Jeanette Taylor by the Housing"
+      + " Equity Initiative of Sunshine Gospel Ministries. Click on each marker to view more"
+      + " information about the property it represents.";
 
     function displayMessage(destination, message, color) {
       destination.style.color = color;
       destination.innerText = message;
     }
 
-    // allow the user to change the radius of sgmCircle
-    const sgmRadiusInput = document.getElementById("sgmRadiusInput");
-    const sgmRadiusMessage = document.getElementById("sgmRadiusMessage");
-    sgmRadiusInput.value = sgmCircle.getRadius() / 1000; // meters to kilometers
-    document.getElementById("sgmRadiusSetButton").addEventListener("click", (event) => {
-      const newRadius = parseFloat(sgmRadiusInput.value);
-      if (!isNaN(newRadius)) {
-        // valid float
-        sgmCircle.setRadius(newRadius * 1000); // kilometers to meters
-        sgmRadiusInput.classList.replace("invalidInput", "validInput");
-        displayMessage(sgmRadiusMessage, `Success! The radius has been set to ${newRadius} km.`, "green");
-      } else {
-        // invalid float
-        sgmRadiusInput.classList.replace("validInput", "invalidInput");
-        displayMessage(sgmRadiusMessage, "Error: input must be a valid number.", "red");
-      }
-    });
-
-    const xhr = new XMLHttpRequest();
-    const pinSearchInput = document.getElementById("pinSearchInput");
-    const pinSearchMessage = document.getElementById("pinSearchMessage");
-
-    function processResponse(pin, response) {
-      console.log(`Data for PIN ${pin}:`, response);
-      const responseJSON = JSON.parse(response);
-      if (responseJSON.length < 1) {
-        displayMessage(pinSearchMessage, "No data could be found for this PIN.", "red");
-      } else {
-        const pinData = responseJSON[0];
-        customMarkers.pins.add(pin);
-        addMarker(pinData, customMarkers, `Custom marker for PIN ${pin}`);
-        displayMessage(pinSearchMessage, "A marker for this PIN has been added to the map.", "green");
-      }
-    }
-
-    function getPinDataAjax(pin) {
-      displayMessage(pinSearchMessage, "Fetching PIN information...", "green");
-        const apiQuery = `SELECT property_address, ward, longitude, latitude, indicator_has_latlon WHERE pin = '${pin}' LIMIT 1`;
-        // reference: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/readystatechange_event (public domain)
-        xhr.open(
-          "GET",
-          `https://datacatalog.cookcountyil.gov/resource/c49d-89sn.json?$query=${encodeURI(apiQuery)}`,
-          true
-        );
-        xhr.onreadystatechange = function() {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-          const status = xhr.status;
-          if (status === 0 || (status >= 200 && status < 400)) {
-            processResponse(pin, xhr.responseText);
-          } else {
-            console.error(xhr.statusText);
-            displayMessage(pinSearchMessage, "The data for this PIN could not be fetched because of an error.", "red");
-          }
-        }
-      };
-      xhr.send();
-    }
-
-    document.getElementById("pinSearchButton").addEventListener("click", (event) => {
-      const pin = pinSearchInput.value.replace(/-/g,'');
-      if (pin.length === 14 && !isNaN(parseInt(pin))) {
-        pinSearchInput.classList.replace("invalidInput", "validInput");
-        if (pin in city_owned_data || pin in taxsale_ward20_data || customMarkers.pins.has(pin)) {
-          displayMessage(pinSearchMessage, "The PIN is already on the map.", "green");
+    function setUpRadiusInput(circleMarker, inputElement, applyChangesButton, messageElement) {
+      // allow the user to change the radius of circleMarker
+      inputElement.value = circleMarker.getRadius() / 1000; // meters to kilometers
+      applyChangesButton.addEventListener("click", (event) => {
+        const newRadius = parseFloat(inputElement.value);
+        if (!isNaN(newRadius)) {
+          // valid float
+          circleMarker.setRadius(newRadius * 1000); // kilometers to meters
+          inputElement.classList.replace("invalidInput", "validInput");
+          displayMessage(messageElement, `Success! The radius has been set to ${newRadius} km.`, "green");
         } else {
-          getPinDataAjax(pin);
+          // invalid float
+          inputElement.classList.replace("validInput", "invalidInput");
+          displayMessage(messageElement, "Error: input must be a valid number.", "red");
         }
-      } else {
-        pinSearchInput.classList.replace("validInput", "invalidInput");
-        displayMessage(pinSearchMessage, "Please enter a valid 14-digit PIN.", "red");
+      });
+    }
+
+    // allow the user to change the radius of circle around Ward 20 office
+    setUpRadiusInput(
+      ward20OfficeCircleMarker,
+      document.getElementById("ward20OfficeRadiusInput"),
+      document.getElementById("ward20OfficeRadiusSetButton"),
+      document.getElementById("ward20OfficeRadiusMessage"),
+    );
+
+    // allow the user to change the radius of circle around Sunshine Gospel Ministries
+    setUpRadiusInput(
+      sgmCircle,
+      document.getElementById("sgmRadiusInput"),
+      document.getElementById("sgmRadiusSetButton"),
+      document.getElementById("sgmRadiusMessage"),
+    );
+
+    // reference: https://leafletjs.com/examples/choropleth/
+    const legend = L.control({position: "bottomleft"});
+
+    legend.onAdd = (map) => {
+      const div = L.DomUtil.create("div", "legend");
+      div.innerHTML = "<header>Marker Clusters</header>"
+      const rangeBounds = [1, 10, 100];
+      const colors = ["rgba(110, 204, 57, 0.8)", "rgba(240, 194, 12, 0.6)", "rgba(241, 128, 23, 0.8)"];
+      for (let i = 0; i < rangeBounds.length; i++) {
+        div.innerHTML += `<p><i style="background-color: ${colors[i]}"></i> ${rangeBounds[i]}` + (rangeBounds[i+1] ? `&ndash;${rangeBounds[i+1]} properties<br>` : "+ properties</p>");
       }
-    });
+      return div;
+    }
+
+    legend.addTo(map);
 
     console.log("Inline script has finished executing.");
     
