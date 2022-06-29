@@ -84,7 +84,7 @@
     // add tiles to map - reference: https://leafletjs.com/examples/layers-control/
     const osmtiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
-      attribution: "&copy; <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a>"
+      attribution: "&copy; <a href='http://www.openstreetmap.org/copyright' target='_blank' rel='noopener'>OpenStreetMap</a>",
     }).addTo(map);
 
     // marker cluster group that serves as the parent for all clusterable markers
@@ -260,7 +260,7 @@
       const layer = event.target;
       layer.setStyle({
         color: "#262626",
-          weight: 6,
+          weight: 5,
           dashArray: "",
           fillOpacity: 0,
       });
@@ -303,16 +303,21 @@
       ),
     };
 
+    const geoBoundariesPane = map.createPane("geoBoundariesPane");
+    geoBoundariesPane.style.zIndex = 450; // between overlay pane and shadow and marker panes
+
     const neighborhoodBoundaries = {
       name: "Neighborhood Boundaries",
       color: "black",
       layer: L.geoJSON(
         neighborhood_boundaries_geojson,
         {
+          pane: "geoBoundariesPane",
+          attribution: "&copy; <a href='https://data.cityofchicago.org/d/bbvz-uum9' target='_blank' rel='noopener'>Chicago Data Portal</a>",
           style: geojsonStyle,
           onEachFeature: (feature, layer) => {
             if (feature.properties && feature.properties.pri_neigh) {
-              layer.bindTooltip(feature.properties.pri_neigh, { className: "tooltip" });
+              layer.bindTooltip(feature.properties.pri_neigh, { className: "tooltip", sticky : true });
             }
             layer.on({
               mouseover: highlightFeature,
