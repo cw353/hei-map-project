@@ -46,7 +46,7 @@
   <script src="../data/city-owned/city_owned_data.js"></script>
   <script src="../data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
   <script src="../data/scavenger-sale/scavenger_data.js"></script>
-  <script src="../data/ward_boundaries_sp34-6z76.js"></script>
+  <script src="../data/geojson/ward_boundaries_sp34-6z76.js"></script>
     
 </head>
 
@@ -269,11 +269,11 @@
 
     // add ward boundaries
     let ward20Feature = null;
-    const wardBoundaryOutlines = {
+    const wardBoundaries = {
       name: "Ward Boundaries",
       color: "black",
       layer: L.geoJSON(
-        wardBoundaries,
+        ward_boundaries_geojson,
         {
           style: {
             color: "black",
@@ -310,8 +310,17 @@
       ),
     };
 
-    // add layer control
+    /*const sgm = new Datagroup("Sunshine Gospel Ministries", sunshineGospel, null, null);
+    sgm.childLayers.set(
+      "Sunshine Gospel Ministries",
+      new LayerInfo(sgm, "#0099cc", true, null)
+    );
+    sgm.childLayers.set(
+      "Circle around Sunshine Gospel Ministries",
+      new LayerInfo(sgm, "#00ace6", false, null)
+    );*/
 
+    // add layer control
     const baseTree = {
       label: "Base Layers",
       children: [
@@ -383,7 +392,7 @@
           selectAllCheckbox: true,
           collapsed: true,
           children: [
-            getOverlay(wardBoundaryOutlines, true),
+            getOverlay(wardBoundaries, true),
             getOverlay(ward20Fill, true),
           ]
         },

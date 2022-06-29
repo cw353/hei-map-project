@@ -45,7 +45,8 @@
   <link rel="stylesheet" href="code/city-owned-map.css"/>
   <script src="data/city-owned/city_owned_data.js"></script>
   <script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
-  <script src="data/ward_boundaries_sp34-6z76.js"></script>
+  <script src="data/geojson/ward_boundaries_sp34-6z76.js"></script>
+  <script src="data/geojson/neighborhood_boundaries_bbvz-uum9.js"></script>
     
 </head>
 
@@ -254,54 +255,72 @@
       fillOpacity: 0.2,
     }).addTo(sunshineGospelCircle.layer);
 
-    // function to be run for each ward feature
-    const onEachWard = (feature, layer) => {
-      if (feature.properties && feature.properties.ward) {
-        layer.bindPopup("Ward " + feature.properties.ward);
+    // based on https://leafletjs.com/examples/choropleth/
+    function highlightFeature(event) {
+      const layer = event.target;
+      layer.setStyle({
+        color: "#262626",
+          weight: 6,
+          dashArray: "",
+          fillOpacity: 0,
+      });
+      if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+          layer.bringToFront();
+      }
+    }
+
+    const geojsonStyle = (feature) => {
+      return {
+        color: "black",
+        weight: 2,
+        opacity: 1,
+        color: "black",
+        dashArray: "4",
+        fillOpacity: 0,
       }
     };
 
     // add ward boundaries
-    let ward20Feature = null;
-    const wardBoundaryOutlines = {
+    // reference: https://leafletjs.com/examples/choropleth/
+    const wardBoundaries = {
       name: "Ward Boundaries",
       color: "black",
       layer: L.geoJSON(
-        wardBoundaries,
+        ward_boundaries_geojson,
         {
-          style: {
+          style: (feature) => { return {
             color: "black",
+            fillColor: feature.properties.ward === "20" ? "#e9ac3c" : null,
             weight: 2,
-            fillOpacity: 0,
-          },
+            fillOpacity: feature.properties.ward === "20" ? 0.4 : 0,
+          } },
           onEachFeature: (feature, layer) => {
-            onEachWard(feature, layer);
-            // Add shaded layer for Ward 20
-            if (feature.properties && feature.properties.ward === "20") {
-              ward20Feature = feature;
+            if (feature.properties && feature.properties.ward) {
+              layer.bindPopup("Ward " + feature.properties.ward);
             }
           }
         }
-      ).addTo(map),
+      ),
     };
 
-    // Add Ward 20 fill
-    const ward20FillColor = "#e9ac3c";
-    const ward20Fill = {
-      name: "Ward 20 (shaded)",
-      color: ward20FillColor,
+    const neighborhoodBoundaries = {
+      name: "Neighborhood Boundaries",
+      color: "black",
       layer: L.geoJSON(
-        ward20Feature,
+        neighborhood_boundaries_geojson,
         {
-          style: {
-            color: "black",
-            weight: 2,
-            fillColor: ward20FillColor,
-            fillOpacity: 0.4,
-          },
-          onEachFeature: onEachWard,
+          style: geojsonStyle,
+          onEachFeature: (feature, layer) => {
+            if (feature.properties && feature.properties.pri_neigh) {
+              layer.bindTooltip(feature.properties.pri_neigh, { className: "tooltip" });
+            }
+            layer.on({
+              mouseover: highlightFeature,
+              mouseout: (event) => { neighborhoodBoundaries.layer.resetStyle(event.target) },
+            });
+          }
         }
-      ).addTo(map),
+      ),
     };
 
     // add layer control
@@ -328,32 +347,32 @@
       return label;
     }
 
-    function getOverlay(layerInfo, addToMap) {
+    function getOverlay(layerInfo, addToMap, radioGroupName) {
       if (addToMap) {
         layerInfo.layer.addTo(map);
       }
-      return { label: getLeafOverlayLabel(layerInfo), layer: layerInfo.layer };
+      return { label: getLeafOverlayLabel(layerInfo), layer: layerInfo.layer, radioGroup: radioGroupName ? radioGroupName : "" };
     }
 
     const overlayTree = {
       label: getParentOverlayLabel("Map Layers"),
       children: [
         {
+          label: getParentOverlayLabel("Geography"),
+          selectAllCheckbox: false,
+          collapsed: false,
+          children: [
+            getOverlay(wardBoundaries, false, "geojson_boundaries"),
+            getOverlay(neighborhoodBoundaries, true, "geojson_boundaries"),
+          ]
+        },
+        {
           label: getParentOverlayLabel("Sunshine Gospel Ministries"),
           selectAllCheckbox: true,
           collapsed: true,
           children: [
-            getOverlay(sunshineGospelPin, true),
-            getOverlay(sunshineGospelCircle, true),
-          ]
-        },
-        {
-          label: getParentOverlayLabel("Ward Geography"),
-          selectAllCheckbox: true,
-          collapsed: true,
-          children: [
-            getOverlay(wardBoundaryOutlines, true),
-            getOverlay(ward20Fill, true),
+            getOverlay(sunshineGospelPin, false),
+            getOverlay(sunshineGospelCircle, false),
           ]
         },
         {
@@ -361,7 +380,7 @@
           selectAllCheckbox: true,
           collapsed: true,
           children: [
-            getOverlay(cityOwnedWard20, true),
+            getOverlay(cityOwnedWard20, false),
             getOverlay(cityOwnedOtherWards, false),
           ]
         },
@@ -370,9 +389,9 @@
           selectAllCheckbox: true,
           collapsed: true,
           children: [
-            getOverlay(taxSaleVacant, true),
-            getOverlay(taxSaleResidential, true),
-            getOverlay(taxSaleCommercial, true),
+            getOverlay(taxSaleVacant, false),
+            getOverlay(taxSaleResidential, false),
+            getOverlay(taxSaleCommercial, false),
           ]
         },
       ]

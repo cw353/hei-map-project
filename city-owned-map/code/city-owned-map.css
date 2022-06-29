@@ -36,6 +36,13 @@
   font-style: italic;
 }
 
+/* reference: https://stackoverflow.com/questions/35353003/how-can-i-hide-tail-triangle-on-popup */
+.tooltip {
+  color: white;
+  background-color: #262626;
+  font-weight: bold;
+}
+
 #map {
   width: 100%;
   height: 600px;
