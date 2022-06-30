@@ -92,53 +92,6 @@
       maxClusterRadius: 50,
     }).addTo(map);
 
-    const cityOwnedWard20 = {
-      name: "Ward 20",
-      color: "#0000ff",
-      layer: L.featureGroup.subGroup(parentMarkerCluster),
-      markerCount: 0,
-    };
-
-    const cityOwnedOtherWards = {
-      name: "Other Wards",
-      color: "#9900cc",
-      layer: L.featureGroup.subGroup(parentMarkerCluster),
-      markerCount: 0,
-    };
-
-    const taxSaleVacant = {
-      name: "Vacant Land",
-      color: "#ff6600",
-      layer: L.featureGroup.subGroup(parentMarkerCluster),
-      markerCount: 0,
-    };
-
-    const taxSaleResidential = {
-      name: "Residential",
-      color: "#ff33cc",
-      layer: L.featureGroup.subGroup(parentMarkerCluster),
-      markerCount: 0,
-    };
-
-    const taxSaleCommercial = {
-      name: "Commercial/Industrial",
-      color: "#666699",
-      layer: L.featureGroup.subGroup(parentMarkerCluster),
-      markerCount: 0,
-    };
-
-    const sunshineGospelPin = {
-      name: "Sunshine Gospel Ministries",
-      color: "#0099cc",
-      layer: L.layerGroup(),
-      markerCount: 0,
-    };
-
-    const sunshineGospelCircle = {
-      name: "Circle around Sunshine Gospel Ministries",
-      color: "#00ace6",
-      layer: L.layerGroup(),
-    };
 
     function getCityOwnedMarkerPopupContent(pinData) {
       // display info about pin
