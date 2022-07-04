@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="author" content="Claire Wagner (Summer 2022 Wheaton College Research Team)">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Map of Properties of Interest to HEI</title>
+
+  <!-- Leaflet CDN -->
+  <!--link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+    integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+    crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+    integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+    crossorigin=""></script-->
+
+  <!-- Leaflet.markercluster CDN -->
+  <!--link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
+    integrity="sha512-RLEjtaFGdC4iQMJDbMzim/dOvAu+8Qp9sw7QE4wIMYcg2goVoivzwgSZq9CsIxp4xKAZPKh5J2f2lOko2Ze6FQ=="
+    crossorigin=""/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"
+    integrity="sha512-BBToHPBStgMiw0lD4AtkRIZmdndhB6aQbXpX7omcrXeG2PauGBl2lzq2xUZTxaLxYz5IDHlmneCZ1IJ+P3kYtQ=="
+    crossorigin=""/>
+  <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"
+    integrity="sha512-MQlyPV+ol2lp4KodaU/Xmrn+txc1TP15pOBF/2Sfre7MRsA/pB4Vy58bEqe9u7a7DczMLtU5wT8n7OblJepKbg=="
+    crossorigin=""></script-->
+
+  <!-- Leaflet.FeatureGroup.SubGroup CDN -->
+  <!--script src="https://unpkg.com/leaflet.featuregroup.subgroup@1.0.2/dist/leaflet.featuregroup.subgroup.js"
+    integrity="sha512-gUiI5CXREIHHGko8AdlPYADT5MHvcCuqee1pjKR4qVcw69zVI+WvrnJcCxwU8JajpJoBjpvPIAGfDVFoQJhDfw=="
+    crossorigin=""></script-->
+
+  <!-- jQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+    integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+    crossorigin=""></script>
+
+  <!-- Local copies of Leaflet plugin scripts and stylesheets -->
+  <link rel="stylesheet" href="libraries/leaflet/leaflet.css"/>
+  <script src="libraries/leaflet/leaflet-src.js"></script>
+  <link rel="stylesheet" href="libraries/leaflet/plugins/MarkerCluster/MarkerCluster.css"/>
+  <link rel="stylesheet" href="libraries/leaflet/plugins/MarkerCluster/MarkerCluster.Default.css"/>
+  <script src="libraries/leaflet/plugins/MarkerCluster/leaflet.markercluster-src.js"></script>
+  <script src="libraries/leaflet/plugins/FeatureGroupSubGroup/leaflet.featuregroup.subgroup-src.js"></script>
+  <link rel="stylesheet" href="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
+  <script src="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
+
+  <!-- External files for stylesheets, functions, and data -->
+  <link rel="stylesheet" href="code/city-owned-map.css"/>
+  <script src="code/classes.js"></script>
+  <script src="code/functions.js"></script>
+  <script src="data/city-owned/city_owned_data.js"></script>
+  <script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
+  <script src="data/geojson/ward_boundaries_sp34-6z76.js"></script>
+  <script src="data/geojson/neighborhood_boundaries_bbvz-uum9.js"></script>
+    
+</head>
+
+<body>
+
+  <div id="pageHeader"></div>
+
+  <div id="map"></div>
+
+  <script>
+
+    $("#pageHeader").html(`<h1>${document.title}</h1>`);
+
+    // create map
+    const map = L.map("map", {
+      center: [41.783, -87.621],
+      zoom: 13,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+    });
+
+    // add tiles to map - reference: https://leafletjs.com/examples/layers-control/
+    const osmtiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; <a href='http://www.openstreetmap.org/copyright' target='_blank' rel='noopener'>OpenStreetMap</a>",
+    }).addTo(map);
+
+    // marker cluster group that serves as the parent for all clusterable markers
+    const parentMarkerCluster = L.markerClusterGroup({
+      maxClusterRadius: 50,
+    }).addTo(map);
+
+    const geoBoundaries = new Datagroup("Geographic Boundaries");
+    geoBoundaries.addChildLayer(new BoundaryLayerInfo(
+        "Ward Boundaries",
+        ward_boundaries_geojson,
+        (props) => { return `Ward ${props.ward}`; }
+      )
+    );
+    geoBoundaries.addChildLayer(new BoundaryLayerInfo(
+        "Neighborhood Boundaries",
+        neighborhood_boundaries_geojson,
+        (props) => { return props.pri_neigh; }
+      )
+    );
+    geoBoundaries.addChildLayer(new LayerInfo("No Boundaries", null, L.layerGroup(), false));
+
+    map.addLayer(geoBoundaries.childLayers.get("Ward Boundaries").layer);
+
+    const baseTree = {
+      label: "Base Layers",
+      children: [
+        { label: "Open StreetMap", layer: osmtiles },
+      ]
+    };
+
+    const overlayTree = {
+      label: getParentOverlayLabel("Map Layers"),
+      children: [
+        getDatagroupOverlaySubtree(geoBoundaries, {
+          radioGroupName: "geoboundaries",
+        }),
+      ],
+    };
+
+    const layerControlTree = L.control.layers.tree(
+      baseTree,
+      overlayTree,
+      {
+        collapsed : false,
+        hideSingleBase: true,
+      }
+    ).addTo(map);
+
+    console.log("Inline script has finished executing.");
+    
+  </script>   
+
+</body>
+
+</html>
+
+<!-- references:
+  https://github.com/Leaflet/Leaflet/tree/main/docs/examples (BSD 2-Clause license)
+  https://github.com/Leaflet/Leaflet.markercluster (MIT license)
+  https://github.com/ghybs/Leaflet.FeatureGroup.SubGroup (BSD 2-Clause license)
+-->
