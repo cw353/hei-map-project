@@ -15,8 +15,17 @@ class MarkerDatagroup extends Datagroup {
     this.classify = classify;
     this.getPopupContent = getPopupContent;
   }
+  // get data for the given identifier
+  // (assumes entries in dataset are indexed by an identifier property - can be overriden as necessary)
   getData(identifier) {
     return dataset[identifier];
+  }
+  // iterate over the dataset
+  // (assumes entries in dataset are indexed by an identifier property - can be overriden as necessary)
+  *dataIterator() {
+    for (const key of Object.keys(this.dataset)) {
+      yield this.dataset[key];
+    }
   }
 }
 

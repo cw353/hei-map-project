@@ -111,19 +111,16 @@
     geoBoundaries.addChildLayer(new LayerInfo("No Boundaries", null, L.layerGroup(), false));
     map.addLayer(geoBoundaries.childLayers.get("Ward Boundaries").layer);
 
-    // custom iterator test
-    const test = {
-      one: "1",
-      two: "2",
-      three: "3",
-    }
-    test[Symbol.iterator] = function*() {
-      for (const key of Object.keys(test)) {
-        yield "this is item " + test[key];
-      }
-    }
-    for (const item of test) {
-      console.log(item);
+    const ward20TaxSale = new MarkerDatagroup(
+      "Ward 20 Tax Sale",
+      taxsale_ward20_data,
+      null,
+      null,
+    );
+
+    const it = ward20TaxSale.dataIterator();
+    for (let i = 0; i < 5; i++) {
+      console.log(it.next().value.pin);
     }
 
     // add overlay control tree
