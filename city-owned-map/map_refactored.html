@@ -52,8 +52,9 @@
   <script src="code/map_functions.js"></script>
   <script src="data/city-owned/city_owned_data.js"></script>
   <script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
-  <script src="data/geojson/ward_boundaries_sp34-6z76.js"></script>
-  <script src="data/geojson/neighborhood_boundaries_bbvz-uum9.js"></script>
+  <script src="data/geojson/ward_boundaries.js"></script>
+  <script src="data/geojson/neighborhood_boundaries.js"></script>
+  <script src="data/geojson/zoning_districts.js"></script>
     
 </head>
 
@@ -97,26 +98,38 @@
     // add geographic boundaries
     const geoBoundaries = new Datagroup("Geographic Boundaries");
     geoBoundaries.addChildLayer(new BoundaryLayerInfo(
-        "Ward Boundaries",
-        ward_boundaries_geojson,
+        "Neighborhood Boundaries",
+        neighborhood_boundaries.data,
+        (props) => { return props.pri_neigh; }
+      )
+    );
+    geoBoundaries.addChildLayer(new BoundaryLayerInfo(
+        "Ward Boundaries (2015-2023)",
+        ward_boundaries_2015_to_2023.data,
         (props) => { return `Ward ${props.ward}`; }
       )
     );
     geoBoundaries.addChildLayer(new BoundaryLayerInfo(
-        "Neighborhood Boundaries",
-        neighborhood_boundaries_geojson,
-        (props) => { return props.pri_neigh; }
+        "Ward Boundaries (2023+)",
+        ward_boundaries_2023.data,
+        (props) => { return `Ward ${props.ward}`; }
+      )
+    );
+    geoBoundaries.addChildLayer(new BoundaryLayerInfo(
+        "Zoning Districts",
+        zoning_districts.data,
+        (props) => { return props.zone_class; }
       )
     );
     geoBoundaries.addChildLayer(new LayerInfo("No Boundaries", null, L.layerGroup(), false));
-    map.addLayer(geoBoundaries.childLayers.get("Ward Boundaries").layer);
+    map.addLayer(geoBoundaries.childLayers.get("Neighborhood Boundaries").layer);
 
-    const ward20TaxSale = new MarkerDatagroup(
+    /*const ward20TaxSale = new MarkerDatagroup(
       "Ward 20 Tax Sale",
       taxsale_ward20_data,
       null,
       null,
-    );
+    );*/
 
     // add overlay control tree
     const baseTree = {
