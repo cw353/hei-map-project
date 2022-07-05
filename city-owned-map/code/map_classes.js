@@ -1,3 +1,5 @@
+/* Author: Claire Wagner (Summer 2022 Wheaton College Research Team) */
+
 class Datagroup {
   childLayers = new Map(); // map of LayerInfo objects
   constructor(name) {
@@ -38,6 +40,13 @@ class LayerInfo {
       this.markerCount = 0;
     }
   }
+  addLayer(sublayer) {
+    this.layer.addLayer(sublayer);
+    if ("markerCount" in this) {
+      this.markerCount++;
+    }
+  }
+  getMarkerCount
 }
 
 class BoundaryLayerInfo extends LayerInfo {

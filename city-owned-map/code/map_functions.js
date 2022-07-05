@@ -1,3 +1,14 @@
+/* Author: Claire Wagner (Summer 2022 Wheaton College Research Team) */
+
+// source: Sasha Trubetskoy, https://sashamaps.net/docs/resources/20-colors/
+const colors = [
+  "#e6194B", "#3cb44b", "#ffe119", "#4363d8", "#f58231",
+  "#911eb4", "#42d4f4", "#f032e6", "#bfef45", "#fabed4",
+  "#469990", "#dcbeff", "#9A6324", "#fffac8", "#800000",
+  "#aaffc3", "#808000", "#ffd8b1", "#000075", "#a9a9a9",
+];
+let nextColor = 0;
+
 function getParentOverlayLabel(name) {
   return (
     `<span class='parentLayer'>${name}</span>`
@@ -56,4 +67,35 @@ function setUpRadiusInput(circleMarker, inputElement, applyChangesButton, messag
       displayMessage(messageElement, "Error: input must be a valid number.", "red");
     }
   });
+}
+
+function addDatagroupToMap(datagroup, getNewLayer, trackMarkerCount) {
+  const dataIterator = datagroup.dataIterator();
+  for (const datum of dataIterator) {
+    const classification = datagroup.classify(datum);
+    // if the LayerInfo object corresponding to classification doesn't exist yet, create it
+    if (!(childLayers.has(classification))) {
+      childLayers.addChildLayer(new LayerInfo(
+          classification,
+          colors[nextColor++ % colors.length],
+          getNewLayer(),
+          trackMarkerCount
+      ));
+    }
+    // add marker to layer
+    addMarkerToLayer(datum, childLayers.get(classification));
+  }
+}
+
+function addMarkerToLayer(data, layerInfo) {
+  const marker = L.marker([data.latitude, data.longitude], {
+    icon: generateIcon(layerInfo.color),
+  });
+  layerInfo.layer.addLayer(marker);
+  if (layerInfo.markerCount != null) {
+    layerInfo.markerCount++;
+  }
+  markerData.marker = marker;
+  markerData.layerInfo = layerInfo;
+  marker.bindPopup(layerInfo.datagroup.getPopupContent(markerData));
 }
