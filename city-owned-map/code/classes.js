@@ -38,7 +38,7 @@ class BoundaryLayerInfo extends LayerInfo {
       color: this.color,
       weight: 2,
       opacity: 1,
-      dashArray: "4",
+      dashArray: "",
       fillOpacity: 0,
     };
     this.layer = L.geoJSON(
@@ -47,7 +47,7 @@ class BoundaryLayerInfo extends LayerInfo {
         style: this.defaultStyle,
         onEachFeature: function(feature, layer) {
           if (feature.properties) {
-            layer.bindTooltip(getTooltipText(feature.properties), { className: "tooltip", sticky : true });
+            layer.bindTooltip(getTooltipText(feature.properties), { className: "darkTooltip", sticky : true });
           }
         }
       }

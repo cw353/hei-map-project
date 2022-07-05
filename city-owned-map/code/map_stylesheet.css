@@ -32,6 +32,10 @@
   font-size: 1.15em;
 }
 
+.bolded {
+  font-weight: bold;
+}
+
 .leafLayer {
   font-style: italic;
 }
@@ -70,7 +74,7 @@
   opacity: 1;  
 }
 
-.tooltip {
+.darkTooltip {
   color: white;
   background-color: #262626;
   font-weight: bold;

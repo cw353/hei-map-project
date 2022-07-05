@@ -47,7 +47,7 @@
   <script src="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
 
   <!-- External files for stylesheets, functions, and data -->
-  <link rel="stylesheet" href="code/city-owned-map.css"/>
+  <link rel="stylesheet" href="code/map_stylesheet.css"/>
   <script src="code/classes.js"></script>
   <script src="code/functions.js"></script>
   <script src="data/city-owned/city_owned_data.js"></script>
@@ -86,6 +86,14 @@
       maxClusterRadius: 50,
     }).addTo(map);
 
+    // test tooltip
+    parentMarkerCluster.on("clustermouseover", (a) => {
+      a.layer.bindTooltip(`This cluster contains ${a.layer.getAllChildMarkers().length} markers.`).openTooltip();
+    });
+    parentMarkerCluster.on("clustermouseout", (a) => {
+      a.layer.closeTooltip().unbindTooltip();
+    });
+
     // add geographic boundaries
     const geoBoundaries = new Datagroup("Geographic Boundaries");
     geoBoundaries.addChildLayer(new BoundaryLayerInfo(
@@ -103,7 +111,20 @@
     geoBoundaries.addChildLayer(new LayerInfo("No Boundaries", null, L.layerGroup(), false));
     map.addLayer(geoBoundaries.childLayers.get("Ward Boundaries").layer);
 
-    
+    // custom iterator test
+    const test = {
+      one: "1",
+      two: "2",
+      three: "3",
+    }
+    test[Symbol.iterator] = function*() {
+      for (const key of Object.keys(test)) {
+        yield "this is item " + test[key];
+      }
+    }
+    for (const item of test) {
+      console.log(item);
+    }
 
     // add overlay control tree
     const baseTree = {
@@ -114,9 +135,11 @@
     };
     const overlayTree = {
       label: getParentOverlayLabel("Map Layers"),
+      selectAllCheckbox: false,
       children: [
         getDatagroupOverlaySubtree(geoBoundaries, {
           radioGroupName: "geoboundaries",
+          selectAllCheckbox: false,
         }),
       ],
     };
@@ -128,6 +151,20 @@
         hideSingleBase: true,
       }
     ).addTo(map);
+
+    // add marker cluster legend to map (reference: https://leafletjs.com/examples/choropleth/)
+    const legend = L.control({position: "bottomleft"});
+    legend.onAdd = function(map) {
+      const div = L.DomUtil.create("div", "legend");
+      div.innerHTML = "<header>Marker Clusters</header>"
+      const rangeBounds = [1, 10, 100];
+      const colors = ["rgba(110, 204, 57, 0.8)", "rgba(240, 194, 12, 0.6)", "rgba(241, 128, 23, 0.8)"];
+      for (let i = 0; i < rangeBounds.length; i++) {
+        div.innerHTML += `<p><i style="background-color: ${colors[i]}"></i> ${rangeBounds[i]}` + (rangeBounds[i+1] ? `&ndash;${rangeBounds[i+1]} properties<br>` : "+ properties</p>");
+      }
+      return div;
+    }
+    legend.addTo(map);
 
     console.log("Inline script has finished executing.");
     
