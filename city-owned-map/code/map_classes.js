@@ -46,7 +46,6 @@ class LayerInfo {
       this.markerCount++;
     }
   }
-  getMarkerCount
 }
 
 class BoundaryLayerInfo extends LayerInfo {

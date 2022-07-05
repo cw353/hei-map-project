@@ -36,10 +36,10 @@
   <script src="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
 
   <!-- External files for stylesheets, functions, and data -->
-  <link rel="stylesheet" href="code/city-owned-map.css"/>
+  <link rel="stylesheet" href="code/map_stylesheet.css"/>
   <script src="data/city-owned/city_owned_data.js"></script>
   <script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
-  <script src="data/geojson/ward_boundaries_sp34-6z76.js"></script>
+  <script src="data/geojson/ward_boundaries.js"></script>
     
 </head>
 
@@ -75,7 +75,6 @@
 
   <script>
 
-    // !!!
     document.getElementById("pageHeader").innerHTML = `<h1>${document.title}</h1>`;
 
     // create map
@@ -275,12 +274,12 @@
     }
 
     addMarker(
-      sunshineGospel,
+      sunshine_gospel,
       sunshineGospelPin,
       "<a href='https://www.sunshinegospel.org/' target='_blank' rel='noopener'>Sunshine Gospel Ministries</a>"
     );
 
-    const sgmCircle = L.circle([sunshineGospel.latitude, sunshineGospel.longitude], {
+    const sgmCircle = L.circle([sunshine_gospel.latitude, sunshine_gospel.longitude], {
       radius: 3000,
       color: sunshineGospelCircle.color,
       fillOpacity: 0.15,
@@ -314,7 +313,7 @@
       name: "Ward Boundaries",
       color: "black",
       layer: L.geoJSON(
-        ward_boundaries_geojson,
+        ward_boundaries_2015_to_2023.data,
         {
           style: {
             color: "black",

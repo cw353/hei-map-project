@@ -32,9 +32,9 @@
     crossorigin=""></script-->
 
   <!-- jQuery -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+  <!--script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"
     integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
-    crossorigin=""></script>
+    crossorigin=""></script-->
 
   <!-- Local copies of Leaflet plugin scripts and stylesheets -->
   <link rel="stylesheet" href="libraries/leaflet/leaflet.css"/>
@@ -50,11 +50,12 @@
   <link rel="stylesheet" href="code/map_stylesheet.css"/>
   <script src="code/map_classes.js"></script>
   <script src="code/map_functions.js"></script>
-  <script src="data/city-owned/city_owned_data.js"></script>
-  <script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
   <script src="data/geojson/ward_boundaries.js"></script>
   <script src="data/geojson/neighborhood_boundaries.js"></script>
   <script src="data/geojson/zoning_districts.js"></script>
+  <script src="data/city-owned/city_owned_data.js"></script>
+  <script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
+  <script src="data/business-licenses/business_license_data.js"></script>
     
 </head>
 
@@ -66,7 +67,9 @@
 
   <script>
 
-    $("#pageHeader").html(`<h1>${document.title}</h1>`);
+    console.log("Starting inline script");
+
+    document.getElementById("pageHeader").innerHTML = `<h1>${document.title}</h1>`;
 
     // create map
     const map = L.map("map", {
@@ -88,23 +91,17 @@
     }).addTo(map);
 
     // test tooltip
-    parentMarkerCluster.on("clustermouseover", (a) => {
+    /*parentMarkerCluster.on("clustermouseover", (a) => {
       a.layer.bindTooltip(`This cluster contains ${a.layer.getAllChildMarkers().length} markers.`).openTooltip();
     });
     parentMarkerCluster.on("clustermouseout", (a) => {
       a.layer.closeTooltip().unbindTooltip();
-    });
+    });*/
 
     // add geographic boundaries
     const geoBoundaries = new Datagroup("Geographic Boundaries");
     geoBoundaries.addChildLayer(new BoundaryLayerInfo(
-        "Neighborhood Boundaries",
-        neighborhood_boundaries.data,
-        (props) => { return props.pri_neigh; }
-      )
-    );
-    geoBoundaries.addChildLayer(new BoundaryLayerInfo(
-        "Ward Boundaries (2015-2023)",
+        "Ward Boundaries (2015&ndash;2023)",
         ward_boundaries_2015_to_2023.data,
         (props) => { return `Ward ${props.ward}`; }
       )
@@ -116,20 +113,82 @@
       )
     );
     geoBoundaries.addChildLayer(new BoundaryLayerInfo(
+        "Neighborhood Boundaries",
+        neighborhood_boundaries.data,
+        (props) => { return props.pri_neigh; }
+      )
+    );
+    geoBoundaries.addChildLayer(new BoundaryLayerInfo(
         "Zoning Districts",
         zoning_districts.data,
         (props) => { return props.zone_class; }
       )
     );
     geoBoundaries.addChildLayer(new LayerInfo("No Boundaries", null, L.layerGroup(), false));
-    map.addLayer(geoBoundaries.childLayers.get("Neighborhood Boundaries").layer);
+    map.addLayer(geoBoundaries.childLayers.get("Ward Boundaries (2015&ndash;2023)").layer);
 
-    /*const ward20TaxSale = new MarkerDatagroup(
+    function getWard(ward) {
+      return ward === 20 ? "Ward 20"
+        : ward <= 10 ? "Wards 1&ndash;10"
+        : ward < 20 ? "Wards 11&ndash;19"
+        : ward <= 30 ? "Wards 21&ndash;30"
+        : ward <= 40 ? "Wards 31&ndash;40"
+        : ward <= 50 ? "Wards 41&ndash;50"
+        : "Unknown Ward";
+    }
+
+    const cityOwned = new MarkerDatagroup(
+      "City-Owned PINs (Possibly for Sale)",
+      city_owned_data,
+      (data) => { return ("ward" in data) ? getWard(data.ward) : "Unknown Ward" },
+      function(data) { return getMarkerPopupContent(data, this, [
+        { label: "PIN", data: data.pin },
+        { label: "Address", data: data.property_address },
+        { label: "Ward", data: data.ward },
+        { label: "Property Status", data: data.property_status },
+        { label: "Record Last Updated", data: data.last_update },
+        { label: "Property Details", data: getPropertyDetailsLink(data.pin) }
+      ])},
+    );
+
+    const ward20TaxSale = new MarkerDatagroup(
       "Ward 20 Tax Sale",
       taxsale_ward20_data,
-      null,
-      null,
-    );*/
+      (data) => { return ("classification" in data) ? data.classification : "Unclassified" },
+      function(data) { return getMarkerPopupContent(data, this, [
+        { label: "PIN", data: data.pin },
+        { label: "Address", data: data.property_address },
+        { label: "Ward", data: data.ward },
+        { label: "2019 Tax Due (Including Interest)", data: `$${data.total_due_including_interest}` },
+        { label: "2019 Tax Due (Excluding Interest)", data: `$${data.total_tax_due}` },
+        { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
+      ])},
+    );
+
+    const businessLicenses = new MarkerDatagroup(
+      "Business Licenses",
+      business_license_data,
+      (data) => { return ("ward" in data) ? getWard(data.ward) : "Unknown Ward" },
+      function(data) { return getMarkerPopupContent(data, this, [
+        { label: "Business", data: data.doing_business_as_name },
+        { label: "Address", data: data.property_address },
+        { label: "Ward", data: data.ward },
+        { label: "License Number", data: data.license_number },
+        { label: "License Description", data: data.license_description },
+        { label: "Business Activity", data: data.business_activity },
+      ])},
+    );
+
+    const datagroups = [cityOwned, ward20TaxSale, businessLicenses];
+    const datagroupOverlays = [];
+    for (const datagroup of datagroups) {
+      populateDatagroupChildLayers(
+        datagroup,
+        () => L.featureGroup.subGroup(parentMarkerCluster),
+        true,
+      );
+      datagroupOverlays.push(getDatagroupOverlaySubtree(datagroup, { selectAllCheckbox: true, sort: true }));
+    }
 
     // add overlay control tree
     const baseTree = {
@@ -138,6 +197,7 @@
         { label: "Open StreetMap", layer: osmtiles },
       ]
     };
+
     const overlayTree = {
       label: getParentOverlayLabel("Map Layers"),
       selectAllCheckbox: false,
@@ -146,8 +206,10 @@
           radioGroupName: "geoboundaries",
           selectAllCheckbox: false,
         }),
+        ...datagroupOverlays,
       ],
     };
+
     const layerControlTree = L.control.layers.tree(
       baseTree,
       overlayTree,
