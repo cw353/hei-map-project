@@ -68,22 +68,19 @@ class MarkerAndCircleDatagroup extends Datagroup {
     const circle = this.childLayers.get(this.circleName).layer;
     const inputElement = $("<input type='number'/>")
       .addClass("radiusInput validInput")
-      .attr("value", circle.getRadius() / 1000) // meters to kilometers
-      .get(0); // unwrap HTML element
-    const messageElement = $("<span></span>").addClass("successMessage").get(0);
+      .val(circle.getRadius() / 1000); // meters to kilometers
+    const messageElement = $("<span></span>").addClass("successMessage");
     const applyChangesButton = $("<button type='button'>Set Radius</button>")
-      .addClass("smallMargin")
+      .addClass("smallHorizontalMargin")
       .on("click", (event) => {
-        const newRadius = parseFloat(inputElement.value);
+        const newRadius = parseFloat(inputElement.val());
         if (!isNaN(newRadius)) { // valid float
           circle.setRadius(newRadius * 1000); // kilometers to meters
-          inputElement.classList.replace("invalidInput", "validInput");
-          messageElement.classList.replace("failureMessage", "successMessage");
-          messageElement.textContent = `Success! The radius has been set to ${newRadius} km.`;
+          inputElement.removeClass("invalidInput").addClass("validInput");
+          messageElement.removeClass("failureMessage").addClass("successMessage").text(`Success! The radius has been set to ${newRadius} km.`);
         } else { // invalid float
-          inputElement.classList.replace("validInput", "invalidInput");
-          messageElement.classList.replace("successMessage", "failureMessage");
-          messageElement.textContent = "Error: input must be a valid number.";
+          inputElement.removeClass("validInput").addClass("invalidInput");
+          messageElement.removeClass("successMessage").addClass("failureMessage").text("Error: input must be a valid number.");
         }
       }
     );

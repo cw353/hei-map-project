@@ -162,3 +162,12 @@ function getSelect(selectLabel, optionList, onSelect) {
     .on("change", (event) => onSelect(event.target.value));
   return form.append(select).get(0);
 }
+
+function getVisibilityToggleButton(element, showButtonText, hideButtonText, callback) {
+  const getButtonText = () => { return element.is(":visible") ? hideButtonText : showButtonText; };
+  const button = $(`<button type='button'>${getButtonText()}</button>`);
+  return button.on("click", (event) => element.toggle(() => {
+      button.text(getButtonText());
+      callback && callback();
+  }))
+}
