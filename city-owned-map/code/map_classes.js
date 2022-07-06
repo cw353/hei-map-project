@@ -49,14 +49,18 @@ class LayerInfo {
 }
 
 class BoundaryLayerInfo extends LayerInfo {
-  constructor(name, dataset, getTooltipText) {
+  constructor(name, dataset, toHighlight, getTooltipText) {
     super(name, "black", null, false);
-    this.defaultStyle = {
-      color: this.color,
-      weight: 2,
-      opacity: 1,
-      dashArray: "",
-      fillOpacity: 0,
+    const fillColor = "red"; //"#e9ac3c";
+    this.defaultStyle = function(feature) {
+      return {
+        color: "black",
+        fillColor: fillColor,
+        weight: 2,
+        opacity: 1,
+        dashArray: "",
+        fillOpacity: toHighlight(feature.properties) ? 0.4 : 0,
+      }
     };
     this.layer = L.geoJSON(
       dataset,
@@ -75,18 +79,22 @@ class BoundaryLayerInfo extends LayerInfo {
       layer.on({
         mouseover: (event) => {
           const layer = event.target;
-            layer.setStyle({
-              color: "#262626",
-                weight: 5,
-                dashArray: "",
-                fillOpacity: 0,
-            });
-            if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-              layer.bringToFront();
-            }
-          },
+          layer.setStyle({
+            color: "#262626",
+            fillColor: fillColor,
+            weight: 5,
+            dashArray: "",
+            fillOpacity: toHighlight(layer.feature.properties) ? 0.4 : 0,
+          });
+          if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+            layer.bringToFront();
+          }
+        },
         mouseout: function(event) { geojsonLayer.resetStyle(event.target) },
       });
     });
+  }
+  refreshStyles() {
+    this.layer.resetStyle();
   }
 }

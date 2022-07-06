@@ -63,6 +63,14 @@
 
   <div id="pageHeader"></div>
 
+  <div id="highlightBoundaryDiv">
+    <label>
+      Highlight yellow on map:
+      <input type="text" id="testInput"/>
+    </label>
+    <button id="testButton">Test</button>
+  </div>
+
   <div id="map"></div>
 
   <script>
@@ -98,29 +106,41 @@
       a.layer.closeTooltip().unbindTooltip();
     });*/
 
+    let wardToHighlight = null;
+    let neighborhoodToHighlight = null;
+    const testInput = document.getElementById("testInput");
+    document.getElementById("testButton").addEventListener("click", (event) => {
+      wardToHighlight = neighborhoodToHighlight = testInput.value;
+      geoBoundaries.childLayers.forEach((childLayer) => "refreshStyles" in childLayer && childLayer.refreshStyles());
+    });
+
     // add geographic boundaries
     const geoBoundaries = new Datagroup("Geographic Boundaries");
     geoBoundaries.addChildLayer(new BoundaryLayerInfo(
         "Ward Boundaries (2015&ndash;2023)",
         ward_boundaries_2015_to_2023.data,
+        (props) => { return "ward" in props && props.ward.toString() === wardToHighlight },
         (props) => { return `Ward ${props.ward}`; }
       )
     );
     geoBoundaries.addChildLayer(new BoundaryLayerInfo(
         "Ward Boundaries (2023+)",
         ward_boundaries_2023.data,
+        (props) => { return "ward" in props && props.ward.toString() === wardToHighlight },
         (props) => { return `Ward ${props.ward}`; }
       )
     );
     geoBoundaries.addChildLayer(new BoundaryLayerInfo(
         "Neighborhood Boundaries",
         neighborhood_boundaries.data,
+        (props) => { return "pri_neigh" in props && props.pri_neigh.toString() === neighborhoodToHighlight },
         (props) => { return props.pri_neigh; }
       )
     );
     geoBoundaries.addChildLayer(new BoundaryLayerInfo(
         "Zoning Districts",
         zoning_districts.data,
+        (props) => { return false },
         (props) => { return props.zone_class; }
       )
     );
@@ -179,7 +199,8 @@
       ])},
     );
 
-    const datagroups = [cityOwned, ward20TaxSale, businessLicenses];
+    //const datagroups = [cityOwned, ward20TaxSale, businessLicenses];
+    const datagroups = [cityOwned];
     const datagroupOverlays = [];
     for (const datagroup of datagroups) {
       populateDatagroupChildLayers(
