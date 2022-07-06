@@ -26,11 +26,11 @@
     integrity="sha512-MQlyPV+ol2lp4KodaU/Xmrn+txc1TP15pOBF/2Sfre7MRsA/pB4Vy58bEqe9u7a7DczMLtU5wT8n7OblJepKbg=="
     crossorigin=""></script-->
 
-  <!-- Leaflet.FeatureGroup.SubGroup CDN -->
-  <!--script src="https://unpkg.com/leaflet.featuregroup.subgroup@1.0.2/dist/leaflet.featuregroup.subgroup.js"
-    integrity="sha512-gUiI5CXREIHHGko8AdlPYADT5MHvcCuqee1pjKR4qVcw69zVI+WvrnJcCxwU8JajpJoBjpvPIAGfDVFoQJhDfw=="
+  <!-- Leaflet.MarkerCluster.LayerSupport CDN -->
+  <!--script src="https://unpkg.com/leaflet.markercluster.layersupport@2.0.1/dist/leaflet.markercluster.layersupport.js"
+    integrity="sha512-Utd3nyu+vSSF4E6z/hcIzoi2mCedtng1MTF2sZWLnlL2BCwSyyvwT2otaWEiVmkgCpfTy6C/RVxo5WIoJ9zY3Q=="
     crossorigin=""></script-->
-
+  
   <!-- jQuery -->
   <!--script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"
     integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
@@ -42,7 +42,7 @@
   <link rel="stylesheet" href="libraries/leaflet/plugins/MarkerCluster/MarkerCluster.css"/>
   <link rel="stylesheet" href="libraries/leaflet/plugins/MarkerCluster/MarkerCluster.Default.css"/>
   <script src="libraries/leaflet/plugins/MarkerCluster/leaflet.markercluster-src.js"></script>
-  <script src="libraries/leaflet/plugins/FeatureGroupSubGroup/leaflet.featuregroup.subgroup-src.js"></script>
+  <script src="libraries/leaflet/plugins/MarkerClusterLayerSupport/layersupport.js"></script>
   <link rel="stylesheet" href="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
   <script src="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
   <script src="libraries/jquery-3.6.0.js"></script>
@@ -68,9 +68,9 @@
   <script src="data/geojson/neighborhood_boundaries.js"></script>
   <script src="data/geojson/zoning_districts.js"></script>
   <script src="data/city-owned/city_owned_data.js"></script>
-  <script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
+  <!--script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
   <script src="data/scavenger-sale/scavenger_data.js"></script>
-  <script src="data/business-licenses/business_license_data.js"></script>
+  <script src="data/business-licenses/business_license_data.js"></script-->
 
   <script>
 
@@ -92,16 +92,16 @@
       attribution: "&copy; <a href='http://www.openstreetmap.org/copyright' target='_blank' rel='noopener'>OpenStreetMap</a>",
     }).addTo(map);
 
-    // marker cluster group that serves as the parent for all clusterable markers
-    const parentMarkerCluster = L.markerClusterGroup({
+    // marker cluster support group for all clusterable markers
+    const markerClusterSupportGroup = L.markerClusterGroup.layerSupport({
       maxClusterRadius: 50,
     }).addTo(map);
 
     // test tooltip
-    /*parentMarkerCluster.on("clustermouseover", (a) => {
+    /*markerClusterSupportGroup.on("clustermouseover", (a) => {
       a.layer.bindTooltip(`This cluster contains ${a.layer.getAllChildMarkers().length} markers.`).openTooltip();
     });
-    parentMarkerCluster.on("clustermouseout", (a) => {
+    markerClusterSupportGroup.on("clustermouseout", (a) => {
       a.layer.closeTooltip().unbindTooltip();
     });*/
 
@@ -126,6 +126,7 @@
     geoBoundaries.addChildLayer(new BoundaryLayerInfo(
       "Ward Boundaries (2015&ndash;2023)",
       ward_boundaries_2015_to_2023.data,
+      ward_boundaries_2015_to_2023.metadata.attribution ? ward_boundaries_2015_to_2023.metadata.attribution : "City of Chicago",
       {
         getTooltipText: (props) => { return `Ward ${props.ward} (2015&ndash;2023)`; },
         highlightFunction: wardHighlightSelect.highlightFunction,
@@ -134,6 +135,7 @@
     geoBoundaries.addChildLayer(new BoundaryLayerInfo(
       "Ward Boundaries (2023+)",
       ward_boundaries_2023.data,
+      ward_boundaries_2023.metadata.attribution ? ward_boundaries_2023.metadata.attribution : "City of Chicago",
       {
         getTooltipText: (props) => { return `Ward ${props.ward} (2023+)`; },
         highlightFunction: wardHighlightSelect.highlightFunction,
@@ -142,6 +144,7 @@
     geoBoundaries.addChildLayer(new BoundaryLayerInfo(
       "Neighborhood Boundaries",
       neighborhood_boundaries.data,
+      neighborhood_boundaries.metadata.attribution ? neighborhood_boundaries.metadata.attribution : "City of Chicago",
       {
         getTooltipText: (props) => { return props.pri_neigh; },
         highlightFunction: neighborhoodHighlightSelect.highlightFunction,
@@ -151,6 +154,7 @@
     geoBoundaries.addChildLayer(new BoundaryLayerInfo(
       "Zoning Districts",
       zoning_districts.data,
+      zoning_districts.metadata.attribution ? zoning_districts.metadata.attribution : "City of Chicago",
       {
         getTooltipText: (props) => { return props.zone_class; },
         highlightFunction: zoneClassHighlightSelect.highlightFunction,
@@ -173,6 +177,7 @@
     const cityOwned = new MarkerDatagroup(
       "City-Owned PINs (Possibly for Sale)",
       city_owned_data,
+      city_owned_metadata.attribution + " & " + property_locations_metadata.attribution,
       (data) => { return ("ward" in data) ? getWard(data.ward) : "Unknown Ward" },
       function(data) { return getMarkerPopupContent(data, this, [
         { label: "PIN", data: data.pin },
@@ -187,6 +192,7 @@
     /*const ward20TaxSale = new MarkerDatagroup(
       "Ward 20 Tax Sale",
       taxsale_ward20_data,
+      property_locations_metadata.attribution,
       (data) => { return ("classification" in data) ? data.classification : "Unclassified" },
       function(data) { return getMarkerPopupContent(data, this, [
         { label: "PIN", data: data.pin },
@@ -202,6 +208,7 @@
     const businessLicenses = new MarkerDatagroup(
       "Business Licenses",
       business_license_data,
+      business_licenses_metadata.attribution,
       (data) => { return ("ward" in data) ? getWard(data.ward) : "Unknown Ward" },
       function(data) { return getMarkerPopupContent(data, this, [
         { label: "Business", data: data.doing_business_as_name },
@@ -216,6 +223,7 @@
     const scavengerSale = new MarkerDatagroup(
       "Scavenger Sale 2022",
       scavenger_sale_data,
+      property_locations_metadata.attribution,
       (data) => { return "property_code_class" in data ? data.property_code_class : "Unclassified" },
       function(data) { return getMarkerPopupContent(data, this, [
         { label: "PIN", data: data.pin },
@@ -233,7 +241,13 @@
     for (const datagroup of datagroups) {
       populateDatagroupChildLayers(
         datagroup,
-        () => L.featureGroup.subGroup(parentMarkerCluster),
+        () => {
+          const layer = L.layerGroup([], {
+            attribution: datagroup.attribution,
+          });
+          markerClusterSupportGroup.checkIn(layer);
+          return layer;
+        },
         true,
       );
       datagroupOverlays.push(getDatagroupOverlaySubtree(
@@ -316,6 +330,4 @@
 
 <!-- references:
   https://github.com/Leaflet/Leaflet/tree/main/docs/examples (BSD 2-Clause license)
-  https://github.com/Leaflet/Leaflet.markercluster (MIT license)
-  https://github.com/ghybs/Leaflet.FeatureGroup.SubGroup (BSD 2-Clause license)
 -->

@@ -11,9 +11,10 @@ class Datagroup {
 }
 
 class MarkerDatagroup extends Datagroup {
-  constructor(name, dataset, classify, getPopupContent) {
+  constructor(name, dataset, attribution, classify, getPopupContent) {
     super(name);
     this.dataset = dataset;
+    this.attribution = attribution;
     this.classify = classify;
     this.getPopupContent = getPopupContent;
   }
@@ -49,7 +50,7 @@ class LayerInfo {
 }
 
 class BoundaryLayerInfo extends LayerInfo {
-  constructor(name, dataset, options) {
+  constructor(name, dataset, attribution, options) {
     super(name, "color" in options ? options.color : "black", null, false);
     const strokeColor = this.color;
     const fillColor = "highlightColor" in options ? options.highlightColor : "#f1ab29";
@@ -65,6 +66,7 @@ class BoundaryLayerInfo extends LayerInfo {
     this.layer = L.geoJSON(
       dataset,
       {
+        attribution: attribution,
         style: this.defaultStyle,
         onEachFeature: function(feature, layer) {
           if ("getTooltipText" in options) {
