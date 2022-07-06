@@ -150,3 +150,11 @@ function getMarkerPopupContent(data, datagroup, dataToDisplay) {
     .append($("<p></p>").addClass("increasedLineHeight").html(dataList.join("<br>"))) // data to display
     .get(0); // unwrap to return DOM node
 }
+
+function getSelect(selectLabel, optionList, onSelect) {
+  const form = $(`<div><label>${selectLabel}</label></div>`).addClass("formDiv");
+  const select = $("<select></select>")
+    .html(optionList.map((option) => { return `<option value="${option}">${option}</option>` }))
+    .on("change", (event) => onSelect(event.target.value));
+  return form.append(select).get(0);
+}

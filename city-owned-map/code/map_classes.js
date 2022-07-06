@@ -52,7 +52,7 @@ class BoundaryLayerInfo extends LayerInfo {
   constructor(name, dataset, options) {
     super(name, "color" in options ? options.color : "black", null, false);
     const strokeColor = this.color;
-    const fillColor = "highlightColor" in options ? options.highlightColor : "#e9ac3c";
+    const fillColor = "highlightColor" in options ? options.highlightColor : "#f1ab29";
     this.defaultStyle = function(feature) {
       return {
         color: strokeColor,
@@ -103,5 +103,25 @@ class BoundaryLayerInfo extends LayerInfo {
   }
   refreshStyles() {
     this.layer.resetStyle();
+  }
+}
+
+class HighlightSelect {
+  #defaultOption = "-- None --";
+  constructor(label, highlightFunction) {
+    this.label = label;
+    this.comparand = this.#defaultOption;
+    this.optionSet = new Set([this.#defaultOption]);
+    this.highlightFunction = (props) => { return highlightFunction(props, this.comparand); }
+  }
+  getHighlightSelectElement(layersToRefresh) {
+    return getSelect(
+      this.label,
+      [...this.optionSet.values()].sort(),
+      (value) => {
+        this.comparand = value;
+        layersToRefresh.forEach((layer) => { layer.refreshStyles() });
+      },
+    );
   }
 }

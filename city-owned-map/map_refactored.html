@@ -55,8 +55,9 @@
   <script src="data/geojson/neighborhood_boundaries.js"></script>
   <script src="data/geojson/zoning_districts.js"></script>
   <script src="data/city-owned/city_owned_data.js"></script>
-  <script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
-  <script src="data/business-licenses/business_license_data.js"></script>
+  <!--script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
+  <script src="data/scavenger-sale/scavenger_data.js"></script>
+  <script src="data/business-licenses/business_license_data.js"></script-->
     
 </head>
 
@@ -70,14 +71,14 @@
 
   <script>
 
-    console.log("Starting inline script");
+    console.log("Starting inline script...");
 
     $("#pageHeader").html(`<h1>${document.title}</h1>`);
 
     // create map
     const map = L.map("map", {
       center: [41.783, -87.621],
-      zoom: 13,
+      zoom: 12,
       scrollWheelZoom: false,
       doubleClickZoom: false,
     });
@@ -101,9 +102,21 @@
       a.layer.closeTooltip().unbindTooltip();
     });*/
 
-    let wardToHighlight = null;
-    let neighborhoodToHighlight = null;
-    const neighborhoodList = [];
+    const wardHighlightSelect = new HighlightSelect(
+      "Choose a ward to highlight: ",
+      (props, comparand) => { return "ward" in props && ("Ward " + props.ward) === comparand },
+    );
+    for (let i = 1; i < 51; i++) { wardHighlightSelect.optionSet.add("Ward " + i); }
+
+    const neighborhoodHighlightSelect = new HighlightSelect(
+      "Choose a neighborhood to highlight: ",
+      (props, comparand) => { return "pri_neigh" in props && props.pri_neigh === comparand },
+    );
+
+    const zoneClassHighlightSelect = new HighlightSelect(
+      "Choose a zone class to highlight: ",
+      (props, comparand) => { return "zone_class" in props && props.zone_class.startsWith(comparand); },
+    );
 
     // add geographic boundaries
     const geoBoundaries = new Datagroup("Geographic Boundaries");
@@ -111,31 +124,25 @@
       "Ward Boundaries (2015&ndash;2023)",
       ward_boundaries_2015_to_2023.data,
       {
-        highlightFunction: (props) => {
-          return "ward" in props && props.ward.toString() === wardToHighlight
-        },
-        getTooltipText: (props) => { return `Ward ${props.ward}`; },
+        getTooltipText: (props) => { return `Ward ${props.ward} (2015&ndash;2023)`; },
+        highlightFunction: wardHighlightSelect.highlightFunction,
       },
     ));
     geoBoundaries.addChildLayer(new BoundaryLayerInfo(
       "Ward Boundaries (2023+)",
       ward_boundaries_2023.data,
       {
-        highlightFunction: (props) => {
-          return "ward" in props && props.ward.toString() === wardToHighlight;
-        },
-        getTooltipText: (props) => { return `Ward ${props.ward}`; },
+        getTooltipText: (props) => { return `Ward ${props.ward} (2023+)`; },
+        highlightFunction: wardHighlightSelect.highlightFunction,
       },
     ));
     geoBoundaries.addChildLayer(new BoundaryLayerInfo(
       "Neighborhood Boundaries",
       neighborhood_boundaries.data,
       {
-        highlightFunction: (props) => {
-          return "pri_neigh" in props && props.pri_neigh.toString() === neighborhoodToHighlight;
-        },
         getTooltipText: (props) => { return props.pri_neigh; },
-        onEachFeature: (feature) => { neighborhoodList.push(feature.properties.pri_neigh); },
+        highlightFunction: neighborhoodHighlightSelect.highlightFunction,
+        onEachFeature: (feature) => { neighborhoodHighlightSelect.optionSet.add(feature.properties.pri_neigh); },
       },
     ));
     geoBoundaries.addChildLayer(new BoundaryLayerInfo(
@@ -143,6 +150,8 @@
       zoning_districts.data,
       {
         getTooltipText: (props) => { return props.zone_class; },
+        highlightFunction: zoneClassHighlightSelect.highlightFunction,
+        onEachFeature: (feature) => { zoneClassHighlightSelect.optionSet.add(feature.properties.zone_class.match(/^[A-Z]+/)[0]); }, // add alphabetic zone class prefix
       }
     ));
     geoBoundaries.addChildLayer(new LayerInfo("No Boundaries", null, L.layerGroup(), false));
@@ -172,7 +181,7 @@
       ])},
     );
 
-    const ward20TaxSale = new MarkerDatagroup(
+    /*const ward20TaxSale = new MarkerDatagroup(
       "Ward 20 Tax Sale",
       taxsale_ward20_data,
       (data) => { return ("classification" in data) ? data.classification : "Unclassified" },
@@ -201,7 +210,22 @@
       ])},
     );
 
-    const datagroups = [cityOwned, ward20TaxSale, businessLicenses];
+    const scavengerSale = new MarkerDatagroup(
+      "Scavenger Sale 2022",
+      scavenger_sale_data,
+      (data) => { return "property_code_class" in data ? data.property_code_class : "Unclassified" },
+      function(data) { return getMarkerPopupContent(data, this, [
+        { label: "PIN", data: data.pin },
+        { label: "Address", data: data.property_address },
+        { label: "Ward", data: data.ward },
+        { label: "Classification", data: data.property_code_meaning },
+        { label: "Delinquent Tax", data: `$${data.delinquent_tax}` },
+        { label: "Delinquent Interest", data: `$${data.delinquent_interest}` },
+        { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
+      ])},
+    );*/
+
+    const datagroups = [cityOwned];
     const datagroupOverlays = [];
     for (const datagroup of datagroups) {
       populateDatagroupChildLayers(
@@ -209,7 +233,14 @@
         () => L.featureGroup.subGroup(parentMarkerCluster),
         true,
       );
-      datagroupOverlays.push(getDatagroupOverlaySubtree(datagroup, { selectAllCheckbox: true, sort: true }));
+      datagroupOverlays.push(getDatagroupOverlaySubtree(
+        datagroup,
+        {
+          selectAllCheckbox: true,
+          sort: true,
+          collapsed: true,
+        }
+      ));
     }
 
     // add overlay control tree
@@ -255,9 +286,21 @@
     }
     legend.addTo(map);
 
-    console.log("Inline script has finished executing.");
+    const highlightSelectItems = [
+      { highlightSelect: wardHighlightSelect, layerNames: ["Ward Boundaries (2015&ndash;2023)", "Ward Boundaries (2023+)"] },
+      { highlightSelect: neighborhoodHighlightSelect, layerNames: ["Neighborhood Boundaries"] },
+      { highlightSelect: zoneClassHighlightSelect, layerNames: ["Zoning Districts"] },
+    ];
+    const highlightSelectDiv = document.getElementById("highlightSelectDiv");
+    for (const item of highlightSelectItems) {
+      highlightSelectDiv.appendChild(
+        item.highlightSelect.getHighlightSelectElement(item.layerNames.map((layerName) => geoBoundaries.childLayers.get(layerName)))
+      );
+    }
+
+    console.log("Ending inline script");
     
-  </script>   
+  </script>
 
 </body>
 
