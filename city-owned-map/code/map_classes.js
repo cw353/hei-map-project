@@ -114,10 +114,10 @@ class HighlightSelect {
     this.optionSet = new Set([this.#defaultOption]);
     this.highlightFunction = (props) => { return highlightFunction(props, this.comparand); }
   }
-  getHighlightSelectElement(layersToRefresh) {
+  getHighlightSelectElement(sort, layersToRefresh) {
     return getSelect(
       this.label,
-      [...this.optionSet.values()].sort(),
+      sort ? [...this.optionSet.values()].sort() : [...this.optionSet.values()],
       (value) => {
         this.comparand = value;
         layersToRefresh.forEach((layer) => { layer.refreshStyles() });

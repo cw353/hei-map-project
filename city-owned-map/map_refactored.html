@@ -287,14 +287,14 @@
     legend.addTo(map);
 
     const highlightSelectItems = [
-      { highlightSelect: wardHighlightSelect, layerNames: ["Ward Boundaries (2015&ndash;2023)", "Ward Boundaries (2023+)"] },
-      { highlightSelect: neighborhoodHighlightSelect, layerNames: ["Neighborhood Boundaries"] },
-      { highlightSelect: zoneClassHighlightSelect, layerNames: ["Zoning Districts"] },
+      { highlightSelect: wardHighlightSelect, sort: false, layerNames: ["Ward Boundaries (2015&ndash;2023)", "Ward Boundaries (2023+)"] },
+      { highlightSelect: neighborhoodHighlightSelect, sort: true, layerNames: ["Neighborhood Boundaries"] },
+      { highlightSelect: zoneClassHighlightSelect, sort: true, layerNames: ["Zoning Districts"] },
     ];
     const highlightSelectDiv = document.getElementById("highlightSelectDiv");
     for (const item of highlightSelectItems) {
       highlightSelectDiv.appendChild(
-        item.highlightSelect.getHighlightSelectElement(item.layerNames.map((layerName) => geoBoundaries.childLayers.get(layerName)))
+        item.highlightSelect.getHighlightSelectElement(item.sort, item.layerNames.map((layerName) => geoBoundaries.childLayers.get(layerName)))
       );
     }
 
