@@ -22,6 +22,14 @@
   background-color: pink;
 }
 
+.successMessage {
+  color: green;
+}
+
+.failureMessage {
+  color: red;
+}
+
 .center {
   text-align: center;
 }
@@ -34,7 +42,7 @@
   line-height: 1.5;
 }
 
-.message {
+.smallMargin {
   margin: 3px;
 }
 

@@ -79,8 +79,8 @@ function getDatagroupOverlaySubtree(datagroup, options) {
   }
   return {
     label: getParentOverlayLabel(datagroup.name),
-    selectAllCheckbox: options && options.selectAllCheckbox,
-    collapsed: options && options.collapsed,
+    selectAllCheckbox: "selectAllCheckbox" in options ? options.selectAllCheckbox : false,
+    collapsed: "collapsed" in options ? options.collapsed : true,
     children: children,
   };
 }
@@ -135,7 +135,9 @@ function addMarkerToLayer(data, layerInfo, popupContent) {
     icon: generateIcon(layerInfo.color),
   });
   layerInfo.addLayer(marker);
-  marker.bindPopup(popupContent, { maxHeight: 200, });
+  if (popupContent != null) {
+    marker.bindPopup(popupContent, { maxHeight: 200, });
+  }
   return marker;
 }
 
@@ -146,8 +148,10 @@ function getPropertyDetailsLink(pin) {
 function getMarkerPopupContent(data, datagroup, dataToDisplay) {
   const dataList = dataToDisplay.map((item) => `<b>${item.label}</b>: ${item.data}`);
   return $("<div></div>")
-    .append($(`<div>${datagroup.name}</div>`).addClass("center underlined")) // header with datagroup name
-    .append($("<p></p>").addClass("increasedLineHeight").html(dataList.join("<br>"))) // data to display
+    .append([
+      $(`<div>${datagroup.name}</div>`).addClass("center underlined"), // header with datagroup name
+      ($("<p></p>").addClass("increasedLineHeight").html(dataList.join("<br>"))), // data to display
+    ])
     .get(0); // unwrap to return DOM node
 }
 

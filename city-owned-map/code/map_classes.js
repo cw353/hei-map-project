@@ -32,6 +32,71 @@ class MarkerDatagroup extends Datagroup {
   }
 }
 
+class MarkerAndCircleDatagroup extends Datagroup {
+  constructor(name, data, attribution, options) {
+    super(name);
+    this.markerName =  "markerName" in options ? options.markerName : name;
+    this.circleName =  "circleName" in options ? options.circleName : `Circle around ${name}`;
+    const markerColor = "markerColor" in options ? options.markerColor : "black";
+    const circleColor = "circleColor" in options ? options.circleColor : "black";
+    // add child layer for marker
+    this.addChildLayer(new LayerInfo(
+      this.markerName,
+      markerColor,
+      L.layerGroup([], { attribution: attribution }),
+      options.trackMarkerCount,
+    ));
+    addMarkerToLayer(
+      data,
+      this.childLayers.get(this.markerName),
+      "markerPopupContent" in options ? options.markerPopupContent : null,
+    );
+    // add child layer for circle
+    this.addChildLayer(new LayerInfo(
+      this.circleName,
+      circleColor,
+      L.circle([data.latitude, data.longitude], {
+        attribution: attribution,
+        color: circleColor,
+        radius: "initialRadius" in options ? options.initialRadius : 3000,
+        fillOpacity: "circleFillOpacity" in options ? options.circleFillOpacity : 0.15,
+      }),
+      false,
+    ));
+  }
+  getRadiusInputElement() {
+    const circle = this.childLayers.get(this.circleName).layer;
+    const inputElement = $("<input type='number'/>")
+      .addClass("radiusInput validInput")
+      .attr("value", circle.getRadius() / 1000) // meters to kilometers
+      .get(0); // unwrap HTML element
+    const messageElement = $("<span></span>").addClass("successMessage").get(0);
+    const applyChangesButton = $("<button type='button'>Set Radius</button>")
+      .addClass("smallMargin")
+      .on("click", (event) => {
+        const newRadius = parseFloat(inputElement.value);
+        if (!isNaN(newRadius)) { // valid float
+          circle.setRadius(newRadius * 1000); // kilometers to meters
+          inputElement.classList.replace("invalidInput", "validInput");
+          messageElement.classList.replace("failureMessage", "successMessage");
+          messageElement.textContent = `Success! The radius has been set to ${newRadius} km.`;
+        } else { // invalid float
+          inputElement.classList.replace("validInput", "invalidInput");
+          messageElement.classList.replace("successMessage", "failureMessage");
+          messageElement.textContent = "Error: input must be a valid number.";
+        }
+      }
+    );
+    return $(`<div></div>`).addClass("formDiv")
+      .append([
+        $(`<label>Set radius of circle around ${this.markerName} (in kilometers): </label>`).append(inputElement),
+        applyChangesButton,
+        messageElement,
+      ])
+      .get(0);
+  }
+}
+
 class LayerInfo {
   constructor(name, color, layer, trackMarkerCount) {
     this.name = name;

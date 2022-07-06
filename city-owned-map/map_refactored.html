@@ -59,11 +59,12 @@
   <div id="pageContent" class="hidden">
     <div id="pageHeader"></div>
     <div id="highlightSelectDiv"></div>
+    <div id="radiiInputDiv"></div>
     <div id="map"></div>
   </div>
 
-  <script src="code/map_classes.js"></script>
   <script src="code/map_functions.js"></script>
+  <script src="code/map_classes.js"></script>
   <script src="data/geojson/ward_boundaries.js"></script>
   <script src="data/geojson/neighborhood_boundaries.js"></script>
   <script src="data/geojson/zoning_districts.js"></script>
@@ -174,6 +175,28 @@
         : "Unknown Ward";
     }
 
+    const sunshineGospel = new MarkerAndCircleDatagroup(
+      "Sunshine Gospel Ministries",
+      sunshine_gospel,
+      property_locations_metadata.attribution,
+      {
+        markerColor: "#ff66ff",
+        circleColor: "#ff80ff",
+        markerPopupContent: "<a href='https://www.sunshinegospel.org/' target='_blank' rel='noopener'>Sunshine Gospel Ministries</a>",
+      },
+    );
+
+    const ward20Office = new MarkerAndCircleDatagroup(
+      "Ward 20 Office",
+      { latitude: 41.7905, longitude : -87.630388 }, // source: https://data.cityofchicago.org/resource/htai-wnw4
+      "City of Chicago",
+      {
+        markerColor: "#0099ff",
+        circleColor: "#00ace6",
+        markerPopupContent: "<a href='https://www.chicago.gov/city/en/about/wards/20.html' target='_blank' rel='noopener'>Ward 20 Office</a>",
+      },
+    );
+
     const cityOwned = new MarkerDatagroup(
       "City-Owned PINs (Possibly for Sale)",
       city_owned_data,
@@ -276,6 +299,8 @@
           radioGroupName: "geoboundaries",
           selectAllCheckbox: false,
         }),
+        getDatagroupOverlaySubtree(ward20Office, { selectAllCheckbox: true }),
+        getDatagroupOverlaySubtree(sunshineGospel, { selectAllCheckbox: true }),
         ...datagroupOverlays,
       ],
     };
@@ -313,6 +338,12 @@
       highlightSelectDiv.appendChild(
         item.highlightSelect.getHighlightSelectElement(item.sort, item.layerNames.map((layerName) => geoBoundaries.childLayers.get(layerName)))
       );
+    }
+
+    const radiiInputItems = [ward20Office, sunshineGospel];
+    const radiiInputDiv = document.getElementById("radiiInputDiv");
+    for (const item of radiiInputItems) {
+      radiiInputDiv.appendChild(item.getRadiusInputElement());
     }
 
     console.log("Ending inline script");
