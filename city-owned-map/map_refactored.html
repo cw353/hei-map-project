@@ -49,25 +49,28 @@
 
   <!-- External files for stylesheets, functions, and data -->
   <link rel="stylesheet" href="code/map_stylesheet.css"/>
+    
+</head>
+
+<body>
+
+  <img id="loadingIcon" class="visible" src="https://upload.wikimedia.org/wikipedia/commons/2/28/InternetSlowdown_Day.gif" alt="loading icon (Darmokand, CC BY-SA 4.0 license)"/>
+
+  <div id="pageContent" class="hidden">
+    <div id="pageHeader"></div>
+    <div id="highlightSelectDiv"></div>
+    <div id="map"></div>
+  </div>
+
   <script src="code/map_classes.js"></script>
   <script src="code/map_functions.js"></script>
   <script src="data/geojson/ward_boundaries.js"></script>
   <script src="data/geojson/neighborhood_boundaries.js"></script>
   <script src="data/geojson/zoning_districts.js"></script>
   <script src="data/city-owned/city_owned_data.js"></script>
-  <!--script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
+  <script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
   <script src="data/scavenger-sale/scavenger_data.js"></script>
-  <script src="data/business-licenses/business_license_data.js"></script-->
-    
-</head>
-
-<body>
-
-  <div id="pageHeader"></div>
-
-  <div id="highlightSelectDiv"></div>
-
-  <div id="map"></div>
+  <script src="data/business-licenses/business_license_data.js"></script>
 
   <script>
 
@@ -300,6 +303,11 @@
 
     console.log("Ending inline script");
     
+  </script>
+
+  <script>
+    document.getElementById("loadingIcon").classList.replace("visible", "noDisplay");
+    document.getElementById("pageContent").classList.replace("hidden", "visible");
   </script>
 
 </body>
