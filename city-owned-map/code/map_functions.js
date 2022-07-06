@@ -144,19 +144,9 @@ function getPropertyDetailsLink(pin) {
 }
 
 function getMarkerPopupContent(data, datagroup, dataToDisplay) {
-  const popupDiv = document.createElement("div");
-  // add header with datagroup name
-  const headerDiv = L.DomUtil.create("div", "center underlined");
-  headerDiv.textContent = datagroup.name;
-  popupDiv.appendChild(headerDiv);
-  // add data section
-  let dataList = [];
-  for (const item of dataToDisplay) {
-    dataList.push(`<b>${item.label}</b>: ${item.data}`);
-  }
-  const dataDisplay = L.DomUtil.create("p", "increasedLineHeight");
-  dataDisplay.innerHTML = dataList.join("<br>");
-  popupDiv.appendChild(dataDisplay);
-  // return popupDiv
-  return popupDiv;
+  const dataList = dataToDisplay.map((item) => `<b>${item.label}</b>: ${item.data}`);
+  return $("<div></div>")
+    .append($(`<div>${datagroup.name}</div>`).addClass("center underlined")) // header with datagroup name
+    .append($("<p></p>").addClass("increasedLineHeight").html(dataList.join("<br>"))) // data to display
+    .get(0); // unwrap to return DOM node
 }

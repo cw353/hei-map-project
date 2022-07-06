@@ -49,17 +49,17 @@ class LayerInfo {
 }
 
 class BoundaryLayerInfo extends LayerInfo {
-  constructor(name, dataset, toHighlight, getTooltipText) {
-    super(name, "black", null, false);
-    const fillColor = "red"; //"#e9ac3c";
+  constructor(name, dataset, options) {
+    super(name, "color" in options ? options.color : "black", null, false);
+    const strokeColor = this.color;
+    const fillColor = "highlightColor" in options ? options.highlightColor : "#e9ac3c";
     this.defaultStyle = function(feature) {
       return {
-        color: "black",
+        color: strokeColor,
         fillColor: fillColor,
         weight: 2,
         opacity: 1,
-        dashArray: "",
-        fillOpacity: toHighlight(feature.properties) ? 0.4 : 0,
+        fillOpacity: ("highlightFunction" in options && options.highlightFunction(feature.properties)) ? 0.4 : 0,
       }
     };
     this.layer = L.geoJSON(
@@ -67,8 +67,16 @@ class BoundaryLayerInfo extends LayerInfo {
       {
         style: this.defaultStyle,
         onEachFeature: function(feature, layer) {
-          if (feature.properties) {
-            layer.bindTooltip(getTooltipText(feature.properties), { className: "darkTooltip", sticky : true });
+          if ("getTooltipText" in options) {
+            layer.bindTooltip(
+              options.getTooltipText(feature.properties),
+              {
+                className: "darkTooltip",
+                sticky : true
+              });
+          }
+          if ("onEachFeature" in options) {
+            options.onEachFeature(feature);
           }
         }
       }
@@ -83,8 +91,7 @@ class BoundaryLayerInfo extends LayerInfo {
             color: "#262626",
             fillColor: fillColor,
             weight: 5,
-            dashArray: "",
-            fillOpacity: toHighlight(layer.feature.properties) ? 0.4 : 0,
+            fillOpacity: ("highlightFunction" in options && options.highlightFunction(layer.feature.properties)) ? 0.4 : 0,
           });
           if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
             layer.bringToFront();
