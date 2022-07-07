@@ -56,13 +56,21 @@
 
   <div id="pageContent">
     <div id="pageHeader"></div>
-    <div id="additionalMapControlsContainer" class="formDiv">
-      <div id="additionalMapControls">
-        <div id="highlightSelectDiv"></div>
-        <div id="radiiInputDiv"></div>
+    <div id="tabDiv"></div>
+    
+    <div id="mapTab">
+      <div id="additionalMapControlsContainer" class="formDiv">
+        <div id="additionalMapControls">
+          <div id="highlightSelectDiv"></div>
+          <div id="radiiInputDiv"></div>
+        </div>
       </div>
+      <div id="map"></div>
     </div>
-    <div id="map"></div>
+
+    <div id="favoritedPinsTab">Favorited PINs content will be added later...</div>
+    <div id="aboutMapTab">Map description will be added later...</div>
+
   </div>
 
   </div>
@@ -357,10 +365,16 @@
     }
 
     const additionalMapControlsDiv = $("#additionalMapControls");
-    getVisibilityToggleButton(
+    getToggleVisibilityButton(
       additionalMapControlsDiv, "+ Show Additional Map Controls", "- Hide Additional Map Controls"
     )
     .insertBefore(additionalMapControlsDiv.hide());
+
+    $("#tabDiv").append(getTabs([
+      { label: "Map", tabContent: $("#mapTab"), callback: () => map.invalidateSize(), initiallyActive: true },
+      { label: "About This Map", tabContent: $("#aboutMapTab"), },
+      { label: "Favorited PINs", tabContent: $("#favoritedPinsTab"), },
+    ]));
 
     console.log("Ending inline script");
     

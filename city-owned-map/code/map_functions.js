@@ -163,11 +163,40 @@ function getSelect(selectLabel, optionList, onSelect) {
   return form.append(select).get(0);
 }
 
-function getVisibilityToggleButton(element, showButtonText, hideButtonText, callback) {
+function getToggleVisibilityButton(element, showButtonText, hideButtonText, callback) {
   const getButtonText = () => { return element.is(":visible") ? hideButtonText : showButtonText; };
   const button = $(`<button type='button'>${getButtonText()}</button>`);
   return button.on("click", (event) => element.toggle(() => {
       button.text(getButtonText());
       callback && callback();
   }))
+}
+
+/* based on https://www.digitalocean.com/community/tutorials/react-tabs-component (joshtronic and christinagorton, CC BY-NC-SA 4.0 license) */
+function getTabs(tabs) {
+  let initiallyActiveTab = null;
+  const setActiveTab = (activeTabLabel) => {
+    for (const tab of tabs) {
+      if (tab.label === activeTabLabel) {
+        tab.tabElement.addClass("activeTab");
+        "callback" in tab ? tab.tabContent.show(0, tab.callback) : tab.tabContent.show(0);
+      } else {
+        tab.tabElement.removeClass("activeTab");
+        "callback" in tab ? tab.tabContent.hide(0, tab.callback) : tab.tabContent.hide(0);
+      }
+    };
+  }
+  const tabElements = tabs.map((tab) => {
+    tab.tabElement = $(`<li>${tab.label}</li>`).addClass("tabListItem")
+      .on("click", (event) => { setActiveTab(tab.label); });
+    if (!initiallyActiveTab && tab.initiallyActive) {
+      initiallyActiveTab = tab.label;
+    }
+    return tab.tabElement;
+  });
+
+  initiallyActiveTab && setActiveTab(initiallyActiveTab);
+
+  return $('<ol></ol>').addClass("tabList")
+    .append(tabElements);
 }
