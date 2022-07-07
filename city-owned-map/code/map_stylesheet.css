@@ -146,7 +146,7 @@
 }
 
 /* based on https://www.digitalocean.com/community/tutorials/react-tabs-component (joshtronic and christinagorton, CC BY-NC-SA 4.0 license) */
-.activeTab {
+.tabListItem.activeTab {
   background-color: white;
   border: solid #ccc;
   border-width: 1px 1px 0 1px;
