@@ -133,7 +133,7 @@
 
 /* based on https://www.digitalocean.com/community/tutorials/react-tabs-component (joshtronic and christinagorton, CC BY-NC-SA 4.0 license) */
 .tabList {
-  border-bottom: 1px solid #ccc;
+  border-bottom: 2px solid #ccc;
   padding-left: 0;
 }
 
@@ -141,7 +141,7 @@
 .tabListItem {
   display: inline-block;
   list-style: none;
-  margin-bottom: -1px;
+  margin-bottom: -2px;
   padding: 0.5rem 0.75rem;
 }
 
@@ -149,5 +149,5 @@
 .tabListItem.activeTab {
   background-color: white;
   border: solid #ccc;
-  border-width: 1px 1px 0 1px;
+  border-width: 2px 2px 0 2px;
 }

@@ -86,6 +86,8 @@
   <script src="data/geojson/ward_boundaries.js"></script>
   <script src="data/geojson/neighborhood_boundaries.js"></script>
   <script src="data/geojson/zoning_districts.js"></script>
+  <script src="data/misc/misc.js"></script>
+  <script src="data/misc/individual_properties.js"></script>
   <script src="data/city-owned/city_owned_data.js"></script>
   <!--script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
   <script src="data/scavenger-sale/scavenger_data.js"></script>
@@ -206,8 +208,8 @@
 
     const ward20Office = new MarkerAndCircleDatagroup(
       "Ward 20 Office",
-      { latitude: 41.7905, longitude : -87.630388 }, // source: https://data.cityofchicago.org/resource/htai-wnw4
-      "City of Chicago",
+      ward_20_office.location,
+      ward_offices_metadata.attribution,
       {
         markerColor: "#0099ff",
         circleColor: "#00ace6",
@@ -233,7 +235,7 @@
     /*const ward20TaxSale = new MarkerDatagroup(
       "Ward 20 Tax Sale",
       taxsale_ward20_data,
-      property_locations_metadata.attribution,
+      taxsale_ward20_metadata.attribution + " & " + property_locations_metadata.attribution,
       (data) => { return ("classification" in data) ? data.classification : "Unclassified" },
       function(data) { return getMarkerPopupContent(data, this, [
         { label: "PIN", data: data.pin },
@@ -242,6 +244,22 @@
         { label: "Classification", data: data.classification },
         { label: "2019 Tax Due (Including Interest)", data: `$${data.total_due_including_interest}` },
         { label: "2019 Tax Due (Excluding Interest)", data: `$${data.total_tax_due}` },
+        { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
+      ])},
+    );
+
+    const scavengerSale = new MarkerDatagroup(
+      "Scavenger Sale 2022",
+      scavenger_sale_data,
+      scavenger_sale_metadata.attribution + " & " + property_locations_metadata.attribution,
+      (data) => { return "property_code_class" in data ? data.property_code_class : "Unclassified" },
+      function(data) { return getMarkerPopupContent(data, this, [
+        { label: "PIN", data: data.pin },
+        { label: "Address", data: data.property_address },
+        { label: "Ward", data: data.ward },
+        { label: "Classification", data: data.property_code_meaning },
+        { label: "Delinquent Tax", data: `$${data.delinquent_tax}` },
+        { label: "Delinquent Interest", data: `$${data.delinquent_interest}` },
         { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
       ])},
     );
@@ -259,25 +277,9 @@
         { label: "License Description", data: data.license_description },
         { label: "Business Activity", data: data.business_activity },
       ])},
-    );
-
-    const scavengerSale = new MarkerDatagroup(
-      "Scavenger Sale 2022",
-      scavenger_sale_data,
-      property_locations_metadata.attribution,
-      (data) => { return "property_code_class" in data ? data.property_code_class : "Unclassified" },
-      function(data) { return getMarkerPopupContent(data, this, [
-        { label: "PIN", data: data.pin },
-        { label: "Address", data: data.property_address },
-        { label: "Ward", data: data.ward },
-        { label: "Classification", data: data.property_code_meaning },
-        { label: "Delinquent Tax", data: `$${data.delinquent_tax}` },
-        { label: "Delinquent Interest", data: `$${data.delinquent_interest}` },
-        { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
-      ])},
     );*/
 
-    const datagroups = [cityOwned];
+    const datagroups = [cityOwned]; //[cityOwned, ward20TaxSale, scavengerSale, businessLicenses];
     const datagroupOverlays = [];
     for (const datagroup of datagroups) {
       populateDatagroupChildLayers(
