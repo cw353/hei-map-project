@@ -69,7 +69,9 @@
     </div>
 
     <div id="favoritedPinsTab">Favorited PINs content will be added later...</div>
-    <div id="aboutMapTab">Map description will be added later...</div>
+    <div id="aboutMapTab">
+      <div id="datasetTableDiv" class="center"></div>
+    </div>
 
   </div>
 
@@ -89,9 +91,9 @@
   <script src="data/misc/misc.js"></script>
   <script src="data/misc/individual_properties.js"></script>
   <script src="data/city-owned/city_owned_data.js"></script>
-  <!--script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
+  <script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
   <script src="data/scavenger-sale/scavenger_data.js"></script>
-  <script src="data/business-licenses/business_license_data.js"></script-->
+  <script src="data/business-licenses/business_license_data.js"></script>
 
   <script>
 
@@ -368,7 +370,7 @@
 
     const additionalMapControlsDiv = $("#additionalMapControls");
     getToggleVisibilityButton(
-      additionalMapControlsDiv, "+ Show Additional Map Controls", "- Hide Additional Map Controls"
+      additionalMapControlsDiv, "+ Show Additional Map Controls", "- Hide Additional Map Controls", false,
     )
     .insertBefore(additionalMapControlsDiv.hide());
 
@@ -377,6 +379,29 @@
       { label: "About This Map", tabContent: $("#aboutMapTab"), },
       { label: "Favorited PINs", tabContent: $("#favoritedPinsTab"), },
     ]));
+
+    $("#aboutMapTab")
+      .append(
+        "<p id='mapDescription'>This is a map of properties that may be of interest to Sunshine Gospel Ministries'"
+        + " Housing Equity Initiative (HEI). This map was created by the Wheaton College 2022"
+        + " Summer Research Team.</p>"
+      )
+      .append(generateMetadataTable(
+        "Data Used in This Map",
+        [
+          property_locations_metadata,
+          ward_offices_metadata,
+          city_owned_metadata,
+          taxsale_ward20_metadata,
+          scavenger_sale_metadata,
+          property_classification_codes_metadata,
+          business_licenses_metadata,
+          ward_boundaries_2015_to_2023.metadata,
+          ward_boundaries_2023.metadata,
+          neighborhood_boundaries.metadata,
+          zoning_districts.metadata,        
+        ],
+      ));
 
     console.log("Ending inline script");
     

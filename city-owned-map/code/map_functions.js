@@ -194,9 +194,52 @@ function getTabs(tabs) {
     }
     return tab.tabElement;
   });
-
-  initiallyActiveTab && setActiveTab(initiallyActiveTab);
-
+  initiallyActiveTab && setActiveTab(initiallyActiveTab); // set initial active tab
   return $('<ol></ol>').addClass("tabList")
     .append(tabElements);
+}
+
+function getNewTabOpenLink(url, displayText) {
+  return `<a href=${url} target='_blank' rel='noopener'>${displayText}</a>`;
+};
+
+function generateTable(caption, data, columns) {
+  const headerCells = $("<tr></tr>").append(columns.map((col) => `<th>${col.label}</th>`));
+  const bodyRows = data.map((datum) => {
+    return $("<tr></tr>").append(
+      columns.map((col) => $("<td></td>").append(col.function(datum)))
+    );
+  });
+  return $("<table></table>").append([
+      `<caption>${caption}</caption>`,
+      $("<thead></thead>").append(headerCells),
+      $("<tbody></tbody>").append(bodyRows),
+  ]);
+}
+
+function generateMetadataTable(caption, metadataList) {
+  const datefields = [
+    { accessor: "createdAt", label: "Created on" },
+    { accessor: "dataUpdatedAt", label: "Data updated on" },
+    { accessor: "metadataUpdatedAt", label: "Metadata updated on" },
+  ];
+  return generateTable(
+    caption,
+    metadataList,
+    [
+      { label: "Dataset", function: (datum) => getNewTabOpenLink(datum.dataUri, datum.name) },
+      { label: "Provided By", function : (datum) => getNewTabOpenLink(datum.attributionLink, datum.attribution), },
+      { label: "Access Date", function: (datum) => datum.accessedOn },
+      { label: "Last Modified", function: (datum) => {
+          const dateItems = [];
+          datefields.forEach((field) => {
+            datum[field.accessor] && dateItems.push(`<li>${field.label} ${datum[field.accessor]}</li>`);
+          });
+          return dateItems.length > 0 ? $("<ul></ul>").append(dateItems) : null;
+        }
+      },
+      { label: "Description", function: (datum) => datum.description },
+      { label: "Map Usage Notes", function: (datum) => datum.dataUseNotes },
+    ]
+  );
 }
