@@ -108,6 +108,12 @@ function populateDatagroupChildLayers(datagroup, getNewLayer, trackMarkerCount) 
   }
 }
 
+function getCheckedInLayer(markerClusterSupportGroup, layerOptions) {
+  const layer = L.layerGroup([], layerOptions);
+  markerClusterSupportGroup.checkIn(layer);
+  return layer;
+}
+
 function addMarkerToLayer(data, datagroup, layerInfo, popupContent) {
   const marker = new DatagroupAwareMarker([data.latitude, data.longitude], {
     icon: generateIcon(layerInfo.color),
@@ -137,11 +143,29 @@ function getMarkerPopupContent(data, datagroup, dataToDisplay) {
 }
 
 function getSelect(selectLabel, optionList, onSelect) {
-  const form = $(`<div><label>${selectLabel}</label></div>`).addClass("formDiv");
+  const form = $(`<div><label>${selectLabel}</label></div>`).addClass("formContainer");
   const select = $("<select></select>")
     .html(optionList.map((option) => { return `<option value="${option}">${option}</option>` }))
     .on("change", (event) => onSelect(event.target.value));
   return form.append(select).get(0);
+}
+
+// if includeConfirmationButton is true, then a button will be included as a child of the returned element
+// and onSelect will be called when that button is clicked rather than when an option is chosen
+function getSelect(selectLabel, optionList, onSelect, includeConfirmationButton, buttonText) {
+  const form = $(`<span><label>${selectLabel}</label></span>`);
+  const select = $("<select></select>")
+    .html(optionList.map((option) => { return `<option value="${option}">${option}</option>` }));
+  form.append(select);
+  if (includeConfirmationButton) {
+    form.append(
+      $(`<button type="button">${buttonText}</button>`).addClass("smallHorizontalMargin")
+        .on("click", () => onSelect(select.val()))
+    );
+  } else {
+    select.on("change", (event) => onSelect(event.target.value));
+  }
+  return form;
 }
 
 function getToggleVisibilityButton(element, showButtonText, hideButtonText, callback) {
@@ -231,7 +255,7 @@ function generateMetadataTable(caption, metadataList) {
 function getMarkerClusterPopupContent(childMarkers) {
   const childDatagroups = {};
   for (const marker of childMarkers) {
-    const datagroupName = marker.options.datagroup.name;
+    const datagroupName = "datagroup" in marker.options ? marker.options.datagroup.name : "Unknown Category";
     if (datagroupName in childDatagroups) {
       childDatagroups[datagroupName]++;
     } else {
@@ -243,9 +267,26 @@ function getMarkerClusterPopupContent(childMarkers) {
     .append($(`<span>This marker cluster contains ${childMarkers.length} markers:</span>`).addClass("bolded"))
     .append($("<ul></ul>").append(
         [...Object.keys(childDatagroups)].sort().map((datagroupName) => {
-            return `<li>${childDatagroups[datagroupName]} marker${childDatagroups[datagroupName] == 1 ? "" : "s"} from "${datagroupName}"</li>`;
+          return `<li>${childDatagroups[datagroupName]} marker${childDatagroups[datagroupName] == 1 ? "" : "s"} from "${datagroupName}"</li>`;
         })
       )
     )
     .get(0);
 }
+
+function searchDatagroupsForIdentifier(identifier, datagroups) {
+  const searchResults = {};
+  for (const datagroup of datagroups) {
+    if ("getData" in datagroup) {
+      const searchResult = datagroup.getData(identifier);
+      if (searchResult) {
+        searchResults[datagroup.name] = searchResult;
+      }
+    }
+  }
+  return searchResults;
+}
+
+/*function getPinSearchBar(label) {
+  const searchBar = $("<input type='text' inputmode='numeric'></input>")
+}*/

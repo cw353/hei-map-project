@@ -1,12 +1,12 @@
-.formDiv {
+.formContainer {
   margin: 10px;
 }
 
-.validInput {
+input:valid, .validInput {
   background-color: null;
 }
 
-.invalidInput {
+input:invalid, .invalidInput {
   background-color: pink;
 }
 

@@ -9,11 +9,11 @@ class Datagroup {
     this.childLayers.set(layerInfo.name, layerInfo);
   }
   getChildLayer(layerName) {
-    return this.childLayers.has(layerName) ? this.childLayers.get(layerName) : null;
+    return this.childLayers.has(layerName) ? this.childLayers.get(layerName) : undefined;
   }
 }
 
-class MarkerDatagroup extends Datagroup {
+class MarkerDatasetDatagroup extends Datagroup {
   constructor(name, dataset, attribution, classify, getPopupContent) {
     super(name);
     this.dataset = dataset;
@@ -24,7 +24,7 @@ class MarkerDatagroup extends Datagroup {
   // get data for the given identifier
   // (assumes entries in dataset are indexed by an identifier property - can be overriden as necessary)
   getData(identifier) {
-    return identifier in dataset ? dataset[identifier] : null;
+    return identifier in this.dataset ? this.dataset[identifier] : undefined;
   }
   // iterate over the dataset
   // (assumes entries in dataset are indexed by an identifier property - can be overriden as necessary)
@@ -97,7 +97,7 @@ class MarkerAndCircleDatagroup extends Datagroup {
         }
       }
     );
-    return $(`<div></div>`).addClass("formDiv")
+    return $(`<div></div>`).addClass("formContainer")
       .append([
         $(`<label>Set radius of circle around ${this.markerName} (in kilometers): </label>`).append(inputElement),
         applyChangesButton,

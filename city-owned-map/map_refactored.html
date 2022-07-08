@@ -59,7 +59,13 @@
     <div id="tabDiv"></div>
     
     <div id="mapTab">
-      <div id="additionalMapControlsContainer" class="formDiv">
+      <div id="searchBarDiv">
+        <!-- at least 14 digits, optionally separated by - or whitespace -->
+        <input id="searchInput" type="search" inputmode="numeric" pattern="([\s-]?\d[\s-]?){14}"/>
+        <button type="button" id="searchButton">Search</button>
+        <span id="searchResultsSpan"></span>
+      </div>
+      <div id="additionalMapControlsContainer" class="formContainer">
         <div id="additionalMapControls">
           <div id="highlightSelectDiv"></div>
           <div id="radiiInputDiv"></div>
@@ -92,7 +98,7 @@
   <script src="data/misc/individual_properties.js"></script>
   <script src="data/city-owned/city_owned_data.js"></script>
   <script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
-  <!--script src="data/scavenger-sale/scavenger_data.js"></script-->
+  <script src="data/scavenger-sale/scavenger_data.js"></script>
   <!--script src="data/business-licenses/business_license_data.js"></script-->
 
   <script>
@@ -223,7 +229,7 @@
       },
     );
 
-    const cityOwned = new MarkerDatagroup(
+    const cityOwned = new MarkerDatasetDatagroup(
       "City-Owned PINs (Possibly for Sale)",
       city_owned_data,
       city_owned_metadata.attribution + " & " + property_locations_metadata.attribution,
@@ -235,10 +241,10 @@
         { label: "Property Status", data: data.property_status },
         { label: "Record Last Updated", data: data.last_update },
         { label: "Property Details", data: getPropertyDetailsLink(data.pin) }
-      ])},
+      ]); },
     );
 
-    const ward20TaxSale = new MarkerDatagroup(
+    const ward20TaxSale = new MarkerDatasetDatagroup(
       "Ward 20 Tax Sale",
       taxsale_ward20_data,
       taxsale_ward20_metadata.attribution + " & " + property_locations_metadata.attribution,
@@ -251,10 +257,10 @@
         { label: "2019 Tax Due (Including Interest)", data: `$${data.total_due_including_interest}` },
         { label: "2019 Tax Due (Excluding Interest)", data: `$${data.total_tax_due}` },
         { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
-      ])},
+      ]); },
     );
 
-    /*const scavengerSale = new MarkerDatagroup(
+    const scavengerSale = new MarkerDatasetDatagroup(
       "Scavenger Sale 2022",
       scavenger_sale_data,
       scavenger_sale_metadata.attribution + " & " + property_locations_metadata.attribution,
@@ -267,10 +273,20 @@
         { label: "Delinquent Tax", data: `$${data.delinquent_tax}` },
         { label: "Delinquent Interest", data: `$${data.delinquent_interest}` },
         { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
-      ])},
+      ]); },
+    );
+
+    /*const userAddedMarkers = new Datagroup("User-Added Markers");
+    userAddedMarkers.addChildLayer(
+      new LayerInfo(
+        "Search Results",
+        "red",
+        getCheckedInLayer(markerClusterSupportGroup, { attribution: property_locations_metadata.attribution }),
+        false,
+      )
     );*/
 
-    /*const businessLicenses = new MarkerDatagroup(
+    /*const businessLicenses = new MarkerDatasetDatagroup(
       "Business Licenses",
       business_license_data,
       business_licenses_metadata.attribution,
@@ -282,23 +298,40 @@
         { label: "License Number", data: data.license_number },
         { label: "License Description", data: data.license_description },
         { label: "Business Activity", data: data.business_activity },
-      ])},
+      ]); },
     );*/
 
-    const datagroups = [cityOwned, ward20TaxSale,];
+    const userAddedMarkers = new MarkerDatasetDatagroup(
+      "User-Added Markers",
+      {},
+      property_locations_metadata.attribution,
+      null, // markers added to this datagroup should be manually classified
+      function(data) { return getMarkerPopupContent(data, this, [
+        { label: "PIN", data: data.pin },
+        { label: "Address", data: data.property_address },
+        { label: "Ward", data: data.ward },
+        { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
+      ]); },
+    );
+    userAddedMarkers.addChildLayer(
+      new LayerInfo(
+        "Search Results",
+        "red",
+        getCheckedInLayer(markerClusterSupportGroup, { attribution: property_locations_metadata.attribution }),
+        false,
+      )
+    );
+
+    const datagroups = [cityOwned, ward20TaxSale, scavengerSale, userAddedMarkers];
     const datagroupOverlays = [];
     for (const datagroup of datagroups) {
-      populateDatagroupChildLayers(
-        datagroup,
-        () => {
-          const layer = L.layerGroup([], {
-            attribution: datagroup.attribution,
-          });
-          markerClusterSupportGroup.checkIn(layer);
-          return layer;
-        },
-        true,
-      );
+      if (datagroup instanceof MarkerDatasetDatagroup) {
+          populateDatagroupChildLayers(
+          datagroup,
+          () => getCheckedInLayer(markerClusterSupportGroup, { attribution: datagroup.attribution }),
+          true,
+        );
+      }
       datagroupOverlays.push(getDatagroupOverlaySubtree(
         datagroup,
         {
@@ -359,10 +392,11 @@
       { highlightSelect: neighborhoodHighlightSelect, sort: true, layerNames: ["Neighborhood Boundaries"] },
       //{ highlightSelect: zoneClassHighlightSelect, sort: true, layerNames: ["Zoning Districts"] },
     ];
-    const highlightSelectDiv = document.getElementById("highlightSelectDiv");
+    const highlightSelectDiv = $("#highlightSelectDiv");
     for (const item of highlightSelectItems) {
-      highlightSelectDiv.appendChild(
-        item.highlightSelect.getHighlightSelectElement(item.sort, item.layerNames.map((layerName) => geoBoundaries.getChildLayer(layerName)))
+      highlightSelectDiv.append(
+        $("<div></div>").addClass("formContainer")
+          .append(item.highlightSelect.getHighlightSelectElement(item.sort, item.layerNames.map((layerName) => geoBoundaries.getChildLayer(layerName))))
       );
     }
 
@@ -397,8 +431,8 @@
           ward_offices_metadata,
           city_owned_metadata,
           taxsale_ward20_metadata,
-          //scavenger_sale_metadata,
-          //property_classification_codes_metadata,
+          scavenger_sale_metadata,
+          property_classification_codes_metadata,
           //business_licenses_metadata,
           ward_boundaries_2015_to_2023.metadata,
           ward_boundaries_2023.metadata,
@@ -406,6 +440,60 @@
           //zoning_districts.metadata,        
         ],
       ));
+
+      function showSearchResults(marker, callback) {
+        const layer = marker.options.layerInfo.layer;
+        if (!map.hasLayer(layer)) {
+          map.addLayer(layer);
+        }
+        markerClusterSupportGroup.zoomToShowLayer(
+          marker,
+          () => { 
+            marker.openPopup();
+            callback && callback();
+          },
+        );
+      }
+
+      const searchInput = document.getElementById("searchInput");
+      const searchResultsSpan = $("#searchResultsSpan");
+      $("#searchButton").on("click", () => {
+        searchResultsSpan.html("");
+        if (searchInput.validity.patternMismatch) {
+          searchInput.setCustomValidity("Please enter a valid 14-digit PIN.");
+          searchInput.reportValidity();
+        } else {
+          const pin = searchInput.value.replace(/[-\s]/g,"");
+          const searchResults = searchDatagroupsForIdentifier(
+            pin,
+            [ cityOwned, ward20TaxSale, scavengerSale ],
+          );
+          const numberOfResults = Object.keys(searchResults).length;
+
+          if (numberOfResults < 1) {
+            searchResultsSpan.text("No results found (ajax)");
+          } else if (numberOfResults == 1) {
+            const finalSearchResult = Object.values(searchResults)[0].leafletMarkerReference;
+            searchResultsSpan.html("");
+            showSearchResults(finalSearchResult, () => { searchResultsSpan.html("The results of your search have been displayed on the map."); });
+          } else {
+            searchResultsSpan.html(
+              getSelect(
+                "Choose a dataset: ",
+                [...Object.keys(searchResults)].sort(),
+                (selection) => {
+                  const finalSearchResult = searchResults[selection].leafletMarkerReference;
+                  console.log("You picked ", selection);
+                  searchResultsSpan.html("");
+                  showSearchResults(finalSearchResult, () => { searchResultsSpan.html("The results of your search have been displayed on the map."); });
+                },
+                true,
+                "Confirm",
+              )
+            );
+          }
+        }
+      });
 
     console.log("Ending inline script");
     
