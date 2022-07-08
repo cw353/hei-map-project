@@ -123,7 +123,8 @@
     // popup that describes marker cluster content when user mouses over marker cluster
     markerClusterSupportGroup.on("clustermouseover", (a) => {
       a.layer.bindPopup(
-        getMarkerClusterPopupContent(a.layer.getAllChildMarkers())
+        getMarkerClusterPopupContent(a.layer.getAllChildMarkers()),
+		{ maxHeight: 200, },
       ).openPopup();
     });
     markerClusterSupportGroup.on("clustermouseout", (a) => {

@@ -206,11 +206,13 @@ function generateMetadataTable(caption, metadataList) {
   ];
   return generateTable(
     caption,
-    metadataList,
+    metadataList.sort((m1, m2) => {
+	  // sort datasets by name
+	  return m1.name < m2.name ? -1 : m1.name > m2.name ? 1 : 0;
+	}),
     [
       { label: "Dataset", function: (datum) => getNewTabOpenLink(datum.dataUri, datum.name) },
       { label: "Provided By", function : (datum) => getNewTabOpenLink(datum.attributionLink, datum.attribution), },
-      { label: "Access Date", function: (datum) => datum.accessedOn },
       { label: "Last Modified", function: (datum) => {
           const dateItems = [];
           datefields.forEach((field) => {
@@ -219,6 +221,7 @@ function generateMetadataTable(caption, metadataList) {
           return dateItems.length > 0 ? $("<ul></ul>").append(dateItems) : null;
         }
       },
+      { label: "Access Date", function: (datum) => datum.accessedOn },
       { label: "Description", function: (datum) => datum.description },
       { label: "Map Usage Notes", function: (datum) => datum.dataUseNotes },
     ]
