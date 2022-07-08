@@ -87,12 +87,12 @@
   <script src="code/map_classes.js"></script>
   <script src="data/geojson/ward_boundaries.js"></script>
   <script src="data/geojson/neighborhood_boundaries.js"></script>
-  <script src="data/geojson/zoning_districts.js"></script>
+  <!--script src="data/geojson/zoning_districts.js"></script-->
   <script src="data/misc/misc.js"></script>
   <script src="data/misc/individual_properties.js"></script>
   <script src="data/city-owned/city_owned_data.js"></script>
   <script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
-  <script src="data/scavenger-sale/scavenger_data.js"></script>
+  <!--script src="data/scavenger-sale/scavenger_data.js"></script-->
   <!--script src="data/business-licenses/business_license_data.js"></script-->
 
   <script>
@@ -135,7 +135,7 @@
       "Choose a ward to highlight: ",
       (props, comparand) => { return "ward" in props && ("Ward " + props.ward) === comparand },
     );
-    for (let i = 1; i < 51; i++) { wardHighlightSelect.optionSet.add("Ward " + i); }
+    for (let i = 1; i < 51; i++) { wardHighlightSelect.addOption("Ward " + i); }
 
     const neighborhoodHighlightSelect = new HighlightSelect(
       "Choose a neighborhood to highlight: ",
@@ -174,9 +174,10 @@
       {
         getTooltipText: (props) => { return props.pri_neigh; },
         highlightFunction: neighborhoodHighlightSelect.highlightFunction,
-        onEachFeature: (feature) => { neighborhoodHighlightSelect.optionSet.add(feature.properties.pri_neigh); },
+        onEachFeature: (feature) => { neighborhoodHighlightSelect.addOption(feature.properties.pri_neigh); },
       },
     ));
+    /*const zoneClassRegex = new RegExp("^[A-Z]+");
     geoBoundaries.addChildLayer(new BoundaryLayerInfo(
       "Zoning Districts",
       zoning_districts.data,
@@ -184,11 +185,11 @@
       {
         getTooltipText: (props) => { return props.zone_class; },
         highlightFunction: zoneClassHighlightSelect.highlightFunction,
-        onEachFeature: (feature) => { zoneClassHighlightSelect.optionSet.add(feature.properties.zone_class.match(/^[A-Z]+/)[0]); }, // add alphabetic zone class prefix
+        onEachFeature: (feature) => { zoneClassHighlightSelect.addOption(zoneClassRegex.exec(feature.properties.zone_class)[0]); }, // add alphabetic zone class prefix
       }
-    ));
+    ));*/
     geoBoundaries.addChildLayer(new LayerInfo("No Boundaries", null, L.layerGroup(), false));
-    map.addLayer(geoBoundaries.childLayers.get("Ward Boundaries (2015&ndash;2023)").layer);
+    map.addLayer(geoBoundaries.getChildLayer("Ward Boundaries (2015&ndash;2023)").layer);
 
     function getWard(ward) {
       return ward === 20 ? "Ward 20"
@@ -253,7 +254,7 @@
       ])},
     );
 
-    const scavengerSale = new MarkerDatagroup(
+    /*const scavengerSale = new MarkerDatagroup(
       "Scavenger Sale 2022",
       scavenger_sale_data,
       scavenger_sale_metadata.attribution + " & " + property_locations_metadata.attribution,
@@ -267,7 +268,7 @@
         { label: "Delinquent Interest", data: `$${data.delinquent_interest}` },
         { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
       ])},
-    );
+    );*/
 
     /*const businessLicenses = new MarkerDatagroup(
       "Business Licenses",
@@ -284,7 +285,7 @@
       ])},
     );*/
 
-    const datagroups = [cityOwned, ward20TaxSale, scavengerSale]; //[cityOwned, ward20TaxSale, scavengerSale, businessLicenses];
+    const datagroups = [cityOwned, ward20TaxSale,];
     const datagroupOverlays = [];
     for (const datagroup of datagroups) {
       populateDatagroupChildLayers(
@@ -356,12 +357,12 @@
     const highlightSelectItems = [
       { highlightSelect: wardHighlightSelect, sort: false, layerNames: ["Ward Boundaries (2015&ndash;2023)", "Ward Boundaries (2023+)"] },
       { highlightSelect: neighborhoodHighlightSelect, sort: true, layerNames: ["Neighborhood Boundaries"] },
-      { highlightSelect: zoneClassHighlightSelect, sort: true, layerNames: ["Zoning Districts"] },
+      //{ highlightSelect: zoneClassHighlightSelect, sort: true, layerNames: ["Zoning Districts"] },
     ];
     const highlightSelectDiv = document.getElementById("highlightSelectDiv");
     for (const item of highlightSelectItems) {
       highlightSelectDiv.appendChild(
-        item.highlightSelect.getHighlightSelectElement(item.sort, item.layerNames.map((layerName) => geoBoundaries.childLayers.get(layerName)))
+        item.highlightSelect.getHighlightSelectElement(item.sort, item.layerNames.map((layerName) => geoBoundaries.getChildLayer(layerName)))
       );
     }
 
@@ -395,14 +396,14 @@
           property_locations_metadata,
           ward_offices_metadata,
           city_owned_metadata,
-          /*taxsale_ward20_metadata,
-          scavenger_sale_metadata,
-          property_classification_codes_metadata,
-          business_licenses_metadata,*/
+          taxsale_ward20_metadata,
+          //scavenger_sale_metadata,
+          //property_classification_codes_metadata,
+          //business_licenses_metadata,
           ward_boundaries_2015_to_2023.metadata,
           ward_boundaries_2023.metadata,
           neighborhood_boundaries.metadata,
-          zoning_districts.metadata,        
+          //zoning_districts.metadata,        
         ],
       ));
 

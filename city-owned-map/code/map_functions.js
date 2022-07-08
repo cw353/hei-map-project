@@ -74,7 +74,7 @@ function getDatagroupOverlaySubtree(datagroup, options) {
     : datagroup.childLayers.keys();
   // generate a leaf overlay object for each child
   for (const key of childLayerKeys) {
-    const layerInfo = datagroup.childLayers.get(key);
+    const layerInfo = datagroup.getChildLayer(key);
     children.push(getLayerInfoOverlayChild(layerInfo, options));
   }
   return {
@@ -98,7 +98,7 @@ function populateDatagroupChildLayers(datagroup, getNewLayer, trackMarkerCount) 
       ));
     }
     // add marker to layer
-    const layerInfo = datagroup.childLayers.get(classification);
+    const layerInfo = datagroup.getChildLayer(classification);
     const marker = addMarkerToLayer(
       datum,
       datagroup,

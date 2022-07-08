@@ -8,6 +8,9 @@ class Datagroup {
   addChildLayer(layerInfo) {
     this.childLayers.set(layerInfo.name, layerInfo);
   }
+  getChildLayer(layerName) {
+    return this.childLayers.has(layerName) ? this.childLayers.get(layerName) : null;
+  }
 }
 
 class MarkerDatagroup extends Datagroup {
@@ -21,7 +24,7 @@ class MarkerDatagroup extends Datagroup {
   // get data for the given identifier
   // (assumes entries in dataset are indexed by an identifier property - can be overriden as necessary)
   getData(identifier) {
-    return dataset[identifier];
+    return identifier in dataset ? dataset[identifier] : null;
   }
   // iterate over the dataset
   // (assumes entries in dataset are indexed by an identifier property - can be overriden as necessary)
@@ -58,7 +61,7 @@ class MarkerAndCircleDatagroup extends Datagroup {
     addMarkerToLayer(
       data,
       this,
-      this.childLayers.get(this.markerName),
+      this.getChildLayer(this.markerName),
       "markerPopupContent" in options ? options.markerPopupContent : null,
     );
     // add child layer for circle
@@ -75,7 +78,7 @@ class MarkerAndCircleDatagroup extends Datagroup {
     ));
   }
   getRadiusInputElement() {
-    const circle = this.childLayers.get(this.circleName).layer;
+    const circle = this.getChildLayer(this.circleName).layer;
     const inputElement = $("<input type='number'/>")
       .addClass("radiusInput validInput")
       .val(circle.getRadius() / 1000); // meters to kilometers
@@ -187,6 +190,9 @@ class HighlightSelect {
     this.comparand = this.#defaultOption;
     this.optionSet = new Set([this.#defaultOption]);
     this.highlightFunction = (props) => { return highlightFunction(props, this.comparand); }
+  }
+  addOption(option) {
+    this.optionSet.add(option);
   }
   getHighlightSelectElement(sort, layersToRefresh) {
     return getSelect(
