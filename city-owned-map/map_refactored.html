@@ -60,8 +60,11 @@
     
     <div id="mapTab">
       <div id="searchBarDiv">
+        <label>
+          Search for a PIN on the map:
         <!-- at least 14 digits, optionally separated by - or whitespace -->
-        <input id="searchInput" type="search" inputmode="numeric" pattern="([\s-]?\d[\s-]?){14}"/>
+          <input id="searchInput" type="search" inputmode="numeric" pattern="([\s-]?\d[\s-]?){14}"/>
+        </label>
         <button type="button" id="searchButton">Search</button>
         <span id="searchResultsSpan"></span>
       </div>
@@ -276,16 +279,6 @@
       ]); },
     );
 
-    /*const userAddedMarkers = new Datagroup("User-Added Markers");
-    userAddedMarkers.addChildLayer(
-      new LayerInfo(
-        "Search Results",
-        "red",
-        getCheckedInLayer(markerClusterSupportGroup, { attribution: property_locations_metadata.attribution }),
-        false,
-      )
-    );*/
-
     /*const businessLicenses = new MarkerDatasetDatagroup(
       "Business Licenses",
       business_license_data,
@@ -301,6 +294,7 @@
       ]); },
     );*/
 
+    console.log(previousUserAddedMarkers);
     const userAddedMarkers = new MarkerDatasetDatagroup(
       "User-Added Markers",
       {},
@@ -309,6 +303,8 @@
       function(data) { return getMarkerPopupContent(data, this, [
         { label: "PIN", data: data.pin },
         { label: "Address", data: data.property_address },
+        { label: "Zip Code", data: data.property_zip },
+        { label: "City", data: data.property_city },
         { label: "Ward", data: data.ward },
         { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
       ]); },
@@ -441,6 +437,20 @@
         ],
       ));
 
+      function getDataByPinViaAjax(pin, done, fail, always) {
+        const jqxhr = $.ajax({
+          url: "https://datacatalog.cookcountyil.gov/resource/c49d-89sn.json",
+          type: "GET",
+          data: {
+            "$query" : `SELECT pin, property_address, property_zip, property_city, ward, latitude, longitude WHERE (pin = '${pin}') AND (latitude IS NOT NULL) AND (longitude IS NOT NULL) LIMIT 1`,
+          },
+          datatype: "json",
+        });
+        done && jqxhr.done(done);
+        fail && jqxhr.fail(fail);
+        always && jqxhr.always(always);
+      }
+
       function showSearchResults(marker, callback) {
         const layer = marker.options.layerInfo.layer;
         if (!map.hasLayer(layer)) {
@@ -455,6 +465,17 @@
         );
       }
 
+      function addSearchResultToMap(data) {
+        userAddedMarkers.dataset[data.pin] = data;
+        const marker = addMarkerToLayer(
+          data,
+          userAddedMarkers,
+          userAddedMarkers.getChildLayer("Search Results"),
+          userAddedMarkers.getPopupContent(data),
+        );
+        return marker;
+      }
+
       const searchInput = document.getElementById("searchInput");
       const searchResultsSpan = $("#searchResultsSpan");
       $("#searchButton").on("click", () => {
@@ -466,12 +487,25 @@
           const pin = searchInput.value.replace(/[-\s]/g,"");
           const searchResults = searchDatagroupsForIdentifier(
             pin,
-            [ cityOwned, ward20TaxSale, scavengerSale ],
+            [ cityOwned, ward20TaxSale, scavengerSale, userAddedMarkers ],
           );
           const numberOfResults = Object.keys(searchResults).length;
 
           if (numberOfResults < 1) {
-            searchResultsSpan.text("No results found (ajax)");
+            if (window.confirm("This PIN is not on the map. Add a new marker to the map for this PIN?")) {
+              getDataByPinViaAjax(
+                pin,
+                (data) => {
+                  if (data.length < 1) {
+                    searchResultsSpan.text("No data could be found for this PIN.");
+                  } else {
+                    const finalSearchResult = addSearchResultToMap(data[0]);
+                    showSearchResults(finalSearchResult, () => { searchResultsSpan.html("A new marker for this PIN has been added to the map."); });
+                  }
+                },
+                (jqxhr, textStatus) => { console.log(`Failed to retrieve data for PIN ${pin}: ${textStatus}`); },
+              );
+            }
           } else if (numberOfResults == 1) {
             const finalSearchResult = Object.values(searchResults)[0].leafletMarkerReference;
             searchResultsSpan.html("");
@@ -483,7 +517,6 @@
                 [...Object.keys(searchResults)].sort(),
                 (selection) => {
                   const finalSearchResult = searchResults[selection].leafletMarkerReference;
-                  console.log("You picked ", selection);
                   searchResultsSpan.html("");
                   showSearchResults(finalSearchResult, () => { searchResultsSpan.html("The results of your search have been displayed on the map."); });
                 },
