@@ -316,6 +316,18 @@
         false,
       )
     );
+    const previousUserAddedPins = localStorage.getItem("hei-map-user-added-pins");
+    previousUserAddedPins && JSON.parse(previousUserAddedPins).forEach((pin) => {
+      getDataByPinViaAjax(
+        pin,
+        (data) => {
+          if (data.length < 1) {
+            console.log("Error: no data found for user-added PIN " + pin);
+          } else {
+            addSearchResultToMap(data[0], false);
+          }
+      });
+    });
 
     const datagroups = [cityOwned, ward20TaxSale, scavengerSale, userAddedMarkers];
     const datagroupOverlays = [];
@@ -464,8 +476,12 @@
         );
       }
 
-      function addSearchResultToMap(data) {
+      function addSearchResultToMap(data, updateLocalStorage) {
         userAddedMarkers.dataset[data.pin] = data;
+        updateLocalStorage && localStorage.setItem(
+          "hei-map-user-added-pins",
+          JSON.stringify(Object.keys(userAddedMarkers.dataset)),
+        );
         const marker = addMarkerToLayer(
           data,
           userAddedMarkers,
@@ -498,7 +514,7 @@
                   if (data.length < 1) {
                     searchResultsSpan.text("No data could be found for this PIN.");
                   } else {
-                    const finalSearchResult = addSearchResultToMap(data[0]);
+                    const finalSearchResult = addSearchResultToMap(data[0], true);
                     showSearchResults(finalSearchResult, () => { searchResultsSpan.html("A new marker for this PIN has been added to the map."); });
                   }
                 },
