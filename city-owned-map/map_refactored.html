@@ -93,7 +93,7 @@
   <script src="data/city-owned/city_owned_data.js"></script>
   <script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
   <script src="data/scavenger-sale/scavenger_data.js"></script>
-  <script src="data/business-licenses/business_license_data.js"></script>
+  <!--script src="data/business-licenses/business_license_data.js"></script-->
 
   <script>
 
@@ -120,13 +120,15 @@
       maxClusterRadius: 50,
     }).addTo(map);
 
-    // test tooltip
-    /*markerClusterSupportGroup.on("clustermouseover", (a) => {
-      a.layer.bindTooltip(`This cluster contains ${a.layer.getAllChildMarkers().length} markers.`).openTooltip();
+    // popup that describes marker cluster content when user mouses over marker cluster
+    markerClusterSupportGroup.on("clustermouseover", (a) => {
+      a.layer.bindPopup(
+        getMarkerClusterPopupContent(a.layer.getAllChildMarkers())
+      ).openPopup();
     });
     markerClusterSupportGroup.on("clustermouseout", (a) => {
-      a.layer.closeTooltip().unbindTooltip();
-    });*/
+      a.layer.closePopup();
+    });
 
     const wardHighlightSelect = new HighlightSelect(
       "Choose a ward to highlight: ",
@@ -234,7 +236,7 @@
       ])},
     );
 
-    /*const ward20TaxSale = new MarkerDatagroup(
+    const ward20TaxSale = new MarkerDatagroup(
       "Ward 20 Tax Sale",
       taxsale_ward20_data,
       taxsale_ward20_metadata.attribution + " & " + property_locations_metadata.attribution,
@@ -266,7 +268,7 @@
       ])},
     );
 
-    const businessLicenses = new MarkerDatagroup(
+    /*const businessLicenses = new MarkerDatagroup(
       "Business Licenses",
       business_license_data,
       business_licenses_metadata.attribution,
@@ -281,7 +283,7 @@
       ])},
     );*/
 
-    const datagroups = [cityOwned]; //[cityOwned, ward20TaxSale, scavengerSale, businessLicenses];
+    const datagroups = [cityOwned, ward20TaxSale, scavengerSale]; //[cityOwned, ward20TaxSale, scavengerSale, businessLicenses];
     const datagroupOverlays = [];
     for (const datagroup of datagroups) {
       populateDatagroupChildLayers(
@@ -392,10 +394,10 @@
           property_locations_metadata,
           ward_offices_metadata,
           city_owned_metadata,
-          taxsale_ward20_metadata,
+          /*taxsale_ward20_metadata,
           scavenger_sale_metadata,
           property_classification_codes_metadata,
-          business_licenses_metadata,
+          business_licenses_metadata,*/
           ward_boundaries_2015_to_2023.metadata,
           ward_boundaries_2023.metadata,
           neighborhood_boundaries.metadata,

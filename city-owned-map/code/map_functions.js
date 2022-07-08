@@ -85,24 +85,6 @@ function getDatagroupOverlaySubtree(datagroup, options) {
   };
 }
 
-function setUpRadiusInput(circleMarker, inputElement, applyChangesButton, messageElement) {
-  // allow the user to change the radius of circleMarker
-  inputElement.value = circleMarker.getRadius() / 1000; // meters to kilometers
-  applyChangesButton.addEventListener("click", (event) => {
-    const newRadius = parseFloat(inputElement.value);
-    if (!isNaN(newRadius)) {
-      // valid float
-      circleMarker.setRadius(newRadius * 1000); // kilometers to meters
-      inputElement.classList.replace("invalidInput", "validInput");
-      displayMessage(messageElement, `Success! The radius has been set to ${newRadius} km.`, "green");
-    } else {
-      // invalid float
-      inputElement.classList.replace("validInput", "invalidInput");
-      displayMessage(messageElement, "Error: input must be a valid number.", "red");
-    }
-  });
-}
-
 function populateDatagroupChildLayers(datagroup, getNewLayer, trackMarkerCount) {
   for (const datum of datagroup.dataIterator()) {
     const classification = datagroup.classify(datum);
@@ -116,28 +98,27 @@ function populateDatagroupChildLayers(datagroup, getNewLayer, trackMarkerCount) 
       ));
     }
     // add marker to layer
+    const layerInfo = datagroup.childLayers.get(classification);
     const marker = addMarkerToLayer(
       datum,
-      datagroup.childLayers.get(classification),
+      datagroup,
+      layerInfo,
       datagroup.getPopupContent(datum),
     );
-    // add metadata to datum
-    datum.metadata = {
-      datagroupName: datagroup.name,
-      layerInfoName: classification,
-      markerReference: marker,
-    }
   }
 }
 
-function addMarkerToLayer(data, layerInfo, popupContent) {
-  const marker = L.marker([data.latitude, data.longitude], {
+function addMarkerToLayer(data, datagroup, layerInfo, popupContent) {
+  const marker = new DatagroupAwareMarker([data.latitude, data.longitude], {
     icon: generateIcon(layerInfo.color),
   });
   layerInfo.addLayer(marker);
   if (popupContent != null) {
     marker.bindPopup(popupContent, { maxHeight: 200, });
   }
+  marker.register({ datagroup: datagroup, layerInfo : layerInfo, });
+  // add marker metadata to data
+  data.leafletMarkerReference = marker;
   return marker;
 }
 
@@ -242,4 +223,26 @@ function generateMetadataTable(caption, metadataList) {
       { label: "Map Usage Notes", function: (datum) => datum.dataUseNotes },
     ]
   );
+}
+
+function getMarkerClusterPopupContent(childMarkers) {
+  const childDatagroups = {};
+  for (const marker of childMarkers) {
+    const datagroupName = marker.options.datagroup.name;
+    if (datagroupName in childDatagroups) {
+      childDatagroups[datagroupName]++;
+    } else {
+      childDatagroups[datagroupName] = 1;
+    }
+  }
+  return $("<div></div>")
+    .addClass("markerClusterPopupContent")
+    .append($(`<span>This marker cluster contains ${childMarkers.length} markers:</span>`).addClass("bolded"))
+    .append($("<ul></ul>").append(
+        [...Object.keys(childDatagroups)].sort().map((datagroupName) => {
+            return `<li>${childDatagroups[datagroupName]} marker${childDatagroups[datagroupName] == 1 ? "" : "s"} from "${datagroupName}"</li>`;
+        })
+      )
+    )
+    .get(0);
 }

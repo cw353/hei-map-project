@@ -1,15 +1,3 @@
-.noDisplay {
-  display: none;
-}
-
-.hidden {
-  visibility: hidden;
-}
-
-.visible {
-  visibility: visible;
-}
-
 .formDiv {
   margin: 10px;
 }
@@ -182,7 +170,7 @@ td {
   width: auto;
 }
 
-td ul {
-  list-style-position: inside;
-  padding-left: 0px;
+td ul, .markerClusterPopupContent ul {
+  list-style-position: outside;
+  padding-left: 20px;
 }

@@ -32,6 +32,15 @@ class MarkerDatagroup extends Datagroup {
   }
 }
 
+const DatagroupAwareMarker = L.Marker.extend({
+  register: function(registrationInfo) {
+    L.Util.setOptions(
+      this,
+      { datagroup: registrationInfo.datagroup, layerInfo: registrationInfo.layerInfo, }
+    );
+  }
+});
+
 class MarkerAndCircleDatagroup extends Datagroup {
   constructor(name, data, attribution, options) {
     super(name);
@@ -48,6 +57,7 @@ class MarkerAndCircleDatagroup extends Datagroup {
     ));
     addMarkerToLayer(
       data,
+      this,
       this.childLayers.get(this.markerName),
       "markerPopupContent" in options ? options.markerPopupContent : null,
     );
