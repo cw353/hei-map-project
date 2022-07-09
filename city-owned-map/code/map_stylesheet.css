@@ -2,13 +2,13 @@
   margin: 10px;
 }
 
-input:valid, .validInput {
+/*input:valid {
   background-color: null;
 }
 
-input:invalid, .invalidInput {
+input:invalid {
   background-color: pink;
-}
+}*/
 
 .successMessage {
   color: green;

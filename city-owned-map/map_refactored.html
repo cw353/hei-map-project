@@ -110,6 +110,8 @@
 
     $("#pageHeader").html(`<h1>${document.title}</h1>`);
 
+    const useLocalStorage = false;
+
     // create map
     const map = L.map("map", {
       center: [41.783, -87.621],
@@ -217,7 +219,7 @@
       {
         markerColor: "#ff66ff",
         circleColor: "#ff80ff",
-        getMarkerLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
+        //getMarkerLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
         markerPopupContent: "<a href='https://www.sunshinegospel.org/' target='_blank' rel='noopener'>Sunshine Gospel Ministries</a>",
       },
     );
@@ -232,7 +234,7 @@
       {
         markerColor: "#0099ff",
         circleColor: "#00ace6",
-        getMarkerLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
+        //getMarkerLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
         markerPopupContent: "<a href='https://www.chicago.gov/city/en/about/wards/20.html' target='_blank' rel='noopener'>Ward 20 Office</a>",
       },
     );
@@ -321,18 +323,20 @@
         false,
       )
     );
-    const previousUserAddedPins = localStorage.getItem("hei-map-user-added-pins");
-    previousUserAddedPins && JSON.parse(previousUserAddedPins).forEach((pin) => {
-      getDataByPinViaAjax(
-        pin,
-        (data) => {
-          if (data.length < 1) {
-            console.log("Error: no data found for user-added PIN " + pin);
-          } else {
-            addSearchResultToMap(data[0], false);
-          }
+    if (useLocalStorage) {
+      const previousUserAddedPins = localStorage.getItem("hei-map-user-added-pins");
+      previousUserAddedPins && JSON.parse(previousUserAddedPins).forEach((pin) => {
+        getDataByPinViaAjax(
+          pin,
+          (data) => {
+            if (data.length < 1) {
+              console.log("Error: no data found for user-added PIN " + pin);
+            } else {
+              addSearchResultToMap(data[0], false);
+            }
+        });
       });
-    });
+    }
 
     const datagroups = [cityOwned, ward20TaxSale, scavengerSale, userAddedMarkers];
     const datagroupOverlays = [];
@@ -520,7 +524,7 @@
                   if (data.length < 1) {
                     searchResultsSpan.text("No data could be found for this PIN.");
                   } else {
-                    const finalSearchResult = addSearchResultToMap(data[0], true);
+                    const finalSearchResult = addSearchResultToMap(data[0], useLocalStorage);
                     showSearchResults(finalSearchResult, () => { searchResultsSpan.html("A new marker for this PIN has been added to the map."); });
                   }
                 },
