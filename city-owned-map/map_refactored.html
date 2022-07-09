@@ -63,7 +63,7 @@
         <label>
           Search for a PIN on the map:
         <!-- at least 14 digits, optionally separated by - or whitespace -->
-          <input id="searchInput" type="search" inputmode="numeric" pattern="([\s-]?\d[\s-]?){14}"/>
+          <input id="searchInput" type="search" inputmode="numeric" pattern="([\s-]*\d[\s-]*){14}"/>
         </label>
         <button type="button" id="searchButton">Search</button>
         <span id="searchResultsSpan"></span>
@@ -217,17 +217,22 @@
       {
         markerColor: "#ff66ff",
         circleColor: "#ff80ff",
+        getMarkerLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
         markerPopupContent: "<a href='https://www.sunshinegospel.org/' target='_blank' rel='noopener'>Sunshine Gospel Ministries</a>",
       },
     );
+    sunshineGospel.getData = function(identifier) {
+      return identifier === this.data.pin.toString() ? this.data : undefined;
+    }
 
     const ward20Office = new MarkerAndCircleDatagroup(
       "Ward 20 Office",
-      ward_20_office.location,
+      ward_20_office,
       ward_offices_metadata.attribution,
       {
         markerColor: "#0099ff",
         circleColor: "#00ace6",
+        getMarkerLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
         markerPopupContent: "<a href='https://www.chicago.gov/city/en/about/wards/20.html' target='_blank' rel='noopener'>Ward 20 Office</a>",
       },
     );
@@ -495,14 +500,15 @@
       const searchResultsSpan = $("#searchResultsSpan");
       $("#searchButton").on("click", () => {
         searchResultsSpan.html("");
-        if (searchInput.validity.patternMismatch) {
+        if (searchInput.validity.patternMismatch || searchInput.value === "") {
           searchInput.setCustomValidity("Please enter a valid 14-digit PIN.");
           searchInput.reportValidity();
         } else {
+          searchInput.setCustomValidity("");
           const pin = searchInput.value.replace(/[-\s]/g,"");
           const searchResults = searchDatagroupsForIdentifier(
             pin,
-            [ cityOwned, ward20TaxSale, scavengerSale, userAddedMarkers ],
+            [ cityOwned, ward20TaxSale, scavengerSale, userAddedMarkers, sunshineGospel, ],
           );
           const numberOfResults = Object.keys(searchResults).length;
 

@@ -47,6 +47,8 @@ const DatagroupAwareMarker = L.Marker.extend({
 class MarkerAndCircleDatagroup extends Datagroup {
   constructor(name, data, attribution, options) {
     super(name);
+    this.data = data;
+    this.attribution = attribution;
     this.markerName =  "markerName" in options ? options.markerName : name;
     this.circleName =  "circleName" in options ? options.circleName : `Circle around ${name}`;
     const markerColor = "markerColor" in options ? options.markerColor : "black";
@@ -55,7 +57,7 @@ class MarkerAndCircleDatagroup extends Datagroup {
     this.addChildLayer(new LayerInfo(
       this.markerName,
       markerColor,
-      L.layerGroup([], { attribution: attribution }),
+      "getMarkerLayer" in options ? options.getMarkerLayer(attribution) : L.layerGroup([], { attribution: attribution }),
       options.trackMarkerCount,
     ));
     addMarkerToLayer(
