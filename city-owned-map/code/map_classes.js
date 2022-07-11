@@ -13,8 +13,164 @@ class Datagroup {
   }
 }
 
+class MarkerData {
+  constructor(markerData, datagroup, layerInfo, marker) {
+    this.markerData = markerData;
+    this.datagroup = datagroup;
+    this.layerInfo = layerInfo;
+    this.marker = marker;
+  }
+}
+
+class Dataset {
+  constructor(data, attribution, identifierField) {
+    this.data = data;
+    this.attribution = attribution;
+    this.identifierField = identifierField;
+  }
+  // can be overriden
+  *dataIterator() {
+    for (const key of Object.keys(this.data)) {
+      yield this.data[key];
+    }
+  }
+}
+
+class MarkerDataDatagroup extends Datagroup {
+  constructor(name, dataset) {
+    super(name);
+    this.dataset = dataset;
+    this.markerData = new Map(); // map of MarkerData objects
+  }
+  hasMarkerData(identifier) {
+    return this.markerData.has(identifier);
+  }
+  getMarkerData(identifier) {
+    return this.hasMarkerData(identifier) ? this.markerData.get(identifier) : undefined;
+  }
+  #setMarkerData(identifier, markerData) {
+    this.markerData.set(identifier.toString(), markerData);
+  }
+  addMarker(identifier, data, layerInfo, popupContent) {
+    const marker = new L.marker(
+      [data.latitude, data.longitude],
+      { icon: generateIcon(layerInfo.color), datagroupName: this.name},
+    );
+    layerInfo.addLayer(marker);
+    if (popupContent != null) {
+      marker.bindPopup(popupContent, { maxHeight: 200, });
+    }
+    this.#setMarkerData(identifier, new MarkerData(
+      data,
+      this,
+      layerInfo,
+      marker,
+    ));
+  }
+}
+
+class ClassifiableMarkerDataDatagroup extends MarkerDataDatagroup {
+  constructor(name, dataset, classify, getPopupContent, options) {
+    super(name, dataset);
+    this.classify = classify;
+    this.getPopupContent = getPopupContent;
+
+    for (const datum of this.dataset.dataIterator()) {
+      const classification = this.classify(datum);
+      // if the LayerInfo object corresponding to classification doesn't exist yet, create it
+      if (!(this.childLayers.has(classification))) {
+        this.addChildLayer(new LayerInfo(
+          classification,
+          "getColor" in options ? options.getColor() : "black",
+          "getNewLayer" in options ? options.getNewLayer(this.dataset.attribution) : L.layerGroup([], { attribution : this.dataset.attribution }),
+          options.trackMarkerCount,
+        ));
+      }
+      const layerInfo = this.getChildLayer(classification);
+      this.addMarker(
+        datum[this.dataset.identifierField],
+        datum,
+        layerInfo,
+        this.getPopupContent(datum),
+      );
+    }
+  }
+}
+
+class MarkerAndCircleDatagroupNew extends MarkerDataDatagroup {
+  constructor(name, dataset, options) {
+    super(name, dataset);
+    this.markerName =  "markerName" in options ? options.markerName : name;
+    this.circleName =  "circleName" in options ? options.circleName : `Circle around ${name}`;
+    const markerColor = "markerColor" in options ? options.markerColor : "black";
+    const circleColor = "circleColor" in options ? options.circleColor : "black";
+    // add child layer for marker
+    this.addChildLayer(new LayerInfo(
+      this.markerName,
+      markerColor,
+      "getMarkerLayer" in options ? options.getMarkerLayer(this.dataset.attribution) : L.layerGroup([], { attribution: this.dataset.attribution }),
+      options.trackMarkerCount,
+    ));
+    const data = this.dataset.data;
+    this.addMarker(
+      data[this.dataset.identifierField],
+      data,
+      this.getChildLayer(this.markerName),
+      "markerPopupContent" in options ? options.markerPopupContent : null,
+    )
+    // add child layer for circle
+    this.addChildLayer(new LayerInfo(
+      this.circleName,
+      circleColor,
+      L.circle([data.latitude, data.longitude], {
+        attribution: this.dataset.attribution,
+        color: circleColor,
+        radius: "initialRadius" in options ? options.initialRadius : 3000,
+        fillOpacity: "circleFillOpacity" in options ? options.circleFillOpacity : 0.15,
+      }),
+      false,
+    ));
+  }
+  *dataIterator() {
+    yield this.dataset.data;
+  }
+  getRadiusInputElement() {
+    const circle = this.getChildLayer(this.circleName).layer;
+    const inputElement = $("<input type='number' min='0'/>")
+      .addClass("radiusInput validInput")
+      .val(circle.getRadius() / 1000) // meters to kilometers
+      .get(0);
+    const messageElement = $("<span></span>").addClass("successMessage");
+    const applyChangesButton = $("<button type='button'>Set Radius</button>")
+      .addClass("smallHorizontalMargin")
+      .on("click", (event) => {
+        messageElement.html("");
+        const newRadius = parseFloat(inputElement.value);
+        if (inputElement.validity.rangeUnderflow) {
+          inputElement.setCustomValidity("Please enter a positive number.");
+          inputElement.reportValidity();
+        } else if (isNaN(newRadius)) {
+          inputElement.setCustomValidity("Please enter a valid number.");
+          inputElement.reportValidity();
+        } else {
+          inputElement.setCustomValidity("");
+          circle.setRadius(newRadius * 1000); // kilometers to meters
+          messageElement.text(`Success! The radius has been set to ${newRadius} km.`);
+        }
+      }
+    );
+    return $(`<div></div>`).addClass("formContainer")
+      .append([
+        $(`<label>Set radius of circle around ${this.markerName} (in kilometers): </label>`).append(inputElement),
+        applyChangesButton,
+        messageElement,
+      ])
+      .get(0);
+  }
+}
+
 class MarkerDatasetDatagroup extends Datagroup {
-  constructor(name, dataset, attribution, classify, getPopupContent) {
+  constructor(name, dataset, attribution, classify, getPopupContent, getNewLayer, trackMarkerCount) {
     super(name);
     this.dataset = dataset;
     this.attribution = attribution;
@@ -36,11 +192,14 @@ class MarkerDatasetDatagroup extends Datagroup {
 }
 
 const DatagroupAwareMarker = L.Marker.extend({
-  register: function(registrationInfo) {
+  registerDatagroupName: function(datagroupName) {
     L.Util.setOptions(
       this,
-      { datagroup: registrationInfo.datagroup, layerInfo: registrationInfo.layerInfo, }
+      { datagroupName: datagroupName },
     );
+  },
+  getDatagroupName: function() {
+    return "datagroupName" in this.options ? this.options.datagroupName : undefined;
   }
 });
 

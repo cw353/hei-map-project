@@ -85,6 +85,10 @@ function getDatagroupOverlaySubtree(datagroup, options) {
   };
 }
 
+function getNextColor() {
+  return colors[nextColor++ % colors.length];
+}
+
 function populateDatagroupChildLayers(datagroup, getNewLayer, trackMarkerCount) {
   for (const datum of datagroup.dataIterator()) {
     const classification = datagroup.classify(datum);
@@ -122,7 +126,7 @@ function addMarkerToLayer(data, datagroup, layerInfo, popupContent) {
   if (popupContent != null) {
     marker.bindPopup(popupContent, { maxHeight: 200, });
   }
-  marker.register({ datagroup: datagroup, layerInfo : layerInfo, });
+  marker.registerDatagroupName(datagroup.name);
   // add marker metadata to data
   data.leafletMarkerReference = marker;
   return marker;
@@ -255,7 +259,7 @@ function generateMetadataTable(caption, metadataList) {
 function getMarkerClusterPopupContent(childMarkers) {
   const childDatagroups = {};
   for (const marker of childMarkers) {
-    const datagroupName = "datagroup" in marker.options ? marker.options.datagroup.name : "Unknown Category";
+    const datagroupName = "datagroupName" in marker.options ? marker.options.datagroupName : "Unknown Category";
     if (datagroupName in childDatagroups) {
       childDatagroups[datagroupName]++;
     } else {
@@ -279,6 +283,19 @@ function searchDatagroupsForIdentifier(identifier, datagroups) {
   for (const datagroup of datagroups) {
     if ("getData" in datagroup) {
       const searchResult = datagroup.getData(identifier);
+      if (searchResult) {
+        searchResults[datagroup.name] = searchResult;
+      }
+    }
+  }
+  return searchResults;
+}
+
+function searchDatagroupsForIdentifierNew(identifier, datagroups) {
+  const searchResults = {};
+  for (const datagroup of datagroups) {
+    if ("getMarkerData" in datagroup) {
+      const searchResult = datagroup.getMarkerData(identifier);
       if (searchResult) {
         searchResults[datagroup.name] = searchResult;
       }

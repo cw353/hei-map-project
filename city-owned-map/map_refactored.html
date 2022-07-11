@@ -212,10 +212,9 @@
         : "Unknown Ward";
     }
 
-    const sunshineGospel = new MarkerAndCircleDatagroup(
+    const sunshineGospel = new MarkerAndCircleDatagroupNew(
       "Sunshine Gospel Ministries",
-      sunshine_gospel,
-      property_locations_metadata.attribution,
+      new Dataset(sunshine_gospel, property_locations_metadata.attribution, "pin"),
       {
         markerColor: "#ff66ff",
         circleColor: "#ff80ff",
@@ -223,14 +222,13 @@
         markerPopupContent: "<a href='https://www.sunshinegospel.org/' target='_blank' rel='noopener'>Sunshine Gospel Ministries</a>",
       },
     );
-    sunshineGospel.getData = function(identifier) {
+    /*sunshineGospel.getData = function(identifier) {
       return identifier === this.data.pin.toString() ? this.data : undefined;
-    }
+    }*/
 
-    const ward20Office = new MarkerAndCircleDatagroup(
+    const ward20Office = new MarkerAndCircleDatagroupNew(
       "Ward 20 Office",
-      ward_20_office,
-      ward_offices_metadata.attribution,
+      new Dataset(ward_20_office, ward_offices_metadata.attribution, "ward"),
       {
         markerColor: "#0099ff",
         circleColor: "#00ace6",
@@ -239,10 +237,9 @@
       },
     );
 
-    const cityOwned = new MarkerDatasetDatagroup(
+    const cityOwned = new ClassifiableMarkerDataDatagroup(
       "City-Owned PINs (Possibly for Sale)",
-      city_owned_data,
-      city_owned_metadata.attribution + " & " + property_locations_metadata.attribution,
+      new Dataset(city_owned_data, city_owned_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
       (data) => { return ("ward" in data) ? getWard(data.ward) : "Unknown Ward" },
       function(data) { return getMarkerPopupContent(data, this, [
         { label: "PIN", data: data.pin },
@@ -252,12 +249,16 @@
         { label: "Record Last Updated", data: data.last_update },
         { label: "Property Details", data: getPropertyDetailsLink(data.pin) }
       ]); },
+      {
+        getColor: getNextColor,
+        getNewLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
+        trackMarkerCount: true,
+      },
     );
 
-    const ward20TaxSale = new MarkerDatasetDatagroup(
+    const ward20TaxSale = new ClassifiableMarkerDataDatagroup(
       "Ward 20 Tax Sale",
-      taxsale_ward20_data,
-      taxsale_ward20_metadata.attribution + " & " + property_locations_metadata.attribution,
+      new Dataset(taxsale_ward20_data, taxsale_ward20_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
       (data) => { return ("classification" in data) ? data.classification : "Unclassified" },
       function(data) { return getMarkerPopupContent(data, this, [
         { label: "PIN", data: data.pin },
@@ -268,12 +269,16 @@
         { label: "2019 Tax Due (Excluding Interest)", data: `$${data.total_tax_due}` },
         { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
       ]); },
+      {
+        getColor: getNextColor,
+        getNewLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
+        trackMarkerCount: true,
+      },
     );
 
-    const scavengerSale = new MarkerDatasetDatagroup(
+    const scavengerSale = new ClassifiableMarkerDataDatagroup(
       "Scavenger Sale 2022",
-      scavenger_sale_data,
-      scavenger_sale_metadata.attribution + " & " + property_locations_metadata.attribution,
+      new Dataset(scavenger_sale_data, scavenger_sale_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
       (data) => { return "property_code_class" in data ? data.property_code_class : "Unclassified" },
       function(data) { return getMarkerPopupContent(data, this, [
         { label: "PIN", data: data.pin },
@@ -284,12 +289,16 @@
         { label: "Delinquent Interest", data: `$${data.delinquent_interest}` },
         { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
       ]); },
+      {
+        getColor: getNextColor,
+        getNewLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
+        trackMarkerCount: true,
+      },
     );
 
-    /*const businessLicenses = new MarkerDatasetDatagroup(
+    /*const businessLicenses = new ClassifiableMarkerDataDatagroup(
       "Business Licenses",
-      business_license_data,
-      business_licenses_metadata.attribution,
+      new Dataset(business_license_data, business_licenses_metadata.attribution, "license_number"),
       (data) => { return ("ward" in data) ? getWard(data.ward) : "Unknown Ward" },
       function(data) { return getMarkerPopupContent(data, this, [
         { label: "Business", data: data.doing_business_as_name },
@@ -299,12 +308,16 @@
         { label: "License Description", data: data.license_description },
         { label: "Business Activity", data: data.business_activity },
       ]); },
+      {
+        getColor: getNextColor,
+        getNewLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
+        trackMarkerCount: true,
+      },
     );*/
 
-    const userAddedMarkers = new MarkerDatasetDatagroup(
+    const userAddedMarkers = new ClassifiableMarkerDataDatagroup(
       "User-Added Markers",
-      {},
-      property_locations_metadata.attribution,
+      new Dataset({}, property_locations_metadata.attribution, "pin"),
       null, // markers added to this datagroup should be manually classified
       function(data) { return getMarkerPopupContent(data, this, [
         { label: "PIN", data: data.pin },
@@ -341,13 +354,6 @@
     const datagroups = [cityOwned, ward20TaxSale, scavengerSale, userAddedMarkers];
     const datagroupOverlays = [];
     for (const datagroup of datagroups) {
-      if (datagroup instanceof MarkerDatasetDatagroup) {
-          populateDatagroupChildLayers(
-          datagroup,
-          () => getCheckedInLayer(markerClusterSupportGroup, { attribution: datagroup.attribution }),
-          true,
-        );
-      }
       datagroupOverlays.push(getDatagroupOverlaySubtree(
         datagroup,
         {
@@ -471,8 +477,9 @@
         always && jqxhr.always(always);
       }
 
-      function showSearchResults(marker, callback) {
-        const layer = marker.options.layerInfo.layer;
+      function showMarker(markerData, callback) {
+        const marker = markerData.marker;
+        const layer = markerData.layerInfo.layer;
         if (!map.hasLayer(layer)) {
           map.addLayer(layer);
         }
@@ -485,19 +492,21 @@
         );
       }
 
-      function addSearchResultToMap(data, updateLocalStorage) {
-        userAddedMarkers.dataset[data.pin] = data;
+      function addSearchResult(data, updateLocalStorage) {
+        const dataset = userAddedMarkers.dataset;
+        const identifier = data[dataset.identifierField];
+        dataset.data[identifier] = data;
+        userAddedMarkers.addMarker(
+          identifier,
+          data,
+          userAddedMarkers.getChildLayer("Search Results"),
+          userAddedMarkers.getPopupContent(data),
+        );
         updateLocalStorage && localStorage.setItem(
           "hei-map-user-added-pins",
           JSON.stringify(Object.keys(userAddedMarkers.dataset)),
         );
-        const marker = addMarkerToLayer(
-          data,
-          userAddedMarkers,
-          userAddedMarkers.getChildLayer("Search Results"),
-          userAddedMarkers.getPopupContent(data),
-        );
-        return marker;
+        return userAddedMarkers.getMarkerData(identifier);
       }
 
       const searchInput = document.getElementById("searchInput");
@@ -510,7 +519,7 @@
         } else {
           searchInput.setCustomValidity("");
           const pin = searchInput.value.replace(/[-\s]/g,"");
-          const searchResults = searchDatagroupsForIdentifier(
+          const searchResults = searchDatagroupsForIdentifierNew(
             pin,
             [ cityOwned, ward20TaxSale, scavengerSale, userAddedMarkers, sunshineGospel, ],
           );
@@ -524,26 +533,26 @@
                   if (data.length < 1) {
                     searchResultsSpan.text("No data could be found for this PIN.");
                   } else {
-                    const finalSearchResult = addSearchResultToMap(data[0], useLocalStorage);
-                    showSearchResults(finalSearchResult, () => { searchResultsSpan.html("A new marker for this PIN has been added to the map."); });
+                    const finalSearchResult = addSearchResult(data[0], useLocalStorage);
+                    showMarker(finalSearchResult, () => { searchResultsSpan.html("A new marker for this PIN has been added to the map."); });
                   }
                 },
                 (jqxhr, textStatus) => { console.log(`Failed to retrieve data for PIN ${pin}: ${textStatus}`); },
               );
             }
-          } else if (numberOfResults == 1) {
-            const finalSearchResult = Object.values(searchResults)[0].leafletMarkerReference;
+          } else if (numberOfResults === 1) {
+            const finalSearchResult = Object.values(searchResults)[0];
             searchResultsSpan.html("");
-            showSearchResults(finalSearchResult, () => { searchResultsSpan.html("The results of your search have been displayed on the map."); });
+            showMarker(finalSearchResult, () => { searchResultsSpan.html("The results of your search have been displayed on the map."); });
           } else {
             searchResultsSpan.html(
               getSelect(
                 "Choose a dataset: ",
                 [...Object.keys(searchResults)].sort(),
                 (selection) => {
-                  const finalSearchResult = searchResults[selection].leafletMarkerReference;
+                  const finalSearchResult = searchResults[selection];
                   searchResultsSpan.html("");
-                  showSearchResults(finalSearchResult, () => { searchResultsSpan.html("The results of your search have been displayed on the map."); });
+                  showMarker(finalSearchResult, () => { searchResultsSpan.html("The results of your search have been displayed on the map."); });
                 },
                 true,
                 "Confirm",
