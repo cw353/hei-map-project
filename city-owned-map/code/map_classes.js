@@ -1,5 +1,22 @@
 /* Author: Claire Wagner (Summer 2022 Wheaton College Research Team) */
 
+class ColorGenerator {
+  // source: Sasha Trubetskoy, https://sashamaps.net/docs/resources/20-colors/
+  static colors = [
+    "#e6194B", "#3cb44b", "#ffe119", "#4363d8", "#f58231",
+    "#911eb4", "#42d4f4", "#f032e6", "#bfef45", "#fabed4",
+    "#469990", "#dcbeff", "#9A6324", "#fffac8", "#800000",
+    "#aaffc3", "#808000", "#ffd8b1", "#000075", "#a9a9a9",
+  ];
+  static numberOfColors = ColorGenerator.colors.length;
+  constructor() {
+    this.nextColor = 0;
+    this.getNextColor = () => {
+      return ColorGenerator.colors[this.nextColor++ % ColorGenerator.numberOfColors];
+    }
+  }
+}
+
 class Datagroup {
   childLayers = new Map(); // map of LayerInfo objects
   constructor(name) {
@@ -51,11 +68,10 @@ class MarkerDataDatagroup extends Datagroup {
   #setMarkerData(identifier, markerData) {
     this.markerData.set(identifier.toString(), markerData);
   }
-  addMarker(identifier, data, layerInfo, popupContent) {
-    const marker = new L.marker(
-      [data.latitude, data.longitude],
-      { icon: generateIcon(layerInfo.color), datagroupName: this.name},
-    );
+  addMarker(identifier, data, layerInfo, popupContent, getMarker) {
+    const marker = getMarker
+      ? getMarker([data.latitude, data.longitude], this, layerInfo)
+      : new L.marker([data.latitude, data.longitude], { icon: generateIcon(layerInfo.color) });
     layerInfo.addLayer(marker);
     if (popupContent != null) {
       marker.bindPopup(popupContent, { maxHeight: 200, });
@@ -82,7 +98,7 @@ class ClassifiableMarkerDataDatagroup extends MarkerDataDatagroup {
         this.addChildLayer(new LayerInfo(
           classification,
           "getColor" in options ? options.getColor() : "black",
-          "getNewLayer" in options ? options.getNewLayer(this.dataset.attribution) : L.layerGroup([], { attribution : this.dataset.attribution }),
+          "getLayer" in options ? options.getLayer(this.dataset.attribution) : L.layerGroup([], { attribution : this.dataset.attribution }),
           options.trackMarkerCount,
         ));
       }
@@ -92,6 +108,7 @@ class ClassifiableMarkerDataDatagroup extends MarkerDataDatagroup {
         datum,
         layerInfo,
         this.getPopupContent(datum),
+        options.getMarker,
       );
     }
   }
@@ -192,14 +209,12 @@ class MarkerDatasetDatagroup extends Datagroup {
 }
 
 const DatagroupAwareMarker = L.Marker.extend({
-  registerDatagroupName: function(datagroupName) {
-    L.Util.setOptions(
-      this,
-      { datagroupName: datagroupName },
-    );
+  setDatagroupName: function(datagroupName) {
+    L.Util.setOptions(this, { datagroupName: datagroupName });
+    return this;
   },
   getDatagroupName: function() {
-    return "datagroupName" in this.options ? this.options.datagroupName : undefined;
+    return this.options.datagroupName;
   }
 });
 

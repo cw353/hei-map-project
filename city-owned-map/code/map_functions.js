@@ -1,14 +1,5 @@
 /* Author: Claire Wagner (Summer 2022 Wheaton College Research Team) */
 
-// source: Sasha Trubetskoy, https://sashamaps.net/docs/resources/20-colors/
-const colors = [
-  "#e6194B", "#3cb44b", "#ffe119", "#4363d8", "#f58231",
-  "#911eb4", "#42d4f4", "#f032e6", "#bfef45", "#fabed4",
-  "#469990", "#dcbeff", "#9A6324", "#fffac8", "#800000",
-  "#aaffc3", "#808000", "#ffd8b1", "#000075", "#a9a9a9",
-];
-let nextColor = 0;
-
 function generateIcon(color) {
   // based on an icon created by Naomi Wagner based on https://www.onlinewebfonts.com/icon/467018 (CC BY license)
   const divisor = 25;
@@ -85,51 +76,10 @@ function getDatagroupOverlaySubtree(datagroup, options) {
   };
 }
 
-function getNextColor() {
-  return colors[nextColor++ % colors.length];
-}
-
-function populateDatagroupChildLayers(datagroup, getNewLayer, trackMarkerCount) {
-  for (const datum of datagroup.dataIterator()) {
-    const classification = datagroup.classify(datum);
-    // if the LayerInfo object corresponding to classification doesn't exist yet, create it
-    if (!(datagroup.childLayers.has(classification))) {
-      datagroup.addChildLayer(new LayerInfo(
-          classification,
-          colors[nextColor++ % colors.length],
-          getNewLayer(),
-          trackMarkerCount,
-      ));
-    }
-    // add marker to layer
-    const layerInfo = datagroup.getChildLayer(classification);
-    const marker = addMarkerToLayer(
-      datum,
-      datagroup,
-      layerInfo,
-      datagroup.getPopupContent(datum),
-    );
-  }
-}
-
 function getCheckedInLayer(markerClusterSupportGroup, layerOptions) {
   const layer = L.layerGroup([], layerOptions);
   markerClusterSupportGroup.checkIn(layer);
   return layer;
-}
-
-function addMarkerToLayer(data, datagroup, layerInfo, popupContent) {
-  const marker = new DatagroupAwareMarker([data.latitude, data.longitude], {
-    icon: generateIcon(layerInfo.color),
-  });
-  layerInfo.addLayer(marker);
-  if (popupContent != null) {
-    marker.bindPopup(popupContent, { maxHeight: 200, });
-  }
-  marker.registerDatagroupName(datagroup.name);
-  // add marker metadata to data
-  data.leafletMarkerReference = marker;
-  return marker;
 }
 
 function getPropertyDetailsLink(pin) {
@@ -144,14 +94,6 @@ function getMarkerPopupContent(data, datagroup, dataToDisplay) {
       ($("<p></p>").addClass("increasedLineHeight").html(dataList.join("<br>"))), // data to display
     ])
     .get(0); // unwrap to return DOM node
-}
-
-function getSelect(selectLabel, optionList, onSelect) {
-  const form = $(`<div><label>${selectLabel}</label></div>`).addClass("formContainer");
-  const select = $("<select></select>")
-    .html(optionList.map((option) => { return `<option value="${option}">${option}</option>` }))
-    .on("change", (event) => onSelect(event.target.value));
-  return form.append(select).get(0);
 }
 
 // if includeConfirmationButton is true, then a button will be included as a child of the returned element
@@ -259,7 +201,7 @@ function generateMetadataTable(caption, metadataList) {
 function getMarkerClusterPopupContent(childMarkers) {
   const childDatagroups = {};
   for (const marker of childMarkers) {
-    const datagroupName = "datagroupName" in marker.options ? marker.options.datagroupName : "Unknown Category";
+    const datagroupName = "getDatagroupName" in marker && marker.getDatagroupName() ? marker.getDatagroupName() : "Unknown Category";
     if (datagroupName in childDatagroups) {
       childDatagroups[datagroupName]++;
     } else {

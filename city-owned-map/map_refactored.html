@@ -237,6 +237,16 @@
       },
     );
 
+    const defaultClassifiableOptions = {
+      getColor: new ColorGenerator().getNextColor,
+      getLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
+      getMarker: (latlng, datagroup, layerInfo) => {
+        return new DatagroupAwareMarker(latlng, { icon: generateIcon(layerInfo.color), })
+          .setDatagroupName(datagroup.name);
+      },
+      trackMarkerCount: true,
+    };
+
     const cityOwned = new ClassifiableMarkerDataDatagroup(
       "City-Owned PINs (Possibly for Sale)",
       new Dataset(city_owned_data, city_owned_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
@@ -249,11 +259,7 @@
         { label: "Record Last Updated", data: data.last_update },
         { label: "Property Details", data: getPropertyDetailsLink(data.pin) }
       ]); },
-      {
-        getColor: getNextColor,
-        getNewLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
-        trackMarkerCount: true,
-      },
+      defaultClassifiableOptions,
     );
 
     const ward20TaxSale = new ClassifiableMarkerDataDatagroup(
@@ -269,11 +275,7 @@
         { label: "2019 Tax Due (Excluding Interest)", data: `$${data.total_tax_due}` },
         { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
       ]); },
-      {
-        getColor: getNextColor,
-        getNewLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
-        trackMarkerCount: true,
-      },
+      defaultClassifiableOptions,
     );
 
     const scavengerSale = new ClassifiableMarkerDataDatagroup(
@@ -289,11 +291,7 @@
         { label: "Delinquent Interest", data: `$${data.delinquent_interest}` },
         { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
       ]); },
-      {
-        getColor: getNextColor,
-        getNewLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
-        trackMarkerCount: true,
-      },
+      defaultClassifiableOptions,
     );
 
     /*const businessLicenses = new ClassifiableMarkerDataDatagroup(
@@ -308,11 +306,7 @@
         { label: "License Description", data: data.license_description },
         { label: "Business Activity", data: data.business_activity },
       ]); },
-      {
-        getColor: getNextColor,
-        getNewLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
-        trackMarkerCount: true,
-      },
+        defaultClassifiableOptions,
     );*/
 
     const userAddedMarkers = new ClassifiableMarkerDataDatagroup(
@@ -327,6 +321,7 @@
         { label: "Ward", data: data.ward },
         { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
       ]); },
+      defaultClassifiableOptions,
     );
     userAddedMarkers.addChildLayer(
       new LayerInfo(
