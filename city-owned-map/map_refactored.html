@@ -110,8 +110,6 @@
 
     $("#pageHeader").html(`<h1>${document.title}</h1>`);
 
-    const useLocalStorage = false;
-
     // create map
     const map = L.map("map", {
       center: [41.783, -87.621],
@@ -331,20 +329,6 @@
         false,
       )
     );
-    if (useLocalStorage) {
-      const previousUserAddedPins = localStorage.getItem("hei-map-user-added-pins");
-      previousUserAddedPins && JSON.parse(previousUserAddedPins).forEach((pin) => {
-        getDataByPinViaAjax(
-          pin,
-          (data) => {
-            if (data.length < 1) {
-              console.log("Error: no data found for user-added PIN " + pin);
-            } else {
-              addSearchResultToMap(data[0], false);
-            }
-        });
-      });
-    }
 
     const datagroups = [cityOwned, ward20TaxSale, scavengerSale, userAddedMarkers];
     const datagroupOverlays = [];
@@ -489,7 +473,7 @@
         );
       }
 
-      function addSearchResult(data, updateLocalStorage) {
+      function addSearchResult(data) {
         const dataset = userAddedMarkers.dataset;
         const identifier = data[dataset.identifierField];
         dataset.data[identifier] = data;
@@ -498,10 +482,6 @@
           data,
           userAddedMarkers.getChildLayer("Search Results"),
           userAddedMarkers.getPopupContent(data),
-        );
-        updateLocalStorage && localStorage.setItem(
-          "hei-map-user-added-pins",
-          JSON.stringify(Object.keys(userAddedMarkers.dataset)),
         );
         return userAddedMarkers.getMarkerData(identifier);
       }
@@ -530,7 +510,7 @@
                   if (data.length < 1) {
                     searchResultsSpan.text("No data could be found for this PIN.");
                   } else {
-                    const finalSearchResult = addSearchResult(data[0], useLocalStorage);
+                    const finalSearchResult = addSearchResult(data[0]);
                     showMarker(finalSearchResult, () => { searchResultsSpan.html("A new marker for this PIN has been added to the map."); });
                   }
                 },
