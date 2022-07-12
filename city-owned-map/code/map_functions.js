@@ -269,7 +269,7 @@ function generateMetadataTable(caption, metadataList) {
   );
 }
 
-function getMarkerClusterPopupContent(childMarkers) {
+function getMarkerClusterTooltipContent(childMarkers) {
   const childDatagroups = {};
   for (const marker of childMarkers) {
     const datagroupName = "datagroupName" in marker.options ? marker.options.datagroupName : "Unknown Category";
