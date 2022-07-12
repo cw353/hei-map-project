@@ -53,6 +53,84 @@ class Dataset {
   }
 }
 
+class MarkerDataDatagroupNew extends Datagroup {
+  constructor(name, dataset, options) {
+    super(name);
+    this.dataset = dataset;
+    this.markerData = new Map(); // map of MarkerData objects
+    this.getMarkerIcon = "getMarkerIcon" in options
+      ? options.getMarkerIcon
+      : (markerData) => generateIcon(markerData.layerInfo.color);
+    this.markerOptions = Object.assign(
+      {
+        riseOnHover: true,
+        riseOffset: 1000000,
+        datagroupName: this.name,
+      },
+      options.markerOptions,
+    );
+    this.getMarkerPopupContent = "getMarkerPopupContent" in options
+      ? options.getMarkerPopupContent
+      : null;
+    this.markerPopupContentOptions = "markerPopupContentOptions" in options
+      ? options.markerPopupContentOptions
+      : null;
+  }
+  hasMarkerData(identifier) {
+    return this.markerData.has(identifier);
+  }
+  getMarkerData(identifier) {
+    return this.hasMarkerData(identifier) ? this.markerData.get(identifier) : undefined;
+  }
+  #setMarkerData(identifier, markerData) {
+    this.markerData.set(identifier.toString(), markerData);
+  }
+  addMarker(identifier, data, layerInfo) {
+    const marker = L.marker(
+      [data.latitude, data.longitude],
+      this.markerOptions,
+    );
+    layerInfo.addLayer(marker);
+    const markerData = new MarkerData(data, this, layerInfo, marker);
+    this.#setMarkerData(identifier, markerData);
+    marker.setIcon(this.getMarkerIcon(markerData));
+    if (this.getMarkerPopupContent) {
+      marker.bindPopup(
+        this.getMarkerPopupContent(markerData, this.markerPopupContentOptions),
+        { maxHeight: 300, }
+      );
+    }
+  }
+}
+
+class ClassifiableMarkerDataDatagroupNew extends MarkerDataDatagroupNew {
+  constructor(name, dataset, classify, options) {
+    super(name, dataset, options);
+    this.classify = classify;
+
+    for (const datum of this.dataset.dataIterator()) {
+      const classification = this.classify(datum);
+      // if the LayerInfo object corresponding to classification doesn't exist yet, create it
+      if (!(this.childLayers.has(classification))) {
+        this.addChildLayer(new LayerInfo(
+          classification,
+          "getLayerColor" in options ? options.getLayerColor() : "blue",
+          "getLayer" in options
+            ? options.getLayer(this.dataset.attribution)
+            : L.layerGroup([], { attribution : this.dataset.attribution }),
+          options.trackMarkerCount,
+        ));
+      }
+      const layerInfo = this.getChildLayer(classification);
+      this.addMarker(
+        datum[this.dataset.identifierField],
+        datum,
+        layerInfo,
+      );
+    }
+  }
+}
+
 class MarkerDataDatagroup extends Datagroup {
   constructor(name, dataset) {
     super(name);

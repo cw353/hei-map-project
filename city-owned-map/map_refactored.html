@@ -237,21 +237,39 @@
     }
 
     const favoritedMarkersTableDiv = $("#favoritedMarkersTableDiv");
+    favoritedMarkersTableDiv.on("click", ".showOnMapButton", (event) => {
+      const markerData = $(event.target).data("markerData");
+      $("#mapTabItem").trigger("click");
+      showMarkerOnMap(map, markerData);
+    });
     function generateFavoritedMarkersTable() {
       favoritedMarkersTableDiv.html(
-        generateTable(
-          "Favorited Markers",
-          [...favoritedMarkers.values()],
-          [
-            { label: "Category", function: (markerData) => markerData.datagroup.name },
-            { label: "Subcategory", function: (markerData) => markerData.layerInfo.name },
-            { label: "Identifier", function: (markerData) => {
-                const dataset = markerData.datagroup.dataset;
-                return markerData.data[dataset.identifierField];
-              },
-            },
-          ],
-        )
+        favoritedMarkers.size === 0
+          ? "You have no favorited markers."
+          : generateTable(
+            "Favorited Markers",
+            [...favoritedMarkers.values()],
+            [
+              { label: "Category", function: (markerData) => markerData.datagroup.name },
+              { label: "Subcategory", function: (markerData) => markerData.layerInfo.name },
+              { label: "Data", function: (markerData) => {
+                const markerPopupContentOptions = markerData.datagroup.markerPopupContentOptions;
+                return markerPopupContentOptions && "getDataToDisplay" in markerPopupContentOptions
+                  ? $("<span></span>").addClass("increasedLineHeight")
+                    .html(markerPopupContentOptions.getDataToDisplay(markerData).map((item) => `${item.label}: ${item.data}`).join("<br>"))
+                    .get(0)
+                  : null;
+              }},
+              { label: "Additional Info", function: (markerData) => {
+                return $("<div></div>").addClass("center")
+                  .append(
+                    $("<button type='button'>Show on Map</button>").addClass("showOnMapButton")
+                      .data("markerData", markerData)
+                  )
+                  .get(0);
+              }},
+            ],
+          )
       );
     }
     
@@ -283,7 +301,50 @@
       trackMarkerCount: true,
     };
 
-    const cityOwned = new ClassifiableMarkerDataDatagroup(
+    const cityOwned = new ClassifiableMarkerDataDatagroupNew(
+      "City-Owned PINs (Possibly for Sale)",
+      new Dataset(city_owned_data, city_owned_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
+      (data) => { return ("ward" in data) ? getWard(data.ward) : "Unknown Ward" },
+      {
+        getLayerColor: new ColorGenerator().getNextColor,
+        getLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
+        getMarkerPopupContent: getMarkerPopupContentRevised,
+        trackMarkerCount: true,
+        markerPopupContentOptions: {
+          getDataToDisplay: (markerData) => {
+            const data = markerData.data;
+            return [
+              { label: "PIN", data: data.pin },
+              { label: "Address", data: data.property_address },
+              { label: "Ward", data: data.ward },
+              { label: "Property Status", data: data.property_status },
+              { label: "Record Last Updated", data: data.last_update },
+              { label: "Property Details", data: getPropertyDetailsLink(data.pin) }
+            ];
+          },
+          getButtons: (markerData) => [ getToggleFavoritedButton(markerData) ],
+        },
+      },
+      //() => {return "Test"},
+      /*(markerData) => {
+        const data = markerData.data;
+        return getMarkerPopupContentNew(
+          markerData,
+          [
+            { label: "PIN", data: data.pin },
+            { label: "Address", data: data.property_address },
+            { label: "Ward", data: data.ward },
+            { label: "Property Status", data: data.property_status },
+            { label: "Record Last Updated", data: data.last_update },
+            { label: "Property Details", data: getPropertyDetailsLink(data.pin) }
+          ],
+          [getToggleFavoritedButton(markerData)],
+        );
+      },
+      defaultClassifiableOptions,*/
+    );
+
+    /*const cityOwned = new ClassifiableMarkerDataDatagroup(
       "City-Owned PINs (Possibly for Sale)",
       new Dataset(city_owned_data, city_owned_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
       (data) => { return ("ward" in data) ? getWard(data.ward) : "Unknown Ward" },
@@ -304,7 +365,7 @@
         );
       },
       defaultClassifiableOptions,
-    );
+    );*/
 
     /*const ward20TaxSale = new ClassifiableMarkerDataDatagroup(
       "Ward 20 Tax Sale",
@@ -492,10 +553,11 @@
     .insertBefore(additionalMapControlsDiv.hide());
 
     $("#tabDiv").append(getTabs([
-      { label: "Map", tabContent: $("#mapTab"), callback: () => map.invalidateSize(false), initiallyActive: true },
-      { label: "About This Map", tabContent: $("#aboutMapTab"), },
+      { label: "Map", id: "mapTabItem", tabContent: $("#mapTab"), callback: () => map.invalidateSize(false), initiallyActive: true },
+      { label: "About This Map", id: "aboutMapTabItem", tabContent: $("#aboutMapTab"), },
       {
         label: "Favorited Markers",
+        id: "favoritedMarkersTabItem",
         tabContent: $("#favoritedMarkersTab"),
         callback: generateFavoritedMarkersTable,
       },

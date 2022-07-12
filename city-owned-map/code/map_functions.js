@@ -151,6 +151,21 @@ function getMarkerPopupContentNew(markerData, dataToDisplay, buttons) {
   return popupContentDiv.get(0); // unwrap to return DOM node
 }
 
+function getMarkerPopupContentRevised(markerData, options) {
+  const popupContentDiv = $("<div></div>")
+    .append($(`<div>${markerData.datagroup.name}</div>`).addClass("center underlined")); // header with datagroup name
+  const dataList = options && "getDataToDisplay" in options
+    ? options.getDataToDisplay(markerData).map((item) => `<b>${item.label}</b>: ${item.data}`)
+    : null;
+  dataList && popupContentDiv.append(
+    $("<p></p>").addClass("increasedLineHeight").html(dataList.join("<br>")) // data to display
+  );
+  options && "getButtons" in options && popupContentDiv.append(
+    $("<div></div>").addClass("center").append(options.getButtons(markerData))
+  );
+  return popupContentDiv.get(0); // unwrap to return DOM node
+}
+
 // if includeConfirmationButton is true, then a button will be included as a child of the returned element
 // and onSelect will be called when that button is clicked rather than when an option is chosen
 function getSelect(selectLabel, optionList, onSelect, includeConfirmationButton, buttonText) {
@@ -193,7 +208,8 @@ function getTabs(tabs) {
     };
   }
   const tabElements = tabs.map((tab) => {
-    tab.tabElement = $(`<li>${tab.label}</li>`).addClass("tabListItem")
+    tab.tabElement = $(`<li>${tab.label}</li>`).attr("id", tab.id)
+      .addClass("tabListItem")
       .on("click", (event) => { setActiveTab(tab.label); });
     if (!initiallyActiveTab && tab.initiallyActive) {
       initiallyActiveTab = tab.label;
@@ -256,7 +272,7 @@ function generateMetadataTable(caption, metadataList) {
 function getMarkerClusterPopupContent(childMarkers) {
   const childDatagroups = {};
   for (const marker of childMarkers) {
-    const datagroupName = "getDatagroupName" in marker && marker.getDatagroupName() ? marker.getDatagroupName() : "Unknown Category";
+    const datagroupName = "datagroupName" in marker.options ? marker.options.datagroupName : "Unknown Category";
     if (datagroupName in childDatagroups) {
       childDatagroups[datagroupName]++;
     } else {
