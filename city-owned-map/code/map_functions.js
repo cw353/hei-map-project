@@ -223,19 +223,6 @@ function getMarkerClusterPopupContent(childMarkers) {
 function searchDatagroupsForIdentifier(identifier, datagroups) {
   const searchResults = {};
   for (const datagroup of datagroups) {
-    if ("getData" in datagroup) {
-      const searchResult = datagroup.getData(identifier);
-      if (searchResult) {
-        searchResults[datagroup.name] = searchResult;
-      }
-    }
-  }
-  return searchResults;
-}
-
-function searchDatagroupsForIdentifierNew(identifier, datagroups) {
-  const searchResults = {};
-  for (const datagroup of datagroups) {
     if ("getMarkerData" in datagroup) {
       const searchResult = datagroup.getMarkerData(identifier);
       if (searchResult) {
@@ -246,6 +233,95 @@ function searchDatagroupsForIdentifierNew(identifier, datagroups) {
   return searchResults;
 }
 
-/*function getPinSearchBar(label) {
-  const searchBar = $("<input type='text' inputmode='numeric'></input>")
-}*/
+function getDataByPinViaAjax(pin, done, fail, always) {
+  const jqxhr = $.ajax({
+    url: "https://datacatalog.cookcountyil.gov/resource/c49d-89sn.json",
+    type: "GET",
+    data: {
+      "$query" : `SELECT pin, property_address, property_zip, property_city, ward, latitude, longitude WHERE (pin = '${pin}') AND (latitude IS NOT NULL) AND (longitude IS NOT NULL) LIMIT 1`,
+    },
+    datatype: "json",
+  });
+  done && jqxhr.done(done);
+  fail && jqxhr.fail(fail);
+  always && jqxhr.always(always);
+}
+
+function showMarkerOnMap(map, markerData, callback) {
+  const marker = markerData.marker;
+  const layer = markerData.layerInfo.layer;
+  if (!map.hasLayer(layer)) {
+    map.addLayer(layer);
+  }
+  map.setZoom(12); // workaround to avoid overlapping markers preventing popup from opening correctly
+  markerClusterSupportGroup.zoomToShowLayer(
+    marker,
+    () => { 
+      marker.openPopup();
+      map.panTo(marker.getLatLng()); // center map on marker
+      callback && callback();
+    },
+  );
+}
+
+function getPinSearchBar(map, datasetsToSearch, addSearchResultToMap) {
+  const searchInput = $("<input type='search' inputmode='numeric' pattern='([\s-]*\\d[\\s-]*){14}'></input").get(0);
+  const searchResultsSpan = $("<span></span>");
+  const showSearchResult = (map, searchResultMarkerData, userFeedbackText, userFeedbackColor) => {
+    showMarkerOnMap(map, searchResultMarkerData, () => { searchResultsSpan.css("color", userFeedbackColor).html(userFeedbackText); });
+  }
+  const searchButton = $("<button type='button'>Search</button>").addClass("smallHorizontalMargin")
+    .on("click", () => {
+      searchResultsSpan.html("");
+      if (searchInput.validity.patternMismatch || searchInput.value === "") {
+        searchInput.setCustomValidity("Please enter a valid 14-digit PIN.");
+        searchInput.reportValidity();
+      } else {
+        searchInput.setCustomValidity("");
+        const pin = searchInput.value.replace(/[-\s]/g,"");
+        const searchResults = searchDatagroupsForIdentifier(pin, datasetsToSearch);
+        const numberOfResults = Object.keys(searchResults).length;
+        if (numberOfResults < 1) {
+          if (window.confirm("This PIN is not on the map. Add a new marker to the map for this PIN?")) {
+            getDataByPinViaAjax(
+              pin,
+              (data) => {
+                if (data.length < 1) {
+                  searchResultsSpan.css("color", "red").text("No data could be found for this PIN.");
+                } else {
+                  const finalSearchResult = addSearchResultToMap(data[0]);
+                  showSearchResult(map, finalSearchResult, "A new marker for this PIN has been added to the map.", "green");
+                }
+              },
+              (jqxhr, textStatus) => { 
+                searchResultsSpan.css("color", "red").text("An error occurred while trying to fetch data for this PIN.");
+                console.log(`Failed to retrieve data for PIN ${pin}: ${textStatus}`);
+              },
+            );
+          }
+        } else if (numberOfResults === 1) {
+          const finalSearchResult = Object.values(searchResults)[0];
+          showSearchResult(map, finalSearchResult, "The results of your search have been displayed on the map.", "green");
+        } else {
+          searchResultsSpan.css("color", "black").html(getSelect(
+            "Choose a dataset: ",
+            [...Object.keys(searchResults)].sort(),
+            (selection) => {
+              searchResultsSpan.html("");
+              const finalSearchResult = searchResults[selection];
+              showSearchResult(map, finalSearchResult, "The results of your search have been displayed on the map.", "green");
+            },
+            true,
+            "Confirm",
+          ));
+        }
+      }
+    });
+  
+  return $("<div></div>").addClass("formContainer")
+    .append([
+      $("<label>Search for a PIN: </label>").append(searchInput),
+      searchButton,
+      searchResultsSpan,
+    ]);
+}

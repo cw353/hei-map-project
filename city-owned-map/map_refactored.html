@@ -59,17 +59,9 @@
     <div id="tabDiv"></div>
     
     <div id="mapTab">
-      <div id="searchBarDiv">
-        <label>
-          Search for a PIN on the map:
-        <!-- at least 14 digits, optionally separated by - or whitespace -->
-          <input id="searchInput" type="search" inputmode="numeric" pattern="([\s-]*\d[\s-]*){14}"/>
-        </label>
-        <button type="button" id="searchButton">Search</button>
-        <span id="searchResultsSpan"></span>
-      </div>
       <div id="additionalMapControlsContainer" class="formContainer">
         <div id="additionalMapControls">
+          <div id="pinSearchBarDiv"></div>
           <div id="highlightSelectDiv"></div>
           <div id="radiiInputDiv"></div>
         </div>
@@ -210,7 +202,7 @@
         : "Unknown Ward";
     }
 
-    const sunshineGospel = new MarkerAndCircleDatagroupNew(
+    const sunshineGospel = new MarkerAndCircleDatagroup(
       "Sunshine Gospel Ministries",
       new Dataset(sunshine_gospel, property_locations_metadata.attribution, "pin"),
       {
@@ -220,11 +212,8 @@
         markerPopupContent: "<a href='https://www.sunshinegospel.org/' target='_blank' rel='noopener'>Sunshine Gospel Ministries</a>",
       },
     );
-    /*sunshineGospel.getData = function(identifier) {
-      return identifier === this.data.pin.toString() ? this.data : undefined;
-    }*/
 
-    const ward20Office = new MarkerAndCircleDatagroupNew(
+    const ward20Office = new MarkerAndCircleDatagroup(
       "Ward 20 Office",
       new Dataset(ward_20_office, ward_offices_metadata.attribution, "ward"),
       {
@@ -239,7 +228,7 @@
       getColor: new ColorGenerator().getNextColor,
       getLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
       getMarker: (latlng, datagroup, layerInfo) => {
-        return new DatagroupAwareMarker(latlng, { icon: generateIcon(layerInfo.color), })
+        return new DatagroupAwareMarker(latlng, { icon: generateIcon(layerInfo.color), riseOnHover: true, riseOffset: 1000000, })
           .setDatagroupName(datagroup.name);
       },
       trackMarkerCount: true,
@@ -329,6 +318,19 @@
         false,
       )
     );
+    userAddedMarkers.addSearchResult = function(data) {
+      const identifier = data[this.dataset.identifierField];
+      this.dataset.data[identifier] = data;
+      this.addMarker(
+        identifier,
+        data,
+        this.getChildLayer("Search Results"),
+        this.getPopupContent(data),
+        defaultClassifiableOptions.getMarker,
+      );
+      return this.getMarkerData(identifier);
+    }
+
 
     const datagroups = [cityOwned, ward20TaxSale, scavengerSale, userAddedMarkers];
     const datagroupOverlays = [];
@@ -388,6 +390,14 @@
     }
     legend.addTo(map);
 
+    $("#pinSearchBarDiv").append(
+      getPinSearchBar(
+        map,
+        [ cityOwned, ward20TaxSale, scavengerSale, userAddedMarkers, sunshineGospel, ],
+        (data) => userAddedMarkers.addSearchResult(data),
+      )
+    );
+
     const highlightSelectItems = [
       { highlightSelect: wardHighlightSelect, sort: false, layerNames: ["Ward Boundaries (2015&ndash;2023)", "Ward Boundaries (2023+)"] },
       { highlightSelect: neighborhoodHighlightSelect, sort: true, layerNames: ["Neighborhood Boundaries"] },
@@ -441,104 +451,7 @@
           //zoning_districts.metadata,        
         ],
       ));
-
-      function getDataByPinViaAjax(pin, done, fail, always) {
-        const jqxhr = $.ajax({
-          url: "https://datacatalog.cookcountyil.gov/resource/c49d-89sn.json",
-          type: "GET",
-          data: {
-            "$query" : `SELECT pin, property_address, property_zip, property_city, ward, latitude, longitude WHERE (pin = '${pin}') AND (latitude IS NOT NULL) AND (longitude IS NOT NULL) LIMIT 1`,
-          },
-          datatype: "json",
-        });
-        done && jqxhr.done(done);
-        fail && jqxhr.fail(fail);
-        always && jqxhr.always(always);
-      }
-
-      function showMarker(markerData, callback) {
-        const marker = markerData.marker;
-        const layer = markerData.layerInfo.layer;
-        if (!map.hasLayer(layer)) {
-          map.addLayer(layer);
-        }
-        map.setZoom(12); // workaround to avoid overlapping markers preventing popup from opening correctly
-        markerClusterSupportGroup.zoomToShowLayer(
-          marker,
-          () => { 
-            marker.openPopup();
-            map.panTo(marker.getLatLng()); // center map on marker
-            callback && callback();
-          },
-        );
-      }
-
-      function addSearchResult(data) {
-        const dataset = userAddedMarkers.dataset;
-        const identifier = data[dataset.identifierField];
-        dataset.data[identifier] = data;
-        userAddedMarkers.addMarker(
-          identifier,
-          data,
-          userAddedMarkers.getChildLayer("Search Results"),
-          userAddedMarkers.getPopupContent(data),
-        );
-        return userAddedMarkers.getMarkerData(identifier);
-      }
-
-      const searchInput = document.getElementById("searchInput");
-      const searchResultsSpan = $("#searchResultsSpan");
-      $("#searchButton").on("click", () => {
-        searchResultsSpan.html("");
-        if (searchInput.validity.patternMismatch || searchInput.value === "") {
-          searchInput.setCustomValidity("Please enter a valid 14-digit PIN.");
-          searchInput.reportValidity();
-        } else {
-          searchInput.setCustomValidity("");
-          const pin = searchInput.value.replace(/[-\s]/g,"");
-          const searchResults = searchDatagroupsForIdentifierNew(
-            pin,
-            [ cityOwned, ward20TaxSale, scavengerSale, userAddedMarkers, sunshineGospel, ],
-          );
-          const numberOfResults = Object.keys(searchResults).length;
-
-          if (numberOfResults < 1) {
-            if (window.confirm("This PIN is not on the map. Add a new marker to the map for this PIN?")) {
-              getDataByPinViaAjax(
-                pin,
-                (data) => {
-                  if (data.length < 1) {
-                    searchResultsSpan.text("No data could be found for this PIN.");
-                  } else {
-                    const finalSearchResult = addSearchResult(data[0]);
-                    showMarker(finalSearchResult, () => { searchResultsSpan.html("A new marker for this PIN has been added to the map."); });
-                  }
-                },
-                (jqxhr, textStatus) => { console.log(`Failed to retrieve data for PIN ${pin}: ${textStatus}`); },
-              );
-            }
-          } else if (numberOfResults === 1) {
-            const finalSearchResult = Object.values(searchResults)[0];
-            searchResultsSpan.html("");
-            showMarker(finalSearchResult, () => { searchResultsSpan.html("The results of your search have been displayed on the map."); });
-          } else {
-            searchResultsSpan.html(
-              getSelect(
-                "Choose a dataset: ",
-                [...Object.keys(searchResults)].sort(),
-                (selection) => {
-                  const finalSearchResult = searchResults[selection];
-                  searchResultsSpan.html("");
-                  showMarker(finalSearchResult, () => { searchResultsSpan.html("The results of your search have been displayed on the map."); });
-                },
-                true,
-                "Confirm",
-              )
-            );
-          }
-        }
-      });
-
+    
     console.log("Ending inline script");
     
   </script>
