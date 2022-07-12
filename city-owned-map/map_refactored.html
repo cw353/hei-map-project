@@ -430,7 +430,7 @@
     .insertBefore(additionalMapControlsDiv.hide());
 
     $("#tabDiv").append(getTabs([
-      { label: "Map", tabContent: $("#mapTab"), callback: () => map.invalidateSize(), initiallyActive: true },
+      { label: "Map", tabContent: $("#mapTab"), callback: () => map.invalidateSize(false), initiallyActive: true },
       { label: "About This Map", tabContent: $("#aboutMapTab"), },
       { label: "Favorited PINs", tabContent: $("#favoritedPinsTab"), },
     ]));
@@ -478,10 +478,12 @@
         if (!map.hasLayer(layer)) {
           map.addLayer(layer);
         }
+        map.setZoom(12); // workaround to avoid overlapping markers preventing popup from opening correctly
         markerClusterSupportGroup.zoomToShowLayer(
           marker,
           () => { 
             marker.openPopup();
+            map.panTo(marker.getLatLng()); // center map on marker
             callback && callback();
           },
         );
@@ -563,7 +565,7 @@
 
   <script>
     $("#loadingIcon").hide();
-    $("#pageContent").show(0, () => map.invalidateSize());
+    $("#pageContent").show(0, () => map.invalidateSize(false));
   </script>
 
 </body>
