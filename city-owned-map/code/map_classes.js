@@ -31,8 +31,8 @@ class Datagroup {
 }
 
 class MarkerData {
-  constructor(markerData, datagroup, layerInfo, marker) {
-    this.markerData = markerData;
+  constructor(data, datagroup, layerInfo, marker) {
+    this.data = data;
     this.datagroup = datagroup;
     this.layerInfo = layerInfo;
     this.marker = marker;
@@ -68,20 +68,16 @@ class MarkerDataDatagroup extends Datagroup {
   #setMarkerData(identifier, markerData) {
     this.markerData.set(identifier.toString(), markerData);
   }
-  addMarker(identifier, data, layerInfo, popupContent, getMarker) {
+  addMarker(identifier, data, layerInfo, getPopupContent, getMarker) {
     const marker = getMarker
       ? getMarker([data.latitude, data.longitude], this, layerInfo)
       : new L.marker([data.latitude, data.longitude], { icon: generateIcon(layerInfo.color) });
     layerInfo.addLayer(marker);
-    if (popupContent != null) {
-      marker.bindPopup(popupContent, { maxHeight: 200, });
+    const markerData = new MarkerData(data, this, layerInfo, marker);
+    this.#setMarkerData(identifier, markerData);
+    if (getPopupContent != null) {
+      marker.bindPopup(getPopupContent(markerData), { maxHeight: 200, });
     }
-    this.#setMarkerData(identifier, new MarkerData(
-      data,
-      this,
-      layerInfo,
-      marker,
-    ));
   }
 }
 
@@ -107,7 +103,7 @@ class ClassifiableMarkerDataDatagroup extends MarkerDataDatagroup {
         datum[this.dataset.identifierField],
         datum,
         layerInfo,
-        this.getPopupContent(datum),
+        this.getPopupContent,
         options.getMarker,
       );
     }
@@ -133,7 +129,7 @@ class MarkerAndCircleDatagroup extends MarkerDataDatagroup {
       data[this.dataset.identifierField],
       data,
       this.getChildLayer(this.markerName),
-      "markerPopupContent" in options ? options.markerPopupContent : null,
+      "getMarkerPopupContent" in options ? options.getMarkerPopupContent : null,
     )
     // add child layer for circle
     this.addChildLayer(new LayerInfo(
@@ -231,6 +227,12 @@ class LayerInfo {
     this.layer.addLayer(sublayer);
     if ("markerCount" in this) {
       this.markerCount++;
+    }
+  }
+  removeLayer(sublayer) {
+    this.layer.removeLayer(sublayer);
+    if ("markerCount" in this) {
+      this.markerCount--;
     }
   }
 }

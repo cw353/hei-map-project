@@ -32,6 +32,48 @@ function generateIcon(color) {
   });
 };
 
+function generateFavoritedIcon(color) {
+  // based on an icon created by Naomi Wagner based on https://www.onlinewebfonts.com/icon/467018 (CC BY license)
+  const divisor = 25;
+  const width = 1920 / divisor;
+  const height = 1080 / divisor;
+  const outlineColor = "#262626";
+  return L.divIcon({
+    className: "custom_divicon",
+    iconSize: [width, height],
+    iconAnchor: [width/2, height],
+    popupAnchor: [0,-(height/5)*4],
+    html:
+      `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+        x="0px" y="0px" width="${width}" height="${height}" viewBox="0 0 1920 1080"
+        style="enable-background:new 0 0 1920 1080;" xml:space="preserve"
+      >
+        <style type="text/css">
+          .svgIconStyle{stroke:${outlineColor};stroke-width:50;stroke-miterlimit:10;}
+        </style>
+        <g>
+          <path class="svgIconStyle" fill=${color} d="M938.9,50.4c28.4-1.7,56.9-0.1,83.2,5c104.3,20.6,185.6,75.2,242.1,165.4c32.8,52.4,49.8,110,51.9,171.9
+            c1.2,36.3-5.6,71.1-17.6,105.2c-19.1,54.4-44.9,105.6-73.3,155.5c-53,93.3-114.1,181.1-178.6,266.6c-6.3,8.3-12.6,16.6-19,24.9
+            c-11.8,15.3-23.6,30.6-35.6,45.7c-6,7.6-12,15.1-18,22.7c-3,3.8-6,7.5-9,11.3c-0.8,1-1.6,2-2.4,2.9c-0.6,0.7-1.3,2.2-2.1,2.6
+            c-1.3,0.7-3.3-2.2-4.2-3.3c-36.7-46.6-73.3-93.2-108.2-141.1c-54-73.9-105.6-149.7-151.6-229.3c-26.5-45.9-50.7-92.8-69.2-142.6
+            c-10.7-28.9-19.2-58.5-22.3-89.3c-3.4-34.2-0.2-67.9,8.6-101c33.1-123.9,109.3-208.9,229.8-253.6C872.7,59,905.8,52.4,938.9,50.4z"
+          />
+          <path class="svgIconStyle" fill="${outlineColor}" fill-opacity="0.9" d="M723.2,408.3c-4.8,104.3,85,235.9,237.8,235.7c121.5-0.2,236.6-97.5,237-236.2
+            c0.4-136.3-111.7-238.2-238.6-238.8C834.9,168.4,719.2,275.9,723.2,408.3z"
+          />
+          <path class="svgIconStyle" fill="gold" d="M959,192.6c0.1-0.1,0.1-0.2,0.2-0.3c1.7,1.8,3.1,4.7,4.3,7c19,37.7,38.1,75.3,56.7,113.2c3,6.1,7.1,8,13,8.9
+            c41.9,6.6,83.9,13.1,126.4,18.8c-0.9,4.6-4.4,7.4-7.2,10.5c-17.2,19.6-35.8,37.9-54.1,56.4c-10.2,10.3-20.2,20.7-30.7,30.7
+            c-3.6,3.4-4.6,6.6-3.7,11.5c6.9,39.7,13.6,79.4,20.3,119c0.6,3.6,1.1,7.3,1.8,11.8c-6-0.8-10.6-3.6-15.2-6
+            c-35.2-18.5-70.5-37-105.6-55.8c-3.7-2-6.4-2-10.2,0c-36.7,19.5-73.6,38.7-110.4,58c-2.9,1.5-5.9,2.8-10.1,4.7
+            c1.7-11.4,3.1-21.7,4.8-31.9c5.6-33.7,11.2-67.3,17.1-100.9c0.8-4.3-0.4-6.8-3.2-9.7c-25.7-25.7-51.8-51-76.6-77.7
+            c-5.9-6.3-12-12.5-17.1-20.3c27.1-3.8,53.3-7.4,79.4-11.2c15.4-2.2,30.7-4.9,46.1-7c6.5-0.9,10.8-4.2,14.1-9.4
+            c5.9-9.2,11-18.9,15.8-28.8c13.7-28.3,27.3-56.8,41-85.1C956.9,197,957.9,194.8,959,192.6z"
+          />
+        </g>
+      </svg>`
+  });
+};
+
 function getParentOverlayLabel(name) {
   return (
     `<span class='parentLayer'>${name}</span>`
@@ -86,14 +128,27 @@ function getPropertyDetailsLink(pin) {
   return `<a href="https://www.cookcountyassessor.com/pin/${pin}" target="_blank" rel="noopener">Assessor's Office</a>`;
 }
 
-function getMarkerPopupContent(data, datagroup, dataToDisplay) {
+function getMarkerPopupContent(markerData, dataToDisplay) {
   const dataList = dataToDisplay.map((item) => `<b>${item.label}</b>: ${item.data}`);
   return $("<div></div>")
     .append([
-      $(`<div>${datagroup.name}</div>`).addClass("center underlined"), // header with datagroup name
+      $(`<div>${markerData.datagroup.name}</div>`).addClass("center underlined"), // header with datagroup name
       ($("<p></p>").addClass("increasedLineHeight").html(dataList.join("<br>"))), // data to display
     ])
     .get(0); // unwrap to return DOM node
+}
+
+function getMarkerPopupContentNew(markerData, dataToDisplay, buttons) {
+  const dataList = dataToDisplay.map((item) => `<b>${item.label}</b>: ${item.data}`);
+  const popupContentDiv = $("<div></div>")
+    .append([
+      $(`<div>${markerData.datagroup.name}</div>`).addClass("center underlined"), // header with datagroup name
+      $("<p></p>").addClass("increasedLineHeight").html(dataList.join("<br>")), // data to display
+    ]);
+  buttons && popupContentDiv.append(
+    $("<div></div>").addClass("center").append(buttons)
+  );
+  return popupContentDiv.get(0); // unwrap to return DOM node
 }
 
 // if includeConfirmationButton is true, then a button will be included as a child of the returned element
@@ -162,9 +217,9 @@ function generateTable(caption, data, columns) {
     );
   });
   return $("<table></table>").append([
-      `<caption>${caption}</caption>`,
-      $("<thead></thead>").append(headerCells),
-      $("<tbody></tbody>").append(bodyRows),
+    `<caption>${caption}</caption>`,
+    $("<thead></thead>").append(headerCells),
+    $("<tbody></tbody>").append(bodyRows),
   ]);
 }
 
