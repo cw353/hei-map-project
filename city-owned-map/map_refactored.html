@@ -382,59 +382,60 @@
       "Business Licenses",
       new Dataset(business_license_data, business_licenses_metadata.attribution, "license_number"),
       (data) => { return ("ward" in data) ? getWard(data.ward) : "Unknown Ward" },
-      function(markerData) {
-        const data = markerData.data;
-        return getMarkerPopupContent(markerData, [
-          { label: "Business", data: data.doing_business_as_name },
-          { label: "Address", data: data.address },
-          { label: "Ward", data: data.ward },
-          { label: "License Number", data: data.license_number },
-          { label: "License Description", data: data.license_description },
-          { label: "Business Activity", data: data.business_activity },
-        ]);
-      },
-        defaultClassifiableOptions,
-    );*/
+      getDefaultAutomaticClassificationOptions(
+        (markerData) => {
+          const data = markerData.data;
+          return [
+            { label: "Business", data: data.doing_business_as_name },
+            { label: "Address", data: data.address },
+            { label: "Ward", data: data.ward },
+            { label: "License Number", data: data.license_number },
+            { label: "License Description", data: data.license_description },
+            { label: "Business Activity", data: data.business_activity },
+          ];
+        }
+      ),
+    );
+    favoritedMarkers.registerDatagroup(businessLicenses);*/
 
-    /*const userAddedMarkers = new AutomaticClassificationDatagroup(
+    const userAddedMarkers = new Datagroup(
       "User-Added Markers",
       new Dataset({}, property_locations_metadata.attribution, "pin"),
-      null, // markers added to this datagroup should be manually classified
-      function(markerData) { 
-        const data = markerData.data;
-        return getMarkerPopupContent(markerData, [
-          { label: "PIN", data: data.pin },
-          { label: "Address", data: data.property_address },
-          { label: "Zip Code", data: data.property_zip },
-          { label: "City", data: data.property_city },
-          { label: "Ward", data: data.ward },
-          { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
-        ]);
+      {
+        getMarkerPopupContent: getMarkerPopupContentRevised,
+        markerPopupContentOptions: {
+          getDataToDisplay: (markerData) => getDataToDisplay([
+            { label: "PIN", data: data.pin },
+            { label: "Address", data: data.property_address },
+            { label: "Zip Code", data: data.property_zip },
+            { label: "City", data: data.property_city },
+            { label: "Ward", data: data.ward },
+            { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
+          ]),
+          getFormElementsToDisplay: (markerData) => [ getToggleFavoritedButton(markerData) ],
+        },
       },
-      defaultClassifiableOptions,
     );
     userAddedMarkers.addChildLayer(
       new LayerInfo(
         "Search Results",
         "red",
-        getCheckedInLayer(markerClusterSupportGroup, { attribution: property_locations_metadata.attribution }),
+        getCheckedInLayer(markerClusterSupportGroup, { attribution: userAddedMarkers.dataset.attribution }),
         false,
       )
     );
     userAddedMarkers.addSearchResult = function(data) {
       const identifier = data[this.dataset.identifierField];
-      this.dataset.data[identifier] = data;
       this.addMarker(
         identifier,
         data,
         this.getChildLayer("Search Results"),
-        this.getPopupContent,
-        defaultClassifiableOptions.getMarker,
       );
       return this.getMarkerData(identifier);
-    }*/
+    }
+    favoritedMarkers.registerDatagroup(userAddedMarkers);
 
-    const datagroups = [cityOwned, ward20TaxSale];//, ward20TaxSale, scavengerSale, userAddedMarkers];
+    const datagroups = [cityOwned, ward20TaxSale, scavengerSale, userAddedMarkers];
     const datagroupOverlays = [];
     for (const datagroup of datagroups) {
       datagroupOverlays.push(getChildLayerGroupOverlaySubtree(
@@ -565,15 +566,16 @@
 
   <script>
     $("#loadingIcon").hide();
+    const savedFavoritedMarkersSize = favoritedMarkers.localStorageSize();
+    if (savedFavoritedMarkersSize > 0) {
+      if (window.confirm(`You have ${savedFavoritedMarkersSize} Favorited Markers that were saved during your previous session. Do you want to keep them?`)) {
+        favoritedMarkers.restoreFromLocalStorage();
+      } else {
+        favoritedMarkers.removeFromLocalStorage();
+      }
+    }
     $("#pageContent").show(0, () => {
       map.invalidateSize(false);
-      if (favoritedMarkers.localStorageSize() > 0) {
-        if (window.confirm("Do you want to restore your Favorited Markers from your previous session?")) {
-          favoritedMarkers.restoreFromLocalStorage();
-        } else {
-          favoritedMarkers.removeFromLocalStorage();
-        }
-      }
     });
   </script>
 

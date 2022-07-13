@@ -128,29 +128,6 @@ function getPropertyDetailsLink(pin) {
   return `<a href="https://www.cookcountyassessor.com/pin/${pin}" target="_blank" rel="noopener">Assessor's Office</a>`;
 }
 
-function getMarkerPopupContent(markerData, dataToDisplay) {
-  const dataList = dataToDisplay.map((item) => `<b>${item.label}</b>: ${item.data}`);
-  return $("<div></div>")
-    .append([
-      $(`<div>${markerData.datagroup.name}</div>`).addClass("center underlined"), // header with datagroup name
-      ($("<p></p>").addClass("increasedLineHeight").html(dataList.join("<br>"))), // data to display
-    ])
-    .get(0); // unwrap to return DOM node
-}
-
-function getMarkerPopupContentNew(markerData, dataToDisplay, buttons) {
-  const dataList = dataToDisplay.map((item) => `<b>${item.label}</b>: ${item.data}`);
-  const popupContentDiv = $("<div></div>")
-    .append([
-      $(`<div>${markerData.datagroup.name}</div>`).addClass("center underlined"), // header with datagroup name
-      $("<p></p>").addClass("increasedLineHeight").html(dataList.join("<br>")), // data to display
-    ]);
-  buttons && popupContentDiv.append(
-    $("<div></div>").addClass("center").append(buttons)
-  );
-  return popupContentDiv.get(0); // unwrap to return DOM node
-}
-
 function getMarkerPopupContentRevised(markerData, options) {
   const popupContentDiv = $("<div></div>")
     .append($(`<div>${markerData.datagroup.name}</div>`).addClass("center underlined")); // header with datagroup name

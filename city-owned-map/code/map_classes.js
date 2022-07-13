@@ -32,7 +32,7 @@ class ChildLayerGroup {
 
 class MarkerData {
   constructor(identifier, data, datagroup, layerInfo, marker) {
-    this.identifier = identifier;
+    this.identifier = identifier.toString();
     this.data = data;
     this.datagroup = datagroup;
     this.layerInfo = layerInfo;
@@ -102,10 +102,20 @@ class Datagroup extends ChildLayerGroup {
     this.#setMarkerData(identifier, markerData);
     marker.setIcon(this.getMarkerIcon(markerData));
     if (this.getMarkerPopupContent) {
-      marker.bindPopup(
-        this.getMarkerPopupContent(markerData, this.markerPopupContentOptions),
-        { maxHeight: 300, }
-      );
+      marker.bindPopup("", { maxHeight: 300, });
+      this.#setMarkerPopupContent(markerData);
+    }
+  }
+  // precondition: this.getMarkerPopupContent != null
+  #setMarkerPopupContent(markerData) {
+    markerData.marker.setPopupContent(
+      this.getMarkerPopupContent(markerData, this.markerPopupContentOptions),
+    );
+  }
+  refreshMarkerPopupContent(identifier) {
+    const markerData = this.getMarkerData(identifier);
+    if (markerData && this.getMarkerPopupContent) {
+      this.#setMarkerPopupContent(markerData);
     }
   }
 }
@@ -170,9 +180,6 @@ class MarkerAndCircleDatagroup extends Datagroup {
       }),
       false,
     ));
-  }
-  *dataIterator() {
-    yield this.dataset.data;
   }
   getRadiusInputElement() {
     const circle = this.getChildLayer(this.circleName).layer;
@@ -362,8 +369,13 @@ class FavoritedMarkerGroup {
     if (toRestore) {
       for (const item of JSON.parse(toRestore)) {
         if (this.sourceDatagroups.has(item.datagroupName)) {
-          const markerData = this.sourceDatagroups.get(item.datagroupName).getMarkerData(item.identifier.toString());
-          markerData ? this.add(markerData) : console.error("error: could not find marker data for " + JSON.stringify(item));
+          const markerData = this.sourceDatagroups.get(item.datagroupName).getMarkerData(item.identifier);
+          if (markerData) {
+            this.add(markerData);
+            markerData.datagroup.refreshMarkerPopupContent(markerData.identifier);
+          } else {
+            console.error("error: could not find marker data for " + JSON.stringify(item));
+          }
         } else {
           console.error("error: could not find source datagroup for " + JSON.stringify(item));
         }
