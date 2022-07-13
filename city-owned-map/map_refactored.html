@@ -59,9 +59,9 @@
     <div id="tabDiv"></div>
     
     <div id="mapTab">
+      <div id="pinSearchBarDiv"></div>
       <div id="additionalMapControlsContainer" class="formContainer">
         <div id="additionalMapControls">
-          <div id="pinSearchBarDiv"></div>
           <div id="highlightSelectDiv"></div>
           <div id="radiiInputDiv"></div>
         </div>
@@ -404,14 +404,17 @@
       {
         getMarkerPopupContent: getMarkerPopupContentRevised,
         markerPopupContentOptions: {
-          getDataToDisplay: (markerData) => getDataToDisplay([
-            { label: "PIN", data: data.pin },
-            { label: "Address", data: data.property_address },
-            { label: "Zip Code", data: data.property_zip },
-            { label: "City", data: data.property_city },
-            { label: "Ward", data: data.ward },
-            { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
-          ]),
+          getDataToDisplay: (markerData) => {
+            const data = markerData.data;
+            return getDataToDisplay([
+              { label: "PIN", data: data.pin },
+              { label: "Address", data: data.property_address },
+              { label: "Zip Code", data: data.property_zip },
+              { label: "City", data: data.property_city },
+              { label: "Ward", data: data.ward },
+              { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
+            ]);
+          },
           getFormElementsToDisplay: (markerData) => [ getToggleFavoritedButton(markerData) ],
         },
       },
@@ -425,7 +428,7 @@
       )
     );
     userAddedMarkers.addSearchResult = function(data) {
-      const identifier = data[this.dataset.identifierField];
+      const identifier = data[this.dataset.identifierField].toString();
       this.addMarker(
         identifier,
         data,
@@ -493,13 +496,13 @@
     }
     legend.addTo(map);
 
-    /*$("#pinSearchBarDiv").append(
+    $("#pinSearchBarDiv").append(
       getPinSearchBar(
         map,
         [ cityOwned, ward20TaxSale, scavengerSale, userAddedMarkers, sunshineGospel, ],
         (data) => userAddedMarkers.addSearchResult(data),
       )
-    );*/
+    );
 
     const highlightSelectItems = [
       { highlightSelect: wardHighlightSelect, sort: false, layerNames: ["Ward Boundaries (2015&ndash;2023)", "Ward Boundaries (2023+)"] },
@@ -568,7 +571,7 @@
     $("#loadingIcon").hide();
     const savedFavoritedMarkersSize = favoritedMarkers.localStorageSize();
     if (savedFavoritedMarkersSize > 0) {
-      if (window.confirm(`You have ${savedFavoritedMarkersSize} Favorited Markers that were saved during your previous session. Do you want to keep them?`)) {
+      if (window.confirm(`You have ${savedFavoritedMarkersSize} Favorited Marker${savedFavoritedMarkersSize === 1 ? " that was" : "s that were"} saved during your previous session. Do you want to keep ${savedFavoritedMarkersSize === 1 ? "it" : "them"}?`)) {
         favoritedMarkers.restoreFromLocalStorage();
       } else {
         favoritedMarkers.removeFromLocalStorage();

@@ -32,7 +32,7 @@ class ChildLayerGroup {
 
 class MarkerData {
   constructor(identifier, data, datagroup, layerInfo, marker) {
-    this.identifier = identifier.toString();
+    this.identifier = identifier;
     this.data = data;
     this.datagroup = datagroup;
     this.layerInfo = layerInfo;
@@ -84,10 +84,11 @@ class Datagroup extends ChildLayerGroup {
       : null;
   }
   hasMarkerData(identifier) {
-    return this.markerData.has(identifier);
+    return this.markerData.has(identifier.toString());
   }
   getMarkerData(identifier) {
-    return this.hasMarkerData(identifier) ? this.markerData.get(identifier) : undefined;
+    const identifierAsString = identifier.toString();
+    return this.hasMarkerData(identifierAsString) ? this.markerData.get(identifierAsString) : undefined;
   }
   #setMarkerData(identifier, markerData) {
     this.markerData.set(identifier.toString(), markerData);
