@@ -70,8 +70,14 @@
     </div>
 
     <div id="favoritedMarkersTab">
-      <div id="favoritedMarkersButtonsDiv"></div>
-      <div id="favoritedMarkersTableDiv" class="center"></div>
+      <p class="italic">
+        To add a marker to your Favorited Markers, click on the marker on the map. If the marker can be added to your Favorited Markers, a popup with a button labeled "Add to Favorites" will appear. Click the button to add the marker to your Favorited Markers.
+      </p>
+      <p id="favoritedMarkersOverviewParagraph" class="italic"></p>
+      <div id="favoritedMarkersDetailsDiv">
+        <div id="favoritedMarkersButtonsDiv"></div>
+        <div id="favoritedMarkersTableDiv" class="center"></div>
+      </div>
     </div>
     <div id="aboutMapTab">
       <div id="datasetTableDiv" class="center"></div>
@@ -150,11 +156,11 @@
     // add geographic boundaries
     const geoBoundaries = new ChildLayerGroup("Geographic Boundaries");
     geoBoundaries.addChildLayer(new BoundaryLayerInfo(
-      "Ward Boundaries (2015&ndash;2023)",
+      "Ward Boundaries (2015–2023)",
       ward_boundaries_2015_to_2023.data,
       ward_boundaries_2015_to_2023.metadata.attribution ? ward_boundaries_2015_to_2023.metadata.attribution : "City of Chicago",
       {
-        getTooltipText: (props) => { return `Ward ${props.ward} (2015&ndash;2023)`; },
+        getTooltipText: (props) => { return `Ward ${props.ward} (2015–2023)`; },
         highlightFunction: wardHighlightSelect.highlightFunction,
       },
     ));
@@ -189,54 +195,19 @@
       }
     ));*/
     geoBoundaries.addChildLayer(new LayerInfo("No Boundaries", null, L.layerGroup(), false));
-    map.addLayer(geoBoundaries.getChildLayer("Ward Boundaries (2015&ndash;2023)").layer);
+    map.addLayer(geoBoundaries.getChildLayer("Ward Boundaries (2015–2023)").layer);
 
     function getWard(ward) {
       return ward === 20 ? "Ward 20"
-        : ward <= 10 ? "Wards 1&ndash;10"
-        : ward < 20 ? "Wards 11&ndash;19"
-        : ward <= 30 ? "Wards 21&ndash;30"
-        : ward <= 40 ? "Wards 31&ndash;40"
-        : ward <= 50 ? "Wards 41&ndash;50"
+        : ward <= 10 ? "Wards 01–10"
+        : ward < 20 ? "Wards 11–19"
+        : ward <= 30 ? "Wards 21–30"
+        : ward <= 40 ? "Wards 31–40"
+        : ward <= 50 ? "Wards 41–50"
         : "Unknown Ward";
     }
 
     const favoritedMarkers = new FavoritedMarkerGroup("hei-map-favorited-markers");
-
-    const favoritedMarkersTableDiv = $("#favoritedMarkersTableDiv");
-    favoritedMarkersTableDiv.on("click", ".showOnMapButton", (event) => {
-      const markerData = $(event.target).data("markerData");
-      $("#mapTabItem").trigger("click");
-      showMarkerOnMap(map, markerData);
-    });
-    function generateFavoritedMarkersTable() {
-      favoritedMarkersTableDiv.html(
-        favoritedMarkers.size() === 0
-          ? "You have no favorited markers."
-          : generateTable(
-            "Favorited Markers",
-            favoritedMarkers.getAllMarkers(),
-            [
-              { label: "Category", function: (markerData) => markerData.datagroup.name },
-              { label: "Subcategory", function: (markerData) => markerData.layerInfo.name },
-              { label: "Data", function: (markerData) => {
-                const markerPopupContentOptions = markerData.datagroup.markerPopupContentOptions;
-                return markerPopupContentOptions && "getDataToDisplay" in markerPopupContentOptions
-                  ? markerPopupContentOptions.getDataToDisplay(markerData)
-                  : null;
-              }},
-              { label: "Additional Info", function: (markerData) => {
-                return $("<div></div>").addClass("center")
-                  .append(
-                    $("<button type='button'>Show on Map</button>").addClass("showOnMapButton")
-                      .data("markerData", markerData)
-                  )
-                  .get(0);
-              }},
-            ],
-          )
-      );
-    }
     
     $(".leaflet-popup-pane")
       .on("click", ".toggleFavoritedButton", (event) => {
@@ -479,7 +450,7 @@
       const div = L.DomUtil.create("div", "legend");
       div.innerHTML = "<header>Marker Clusters</header>";
       for (let i = 0; i < rangeBounds.length; i++) {
-        div.innerHTML += `<p><i style="background-color: ${colors[i]}"></i> ${rangeBounds[i]}` + (rangeBounds[i+1] ? `&ndash;${rangeBounds[i+1]} properties<br>` : "+ properties</p>");
+        div.innerHTML += `<p><i style="background-color: ${colors[i]}"></i> ${rangeBounds[i]}` + (rangeBounds[i+1] ? `–${rangeBounds[i+1]} properties<br>` : "+ properties</p>");
       }
       return div;
     }
@@ -494,7 +465,7 @@
     );
 
     const highlightSelectItems = [
-      { highlightSelect: wardHighlightSelect, sort: false, layerNames: ["Ward Boundaries (2015&ndash;2023)", "Ward Boundaries (2023+)"] },
+      { highlightSelect: wardHighlightSelect, sort: false, layerNames: ["Ward Boundaries (2015–2023)", "Ward Boundaries (2023+)"] },
       { highlightSelect: neighborhoodHighlightSelect, sort: true, layerNames: ["Neighborhood Boundaries"] },
       //{ highlightSelect: zoneClassHighlightSelect, sort: true, layerNames: ["Zoning Districts"] },
     ];
@@ -518,6 +489,25 @@
     )
     .insertBefore(additionalMapControlsDiv.hide());
 
+    const favoritedMarkersOverviewParagraph = $("#favoritedMarkersOverviewParagraph");
+    const favoritedMarkersDetailsDiv = $("#favoritedMarkersDetailsDiv");
+    const favoritedMarkersTableDiv = $("#favoritedMarkersTableDiv");
+    favoritedMarkersTableDiv.on("click", ".showOnMapButton", (event) => {
+      const markerData = $(event.target).data("markerData");
+      $("#mapTabItem").trigger("click");
+      showMarkerOnMap(map, markerData);
+    });
+    function generateFavoritedMarkersContent() {
+      const numFavoritedMarkers = favoritedMarkers.size();
+      favoritedMarkersOverviewParagraph.text(`You have ${numFavoritedMarkers} Favorited Marker${numFavoritedMarkers === 1 ? "" : "s"}.`);
+      if (numFavoritedMarkers > 0) {
+        favoritedMarkersTableDiv.html(generateFavoritedMarkersTable(favoritedMarkers.getAll()));
+        favoritedMarkersDetailsDiv.show(0);
+      } else {
+        favoritedMarkersDetailsDiv.hide(0);
+      }
+    }
+
     $("#tabDiv").append(getTabs([
       { label: "Map", id: "mapTabItem", tabContent: $("#mapTab"), callback: () => map.invalidateSize(false), initiallyActive: true },
       { label: "About This Map", id: "aboutMapTabItem", tabContent: $("#aboutMapTab"), },
@@ -525,13 +515,13 @@
         label: "Favorited Markers",
         id: "favoritedMarkersTabItem",
         tabContent: $("#favoritedMarkersTab"),
-        callback: generateFavoritedMarkersTable,
+        callback: generateFavoritedMarkersContent,
       },
     ]));
 
     $("#aboutMapTab")
       .append(
-        "<p id='mapDescription'>This is a map of properties that may be of interest to Sunshine Gospel Ministries'"
+        "<p class='italic'>This is a map of properties that may be of interest to Sunshine Gospel Ministries'"
         + " Housing Equity Initiative (HEI). This map was created by the Wheaton College 2022"
         + " Summer Research Team.</p>"
       )
@@ -552,15 +542,28 @@
         ],
       ));
     
-    $("#favoritedMarkersButtonsDiv").append(
+    $("#favoritedMarkersButtonsDiv").append([
       $("<button type='button'>Delete All Favorited Markers</button>")
         .on("click", (event) => {
           if (favoritedMarkers.size() > 0 && window.confirm("Are you sure you want to delete all of your Favorited Markers?")) {
             favoritedMarkers.removeAll();
-            generateFavoritedMarkersTable();
+            generateFavoritedMarkersContent();
           }
-        })
-    )
+        }),
+      $("<button type='button'>Export All Favorited Markers as JSON</button>")
+        .on("click", (event) => {
+          const toExport = JSON.stringify(
+            favoritedMarkers.getAll().map((markerData) => {
+              return {
+                category: markerData.datagroup.name,
+                subcategory: markerData.layerInfo.name,
+                data: markerData.data,
+              }
+            })
+          );
+          downloadDataAsFile(toExport, "favoritedMarkers.json", "application/json");
+        }),
+    ]);
     
     console.log("Ending inline script");
     

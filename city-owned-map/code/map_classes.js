@@ -391,7 +391,7 @@ class FavoritedMarkerGroup {
     const saved = localStorage.getItem(this.localStorageItemName);
     return saved ? JSON.parse(saved).length : 0;
   }
-  getAllMarkers() {
+  getAll() {
     // sort primary by datagroup name and secondarily by layerinfo name
     return [...this.favoritedMarkers.values()].sort(
       (a, b) => compare(a.datagroup.name, b.datagroup.name, () => compare(a.layerInfo.name, b.layerInfo.name, null))

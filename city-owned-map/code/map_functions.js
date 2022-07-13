@@ -244,6 +244,31 @@ function generateMetadataTable(caption, metadataList) {
   );
 }
 
+function generateFavoritedMarkersTable(favoritedMarkers) {
+  return generateTable(
+    "Favorited Markers",
+    favoritedMarkers,
+    [
+      { label: "Category", function: (markerData) => markerData.datagroup.name },
+      { label: "Subcategory", function: (markerData) => markerData.layerInfo.name },
+      { label: "Data", function: (markerData) => {
+        const markerPopupContentOptions = markerData.datagroup.markerPopupContentOptions;
+        return markerPopupContentOptions && "getDataToDisplay" in markerPopupContentOptions
+          ? markerPopupContentOptions.getDataToDisplay(markerData)
+          : null;
+      }},
+      { label: "Additional Info", function: (markerData) => {
+        return $("<div></div>").addClass("center")
+          .append(
+            $("<button type='button'>Show on Map</button>").addClass("showOnMapButton")
+              .data("markerData", markerData)
+          )
+          .get(0);
+      }},
+    ]
+  );
+}
+
 function getMarkerClusterTooltipContent(childMarkers) {
   const childDatagroups = {};
   for (const marker of childMarkers) {
@@ -370,4 +395,23 @@ function getPinSearchBar(map, datasetsToSearch, addSearchResultToMap) {
       searchButton,
       searchResultsSpan,
     ]);
+}
+
+/**
+ * Helper function to download data as file.
+ * Based on https://stackoverflow.com/a/30832210 (CC BY-SA 3.0 license).
+ * @param data The data to include in the file.
+ * @param filename The name of the file to download.
+ * @param type The MIME type of the data.
+ */
+ function downloadDataAsFile(data, filename, type) {
+  const file = new Blob([data], {type: type});
+  const downloadLink = document.createElement("a");
+  const url = URL.createObjectURL(file);
+  downloadLink.href = url;
+  downloadLink.download = filename;
+  downloadLink.click();
+  setTimeout(function() {
+    URL.revokeObjectURL(url);  
+  }, 0);
 }
