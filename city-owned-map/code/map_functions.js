@@ -236,6 +236,10 @@ function generateTable(caption, data, columns) {
   ]);
 }
 
+function compare(a, b, tiebreakerFunction) {
+  return a < b ? -1 : a > b ? 1 : (tiebreakerFunction != null) ? tiebreakerFunction() : 0;
+}
+
 function generateMetadataTable(caption, metadataList) {
   const datefields = [
     { accessor: "createdAt", label: "Created on" },
@@ -244,10 +248,7 @@ function generateMetadataTable(caption, metadataList) {
   ];
   return generateTable(
     caption,
-    metadataList.sort((m1, m2) => {
-	  // sort datasets by name
-	  return m1.name < m2.name ? -1 : m1.name > m2.name ? 1 : 0;
-	}),
+    metadataList.sort((a, b) => compare(a.name, b.name, null)),
     [
       { label: "Dataset", function: (datum) => getNewTabOpenLink(datum.dataUri, datum.name) },
       { label: "Provided By", function : (datum) => getNewTabOpenLink(datum.attributionLink, datum.attribution), },

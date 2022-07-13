@@ -244,7 +244,8 @@
           ? "You have no favorited markers."
           : generateTable(
             "Favorited Markers",
-            [...favoritedMarkers.values()],
+            // sort primary by datagroup name and secondarily by layerinfo name
+            [...favoritedMarkers.values()].sort((a, b) => compare(a.datagroup.name, b.datagroup.name, () => compare(a.layerInfo.name, b.layerInfo.name, null))),
             [
               { label: "Category", function: (markerData) => markerData.datagroup.name },
               { label: "Subcategory", function: (markerData) => markerData.layerInfo.name },
@@ -285,105 +286,65 @@
         .data("markerData", markerData);
     }
 
-    const defaultClassifiableOptions = {
-      getColor: new ColorGenerator().getNextColor,
-      getLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
-      getMarker: (latlng, datagroup, layerInfo) => {
-        return new DatagroupAwareMarker(latlng, { icon: generateIcon(layerInfo.color), riseOnHover: true, riseOffset: 1000000, })
-          .setDatagroupName(datagroup.name);
-      },
-      trackMarkerCount: true,
+    const colorGenerator = new ColorGenerator();
+    const getDefaultClassifiableOptions = (getListOfDataToDisplay) => {
+      return {
+        getLayerColor: colorGenerator.getNextColor,
+        getLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
+        getMarkerPopupContent: getMarkerPopupContentRevised,
+        markerPopupContentOptions: {
+          getDataToDisplay: (markerData) => {
+            const dataList = getListOfDataToDisplay(markerData);
+            return $("<span></span>").addClass("increasedLineHeight")
+              .html(dataList.map((item) => `<span class='dataToDisplayLabel'>${item.label}</span>: ${item.data}`).join("<br>"))
+              .get(0);
+          },
+          getFormElementsToDisplay: (markerData) => [ getToggleFavoritedButton(markerData) ],
+        },
+        trackMarkerCount: true,
+      };
     };
 
     const cityOwned = new ClassifiableMarkerDataDatagroupNew(
       "City-Owned PINs (Possibly for Sale)",
       new Dataset(city_owned_data, city_owned_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
       (data) => { return ("ward" in data) ? getWard(data.ward) : "Unknown Ward" },
-      {
-        getLayerColor: new ColorGenerator().getNextColor,
-        getLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
-        getMarkerPopupContent: getMarkerPopupContentRevised,
-        trackMarkerCount: true,
-        markerPopupContentOptions: {
-          getDataToDisplay: (markerData) => {
-            const data = markerData.data;
-            const dataToDisplay = [
-              { label: "PIN", data: data.pin },
-              { label: "Address", data: data.property_address },
-              { label: "Ward", data: data.ward },
-              { label: "Property Status", data: data.property_status },
-              { label: "Record Last Updated", data: data.last_update },
-              { label: "Property Details", data: getPropertyDetailsLink(data.pin) }
-            ];
-            return $("<span></span>").addClass("increasedLineHeight")
-              .html(dataToDisplay.map((item) => `<span class='dataToDisplayLabel'>${item.label}</span>: ${item.data}`).join("<br>"))
-              .get(0);
-          },
-          getFormElementsToDisplay: (markerData) => [ getToggleFavoritedButton(markerData) ],
-        },
-      },
-      //() => {return "Test"},
-      /*(markerData) => {
-        const data = markerData.data;
-        return getMarkerPopupContentNew(
-          markerData,
-          [
+      getDefaultClassifiableOptions(
+        (markerData) => {
+          const data = markerData.data;
+          return [
             { label: "PIN", data: data.pin },
             { label: "Address", data: data.property_address },
             { label: "Ward", data: data.ward },
             { label: "Property Status", data: data.property_status },
             { label: "Record Last Updated", data: data.last_update },
-            { label: "Property Details", data: getPropertyDetailsLink(data.pin) }
-          ],
-          [getToggleFavoritedButton(markerData)],
-        );
-      },
-      defaultClassifiableOptions,*/
+            { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
+          ];
+        }
+      ),
     );
 
-    /*const cityOwned = new ClassifiableMarkerDataDatagroup(
-      "City-Owned PINs (Possibly for Sale)",
-      new Dataset(city_owned_data, city_owned_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
-      (data) => { return ("ward" in data) ? getWard(data.ward) : "Unknown Ward" },
-      //() => {return "Test"},
-      (markerData) => {
-        const data = markerData.data;
-        return getMarkerPopupContentNew(
-          markerData,
-          [
-            { label: "PIN", data: data.pin },
-            { label: "Address", data: data.property_address },
-            { label: "Ward", data: data.ward },
-            { label: "Property Status", data: data.property_status },
-            { label: "Record Last Updated", data: data.last_update },
-            { label: "Property Details", data: getPropertyDetailsLink(data.pin) }
-          ],
-          [getToggleFavoritedButton(markerData)],
-        );
-      },
-      defaultClassifiableOptions,
-    );*/
-
-    /*const ward20TaxSale = new ClassifiableMarkerDataDatagroup(
+    const ward20TaxSale = new ClassifiableMarkerDataDatagroupNew(
       "Ward 20 Tax Sale",
       new Dataset(taxsale_ward20_data, taxsale_ward20_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
       (data) => { return ("classification" in data) ? data.classification : "Unclassified" },
-      function(markerData) {
-        const data = markerData.data;
-        return getMarkerPopupContent(markerData, [
-          { label: "PIN", data: data.pin },
-          { label: "Address", data: data.property_address },
-          { label: "Ward", data: data.ward },
-          { label: "Classification", data: data.classification },
-          { label: "2019 Tax Due (Including Interest)", data: `$${data.total_due_including_interest}` },
-          { label: "2019 Tax Due (Excluding Interest)", data: `$${data.total_tax_due}` },
-          { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
-        ]);
-      },
-      defaultClassifiableOptions,
+      getDefaultClassifiableOptions(
+        (markerData) => {
+          const data = markerData.data;
+          return [
+            { label: "PIN", data: data.pin },
+            { label: "Address", data: data.property_address },
+            { label: "Ward", data: data.ward },
+            { label: "Classification", data: data.classification },
+            { label: "2019 Tax Due (Including Interest)", data: `$${data.total_due_including_interest}` },
+            { label: "2019 Tax Due (Excluding Interest)", data: `$${data.total_tax_due}` },
+            { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
+          ];
+        }
+      ),
     );
 
-    const scavengerSale = new ClassifiableMarkerDataDatagroup(
+    /*const scavengerSale = new ClassifiableMarkerDataDatagroup(
       "Scavenger Sale 2022",
       new Dataset(scavenger_sale_data, scavenger_sale_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
       (data) => { return "property_code_class" in data ? data.property_code_class : "Unclassified" },
@@ -458,7 +419,7 @@
       return this.getMarkerData(identifier);
     }*/
 
-    const datagroups = [cityOwned];//, ward20TaxSale, scavengerSale, userAddedMarkers];
+    const datagroups = [cityOwned, ward20TaxSale];//, ward20TaxSale, scavengerSale, userAddedMarkers];
     const datagroupOverlays = [];
     for (const datagroup of datagroups) {
       datagroupOverlays.push(getDatagroupOverlaySubtree(

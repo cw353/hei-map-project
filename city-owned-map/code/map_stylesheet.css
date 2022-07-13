@@ -145,6 +145,10 @@ input:invalid {
   border-width: 2px 2px 0 2px;
 }
 
+table {
+  width: 100%;
+}
+
 table, th, td {
   border: 2px solid black;
   border-collapse: collapse;
