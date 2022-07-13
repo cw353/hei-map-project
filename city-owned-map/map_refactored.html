@@ -70,6 +70,7 @@
     </div>
 
     <div id="favoritedMarkersTab">
+      <div id="favoritedMarkersButtonsDiv"></div>
       <div id="favoritedMarkersTableDiv" class="center"></div>
     </div>
     <div id="aboutMapTab">
@@ -550,6 +551,16 @@
           //zoning_districts.metadata,        
         ],
       ));
+    
+    $("#favoritedMarkersButtonsDiv").append(
+      $("<button type='button'>Delete All Favorited Markers</button>")
+        .on("click", (event) => {
+          if (favoritedMarkers.size() > 0 && window.confirm("Are you sure you want to delete all of your Favorited Markers?")) {
+            favoritedMarkers.removeAll();
+            generateFavoritedMarkersTable();
+          }
+        })
+    )
     
     console.log("Ending inline script");
     

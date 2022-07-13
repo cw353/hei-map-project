@@ -118,7 +118,9 @@ class Datagroup extends ChildLayerGroup {
   }
   // precondition: this.getMarkerPopupContent != null
   #setMarkerPopupContent(markerData) {
-    markerData.marker.setPopupContent(
+    const marker = markerData.marker;
+    marker.closePopup();
+    marker.setPopupContent(
       this.getMarkerPopupContent(markerData, this.markerPopupContentOptions),
     );
   }
@@ -403,12 +405,19 @@ class FavoritedMarkerGroup {
     markerData.marker.setIcon(generateFavoritedIcon(markerData.layerInfo.color));
     !skipUpdatingLocalStorage && this.saveToLocalStorage();
   }
-  remove(markerData) {
+  remove(markerData, skipUpdatingLocalStorage) {
     if (this.has(markerData)) {
       this.favoritedMarkers.delete(markerData);
       markerData.marker.setIcon(generateIcon(markerData.layerInfo.color));
-      this.saveToLocalStorage();
+      !skipUpdatingLocalStorage && this.saveToLocalStorage();
     }
+  }
+  removeAll() {
+    for (const markerData of this.favoritedMarkers.values()) {
+      this.remove(markerData, true);
+      markerData.datagroup.refreshMarkerPopupContent(markerData.identifier);
+    }
+    this.removeFromLocalStorage();
   }
   registerDatagroup(datagroup) {
     this.sourceDatagroups.set(datagroup.name, datagroup);
