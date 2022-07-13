@@ -199,6 +199,10 @@ function getOpenInNewTabLink(url, displayText) {
   return `<a href=${url} target='_blank' rel='noopener'>${displayText ? displayText : url}</a>`;
 };
 
+function compare(a, b, tiebreakerFunction) {
+  return a < b ? -1 : a > b ? 1 : (tiebreakerFunction != null) ? tiebreakerFunction() : 0;
+}
+
 function generateTable(caption, data, columns) {
   const headerCells = $("<tr></tr>").append(columns.map((col) => `<th>${col.label}</th>`));
   const bodyRows = data.map((datum) => {
@@ -211,10 +215,6 @@ function generateTable(caption, data, columns) {
     $("<thead></thead>").append(headerCells),
     $("<tbody></tbody>").append(bodyRows),
   ]);
-}
-
-function compare(a, b, tiebreakerFunction) {
-  return a < b ? -1 : a > b ? 1 : (tiebreakerFunction != null) ? tiebreakerFunction() : 0;
 }
 
 function generateMetadataTable(caption, metadataList) {

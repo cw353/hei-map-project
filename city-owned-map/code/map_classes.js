@@ -17,19 +17,6 @@ class ColorGenerator {
   }
 }
 
-class ChildLayerGroup {
-  childLayers = new Map(); // map of LayerInfo objects
-  constructor(name) {
-    this.name = name;
-  }
-  addChildLayer(layerInfo) {
-    this.childLayers.set(layerInfo.name, layerInfo);
-  }
-  getChildLayer(layerName) {
-    return this.childLayers.has(layerName) ? this.childLayers.get(layerName) : undefined;
-  }
-}
-
 class MarkerData {
   constructor(identifier, data, datagroup, layerInfo, marker) {
     this.identifier = identifier;
@@ -57,6 +44,19 @@ class Dataset {
     for (const key of Object.keys(this.data)) {
       yield this.data[key];
     }
+  }
+}
+
+class ChildLayerGroup {
+  childLayers = new Map(); // map of LayerInfo objects
+  constructor(name) {
+    this.name = name;
+  }
+  addChildLayer(layerInfo) {
+    this.childLayers.set(layerInfo.name, layerInfo);
+  }
+  getChildLayer(layerName) {
+    return this.childLayers.has(layerName) ? this.childLayers.get(layerName) : undefined;
   }
 }
 

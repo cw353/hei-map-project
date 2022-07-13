@@ -8,15 +8,15 @@
   <title>Map of Properties of Interest to HEI</title>
 
   <!-- Leaflet CDN -->
-  <!--link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
     integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
     crossorigin=""/>
   <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
     integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
-    crossorigin=""></script-->
+    crossorigin=""></script>
 
   <!-- Leaflet.markercluster CDN -->
-  <!--link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
     integrity="sha512-RLEjtaFGdC4iQMJDbMzim/dOvAu+8Qp9sw7QE4wIMYcg2goVoivzwgSZq9CsIxp4xKAZPKh5J2f2lOko2Ze6FQ=="
     crossorigin=""/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"
@@ -24,30 +24,23 @@
     crossorigin=""/>
   <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"
     integrity="sha512-MQlyPV+ol2lp4KodaU/Xmrn+txc1TP15pOBF/2Sfre7MRsA/pB4Vy58bEqe9u7a7DczMLtU5wT8n7OblJepKbg=="
-    crossorigin=""></script-->
+    crossorigin=""></script>
 
   <!-- Leaflet.MarkerCluster.LayerSupport CDN -->
-  <!--script src="https://unpkg.com/leaflet.markercluster.layersupport@2.0.1/dist/leaflet.markercluster.layersupport.js"
+  <script src="https://unpkg.com/leaflet.markercluster.layersupport@2.0.1/dist/leaflet.markercluster.layersupport.js"
     integrity="sha512-Utd3nyu+vSSF4E6z/hcIzoi2mCedtng1MTF2sZWLnlL2BCwSyyvwT2otaWEiVmkgCpfTy6C/RVxo5WIoJ9zY3Q=="
-    crossorigin=""></script-->
+    crossorigin=""></script>
   
   <!-- jQuery -->
-  <!--script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"
     integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
-    crossorigin=""></script-->
+    crossorigin=""></script>
 
   <!-- Local copies of Leaflet plugin scripts and stylesheets -->
-  <link rel="stylesheet" href="libraries/leaflet/leaflet.css"/>
-  <script src="libraries/leaflet/leaflet-src.js"></script>
-  <link rel="stylesheet" href="libraries/leaflet/plugins/MarkerCluster/MarkerCluster.css"/>
-  <link rel="stylesheet" href="libraries/leaflet/plugins/MarkerCluster/MarkerCluster.Default.css"/>
-  <script src="libraries/leaflet/plugins/MarkerCluster/leaflet.markercluster-src.js"></script>
-  <script src="libraries/leaflet/plugins/MarkerClusterLayerSupport/layersupport.js"></script>
   <link rel="stylesheet" href="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
   <script src="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
-  <script src="libraries/jquery-3.6.0.js"></script>
 
-  <!-- External files for stylesheets, functions, and data -->
+  <!-- External stylesheet -->
   <link rel="stylesheet" href="code/map_stylesheet.css"/>
     
 </head>
@@ -97,13 +90,12 @@
   <script src="code/map_classes.js"></script>
   <script src="data/geojson/ward_boundaries.js"></script>
   <script src="data/geojson/neighborhood_boundaries.js"></script>
-  <!--script src="data/geojson/zoning_districts.js"></script-->
+  <script src="data/geojson/zoning_districts.js"></script>
   <script src="data/misc/misc.js"></script>
   <script src="data/misc/individual_properties.js"></script>
   <script src="data/city-owned/city_owned_data.js"></script>
   <script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
   <script src="data/scavenger-sale/scavenger_data.js"></script>
-  <!--script src="data/business-licenses/business_license_data.js"></script-->
 
   <script>
 
@@ -183,7 +175,7 @@
         onEachFeature: (feature) => { neighborhoodHighlightSelect.addOption(feature.properties.pri_neigh); },
       },
     ));
-    /*const zoneClassRegex = new RegExp("^[A-Z]+");
+    const zoneClassRegex = new RegExp("^[A-Z]+");
     geoBoundaries.addChildLayer(new BoundaryLayerInfo(
       "Zoning Districts",
       zoning_districts.data,
@@ -193,7 +185,7 @@
         highlightFunction: zoneClassHighlightSelect.highlightFunction,
         onEachFeature: (feature) => { zoneClassHighlightSelect.addOption(zoneClassRegex.exec(feature.properties.zone_class)[0]); }, // add alphabetic zone class prefix
       }
-    ));*/
+    ));
     geoBoundaries.addChildLayer(new LayerInfo("No Boundaries", null, L.layerGroup(), false));
     map.addLayer(geoBoundaries.getChildLayer("Ward Boundaries (2015–2023)").layer);
 
@@ -353,25 +345,6 @@
       ),
     );
 
-    /*const businessLicenses = new AutomaticClassificationDatagroup(
-      "Business Licenses",
-      new Dataset(business_license_data, business_licenses_metadata.attribution, "license_number"),
-      (data) => { return ("ward" in data) ? getWard(data.ward) : "Unknown Ward" },
-      getDefaultAutomaticClassificationOptions(
-        (markerData) => {
-          const data = markerData.data;
-          return [
-            { label: "Business", data: data.doing_business_as_name },
-            { label: "Address", data: data.address },
-            { label: "Ward", data: data.ward },
-            { label: "License Number", data: data.license_number },
-            { label: "License Description", data: data.license_description },
-            { label: "Business Activity", data: data.business_activity },
-          ];
-        }
-      ),
-    );*/
-
     const userAddedMarkers = new SearchResultsDatagroup(
       "User-Added Markers",
       new Dataset({}, property_locations_metadata.attribution, "pin"),
@@ -467,7 +440,7 @@
     const highlightSelectItems = [
       { highlightSelect: wardHighlightSelect, sort: false, layerNames: ["Ward Boundaries (2015–2023)", "Ward Boundaries (2023+)"] },
       { highlightSelect: neighborhoodHighlightSelect, sort: true, layerNames: ["Neighborhood Boundaries"] },
-      //{ highlightSelect: zoneClassHighlightSelect, sort: true, layerNames: ["Zoning Districts"] },
+      { highlightSelect: zoneClassHighlightSelect, sort: true, layerNames: ["Zoning Districts"] },
     ];
     const highlightSelectDiv = $("#highlightSelectDiv");
     for (const item of highlightSelectItems) {
@@ -534,11 +507,10 @@
           taxsale_ward20_metadata,
           scavenger_sale_metadata,
           property_classification_codes_metadata,
-          //business_licenses_metadata,
           ward_boundaries_2015_to_2023.metadata,
           ward_boundaries_2023.metadata,
           neighborhood_boundaries.metadata,
-          //zoning_districts.metadata,        
+          zoning_districts.metadata,        
         ],
       ));
     

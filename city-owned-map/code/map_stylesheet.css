@@ -1,6 +1,4 @@
-.formContainer {
-  margin: 10px;
-}
+/* Author: Claire Wagner (Summer 2022 Wheaton College Research Team) */
 
 input:valid {
   background-color: null;
@@ -10,12 +8,49 @@ input:invalid {
   background-color: pink;
 }
 
-.successMessage {
-  color: green;
+button {
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-top: 3px;
+  margin-bottom: 3px;
 }
 
-.failureMessage {
-  color: red;
+table {
+  width: 100%;
+}
+
+table, th, td {
+  border: 2px solid black;
+  border-collapse: collapse;
+}
+
+table caption {
+  font-weight: bold;
+  font-size: 1.15em;
+  margin: 5px;
+}
+
+th, td {
+  padding: 5px;
+  vertical-align: middle;
+}
+
+th {
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.05em;
+}
+
+td {
+  text-align: left;
+  min-width: 100px;
+  max-width: 800px;
+  width: auto;
+}
+
+td ul, .markerClusterPopupContent ul {
+  list-style-position: outside;
+  padding-left: 20px;
 }
 
 .center {
@@ -26,28 +61,33 @@ input:invalid {
   text-decoration: underline;
 }
 
-.increasedLineHeight {
-  line-height: 1.5;
-}
-
-button {
-  margin-left: 5px;
-  margin-right: 5px;
-  margin-top: 3px;
-  margin-bottom: 3px;
-}
-
-.parentLayer {
-  font-weight: bold;
-  font-size: 1.15em;
-}
-
 .bolded {
   font-weight: bold;
 }
 
 .italic {
   font-style: italic;
+}
+
+.formContainer {
+  margin: 10px;
+}
+
+.successMessage {
+  color: green;
+}
+
+.failureMessage {
+  color: red;
+}
+
+.increasedLineHeight {
+  line-height: 1.5;
+}
+
+.parentLayer {
+  font-weight: bold;
+  font-size: 1.15em;
 }
 
 .leafLayer {
@@ -98,29 +138,6 @@ button {
   font-weight: bold;
 }
 
-#map {
-  display: flex;
-  width: 100%;
-  height: 75vh;/*600px;*/
-  left: 0;
-  top: 0;
-}
-
-#loadingIcon {
-  display: block;
-  margin: auto;
-  width: 50%;
-}
-
-#pageHeader {
-  text-align: center;
-  font-size: 12px;
-}
-
-#pinSearchInput {
-  width: 12em;
-}
-
 /* based on https://www.digitalocean.com/community/tutorials/react-tabs-component (joshtronic and christinagorton, CC BY-NC-SA 4.0 license) */
 .tabList {
   border-bottom: 2px solid #ccc;
@@ -143,40 +160,25 @@ button {
   border-width: 2px 2px 0 2px;
 }
 
-table {
+#map {
+  display: flex;
   width: 100%;
+  height: 75vh;/*600px;*/
+  left: 0;
+  top: 0;
 }
 
-table, th, td {
-  border: 2px solid black;
-  border-collapse: collapse;
+#loadingIcon {
+  display: block;
+  margin: auto;
+  width: 50%;
 }
 
-table caption {
-  font-weight: bold;
-  font-size: 1.15em;
-  margin: 5px;
-}
-
-th, td {
-  padding: 5px;
-}
-
-th {
+#pageHeader {
   text-align: center;
-  font-weight: bold;
-  font-size: 1.05em;
+  font-size: 12px;
 }
 
-td {
-  text-align: left;
-  vertical-align: middle;
-  min-width: 100px;
-  max-width: 800px;
-  width: auto;
-}
-
-td ul, .markerClusterPopupContent ul {
-  list-style-position: outside;
-  padding-left: 20px;
+#pinSearchInput {
+  width: 12em;
 }
