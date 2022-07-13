@@ -97,21 +97,21 @@ function getLayerInfoOverlayChild(layerInfo, options) {
   };
 }
 
-function getDatagroupOverlaySubtree(datagroup, options) {
+function getChildLayerGroupOverlaySubtree(group, options) {
   const children = [];
   // sort child layers if sortFunction is provided in options
   const childLayerKeys = options && (options.sort)
     ? "sortFunction" in options
-      ? [...datagroup.childLayers.keys()].sort(options.sortFunction)
-      : [...datagroup.childLayers.keys()].sort()
-    : datagroup.childLayers.keys();
+      ? [...group.childLayers.keys()].sort(options.sortFunction)
+      : [...group.childLayers.keys()].sort()
+    : group.childLayers.keys();
   // generate a leaf overlay object for each child
   for (const key of childLayerKeys) {
-    const layerInfo = datagroup.getChildLayer(key);
+    const layerInfo = group.getChildLayer(key);
     children.push(getLayerInfoOverlayChild(layerInfo, options));
   }
   return {
-    label: getParentOverlayLabel(datagroup.name),
+    label: getParentOverlayLabel(group.name),
     selectAllCheckbox: "selectAllCheckbox" in options ? options.selectAllCheckbox : false,
     collapsed: "collapsed" in options ? options.collapsed : true,
     children: children,
@@ -218,8 +218,8 @@ function getTabs(tabs) {
     .append(tabElements);
 }
 
-function getNewTabOpenLink(url, displayText) {
-  return `<a href=${url} target='_blank' rel='noopener'>${displayText}</a>`;
+function getOpenInNewTabLink(url, displayText) {
+  return `<a href=${url} target='_blank' rel='noopener'>${displayText ? displayText : url}</a>`;
 };
 
 function generateTable(caption, data, columns) {
@@ -250,8 +250,8 @@ function generateMetadataTable(caption, metadataList) {
     caption,
     metadataList.sort((a, b) => compare(a.name, b.name, null)),
     [
-      { label: "Dataset", function: (datum) => getNewTabOpenLink(datum.dataUri, datum.name) },
-      { label: "Provided By", function : (datum) => getNewTabOpenLink(datum.attributionLink, datum.attribution), },
+      { label: "Dataset", function: (datum) => getOpenInNewTabLink(datum.dataUri, datum.name) },
+      { label: "Provided By", function : (datum) => getOpenInNewTabLink(datum.attributionLink, datum.attribution), },
       { label: "Last Modified", function: (datum) => {
           const dateItems = [];
           datefields.forEach((field) => {

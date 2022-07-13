@@ -115,7 +115,7 @@
     // add tiles to map - reference: https://leafletjs.com/examples/layers-control/
     const osmtiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
-      attribution: "&copy; <a href='http://www.openstreetmap.org/copyright' target='_blank' rel='noopener'>OpenStreetMap</a>",
+      attribution: "&copy; " + getOpenInNewTabLink("http://www.openstreetmap.org/copyright", "OpenStreetMap"),
     }).addTo(map);
 
     // marker cluster support group for all clusterable markers
@@ -147,7 +147,7 @@
     );
 
     // add geographic boundaries
-    const geoBoundaries = new Datagroup("Geographic Boundaries");
+    const geoBoundaries = new ChildLayerGroup("Geographic Boundaries");
     geoBoundaries.addChildLayer(new BoundaryLayerInfo(
       "Ward Boundaries (2015&ndash;2023)",
       ward_boundaries_2015_to_2023.data,
@@ -200,37 +200,7 @@
         : "Unknown Ward";
     }
 
-    const sunshineGospel = new MarkerAndCircleDatagroup(
-      "Sunshine Gospel Ministries",
-      new Dataset(sunshine_gospel, property_locations_metadata.attribution, "pin"),
-      {
-        markerColor: "#ff66ff",
-        circleColor: "#ff80ff",
-        //getMarkerLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
-        getMarkerPopupContent: () => "<a href='https://www.sunshinegospel.org/' target='_blank' rel='noopener'>Sunshine Gospel Ministries</a>",
-      },
-    );
-
-    const ward20Office = new MarkerAndCircleDatagroup(
-      "Ward 20 Office",
-      new Dataset(ward_20_office, ward_offices_metadata.attribution, "ward"),
-      {
-        markerColor: "#0099ff",
-        circleColor: "#00ace6",
-        //getMarkerLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
-        getMarkerPopupContent: () => "<a href='https://www.chicago.gov/city/en/about/wards/20.html' target='_blank' rel='noopener'>Ward 20 Office</a>",
-      },
-    );
-
-    const favoritedMarkers = new Set();
-    function addFavoritedMarker(markerData) {
-      favoritedMarkers.add(markerData);
-      markerData.marker.setIcon(generateFavoritedIcon(markerData.layerInfo.color));
-    }
-    function removeFavoritedMarker(markerData) {
-      favoritedMarkers.delete(markerData);
-      markerData.marker.setIcon(generateIcon(markerData.layerInfo.color));
-    }
+    const favoritedMarkers = new FavoritedMarkerGroup("hei-map-favorited-markers");
 
     const favoritedMarkersTableDiv = $("#favoritedMarkersTableDiv");
     favoritedMarkersTableDiv.on("click", ".showOnMapButton", (event) => {
@@ -240,12 +210,11 @@
     });
     function generateFavoritedMarkersTable() {
       favoritedMarkersTableDiv.html(
-        favoritedMarkers.size === 0
+        favoritedMarkers.size() === 0
           ? "You have no favorited markers."
           : generateTable(
             "Favorited Markers",
-            // sort primary by datagroup name and secondarily by layerinfo name
-            [...favoritedMarkers.values()].sort((a, b) => compare(a.datagroup.name, b.datagroup.name, () => compare(a.layerInfo.name, b.layerInfo.name, null))),
+            favoritedMarkers.getAllMarkers(),
             [
               { label: "Category", function: (markerData) => markerData.datagroup.name },
               { label: "Subcategory", function: (markerData) => markerData.layerInfo.name },
@@ -272,10 +241,10 @@
       const target = $(event.target);
       const markerData = target.data("markerData");
       if (favoritedMarkers.has(markerData)) {
-        removeFavoritedMarker(markerData);
+        favoritedMarkers.remove(markerData);
         target.text("Add to Favorites");
       } else {
-        addFavoritedMarker(markerData);
+        favoritedMarkers.add(markerData);
         target.text("Remove from Favorites");
       }
     });
@@ -286,30 +255,72 @@
         .data("markerData", markerData);
     }
 
+    function getDataToDisplay(dataList) {
+      return $("<span></span>").addClass("increasedLineHeight")
+        .html(dataList.map((item) => `<span class='dataToDisplayLabel'>${item.label}</span>: ${item.data}`).join("<br>"))
+        .get(0);
+    }
     const colorGenerator = new ColorGenerator();
-    const getDefaultClassifiableOptions = (getListOfDataToDisplay) => {
+    const getDefaultAutomaticClassificationOptions = (getListOfDataToDisplay) => {
       return {
         getLayerColor: colorGenerator.getNextColor,
         getLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
         getMarkerPopupContent: getMarkerPopupContentRevised,
         markerPopupContentOptions: {
-          getDataToDisplay: (markerData) => {
-            const dataList = getListOfDataToDisplay(markerData);
-            return $("<span></span>").addClass("increasedLineHeight")
-              .html(dataList.map((item) => `<span class='dataToDisplayLabel'>${item.label}</span>: ${item.data}`).join("<br>"))
-              .get(0);
-          },
+          getDataToDisplay: (markerData) => getDataToDisplay(getListOfDataToDisplay(markerData)),
           getFormElementsToDisplay: (markerData) => [ getToggleFavoritedButton(markerData) ],
         },
         trackMarkerCount: true,
       };
     };
 
-    const cityOwned = new ClassifiableMarkerDataDatagroupNew(
+    const sunshineGospel = new MarkerAndCircleDatagroup(
+      "Sunshine Gospel Ministries",
+      new Dataset(sunshine_gospel, property_locations_metadata.attribution, "pin"),
+      {
+        markerColor: "#ff66ff",
+        circleColor: "#ff80ff",
+        getMarkerPopupContent: getMarkerPopupContentRevised,
+        markerPopupContentOptions: {
+          getDataToDisplay: (markerData) => {
+            const data = markerData.data;
+            return getDataToDisplay([
+              { label: "Address", data: data.property_address },
+              { label: "Website", data: getOpenInNewTabLink("https://www.sunshinegospel.org/") },
+            ]);
+          },
+          getFormElementsToDisplay: (markerData) => [ getToggleFavoritedButton(markerData) ],
+        },
+      },
+    );
+    favoritedMarkers.registerDatagroup(sunshineGospel);
+
+    const ward20Office = new MarkerAndCircleDatagroup(
+      "Ward 20 Office",
+      new Dataset(ward_20_office, ward_offices_metadata.attribution, "ward"),
+      {
+        markerColor: "#0099ff",
+        circleColor: "#00ace6",
+        getMarkerPopupContent: getMarkerPopupContentRevised,
+        markerPopupContentOptions: {
+          getDataToDisplay: (markerData) => {
+            const data = markerData.data;
+            return getDataToDisplay([
+              { label: "Address", data: data.address },
+              { label: "Website", data: getOpenInNewTabLink("https://www.chicago.gov/city/en/about/wards/20.html") },
+            ]);
+          },
+          getFormElementsToDisplay: (markerData) => [ getToggleFavoritedButton(markerData) ],
+        },
+      },
+    );
+    favoritedMarkers.registerDatagroup(ward20Office);
+
+    const cityOwned = new AutomaticClassificationDatagroup(
       "City-Owned PINs (Possibly for Sale)",
       new Dataset(city_owned_data, city_owned_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
       (data) => { return ("ward" in data) ? getWard(data.ward) : "Unknown Ward" },
-      getDefaultClassifiableOptions(
+      getDefaultAutomaticClassificationOptions(
         (markerData) => {
           const data = markerData.data;
           return [
@@ -323,12 +334,13 @@
         }
       ),
     );
+    favoritedMarkers.registerDatagroup(cityOwned);
 
-    const ward20TaxSale = new ClassifiableMarkerDataDatagroupNew(
+    const ward20TaxSale = new AutomaticClassificationDatagroup(
       "Ward 20 Tax Sale",
       new Dataset(taxsale_ward20_data, taxsale_ward20_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
       (data) => { return ("classification" in data) ? data.classification : "Unclassified" },
-      getDefaultClassifiableOptions(
+      getDefaultAutomaticClassificationOptions(
         (markerData) => {
           const data = markerData.data;
           return [
@@ -343,27 +355,30 @@
         }
       ),
     );
+    favoritedMarkers.registerDatagroup(ward20TaxSale);
 
-    /*const scavengerSale = new ClassifiableMarkerDataDatagroup(
+    const scavengerSale = new AutomaticClassificationDatagroup(
       "Scavenger Sale 2022",
       new Dataset(scavenger_sale_data, scavenger_sale_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
       (data) => { return "property_code_class" in data ? data.property_code_class : "Unclassified" },
-      function(markerData) {
-        const data = markerData.data;
-        return getMarkerPopupContent(markerData, [
-          { label: "PIN", data: data.pin },
-          { label: "Address", data: data.property_address },
-          { label: "Ward", data: data.ward },
-          { label: "Classification", data: data.property_code_meaning },
-          { label: "Delinquent Tax", data: `$${data.delinquent_tax}` },
-          { label: "Delinquent Interest", data: `$${data.delinquent_interest}` },
-          { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
-        ]);
-      },
-      defaultClassifiableOptions,
-    );*/
+      getDefaultAutomaticClassificationOptions(
+        (markerData) => {
+          const data = markerData.data;
+          return [
+            { label: "PIN", data: data.pin },
+            { label: "Address", data: data.property_address },
+            { label: "Ward", data: data.ward },
+            { label: "Classification", data: data.property_code_meaning },
+            { label: "Delinquent Tax", data: `$${data.delinquent_tax}` },
+            { label: "Delinquent Interest", data: `$${data.delinquent_interest}` },
+            { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
+          ];
+        }
+      ),
+    );
+    favoritedMarkers.registerDatagroup(scavengerSale);
 
-    /*const businessLicenses = new ClassifiableMarkerDataDatagroup(
+    /*const businessLicenses = new AutomaticClassificationDatagroup(
       "Business Licenses",
       new Dataset(business_license_data, business_licenses_metadata.attribution, "license_number"),
       (data) => { return ("ward" in data) ? getWard(data.ward) : "Unknown Ward" },
@@ -381,7 +396,7 @@
         defaultClassifiableOptions,
     );*/
 
-    /*const userAddedMarkers = new ClassifiableMarkerDataDatagroup(
+    /*const userAddedMarkers = new AutomaticClassificationDatagroup(
       "User-Added Markers",
       new Dataset({}, property_locations_metadata.attribution, "pin"),
       null, // markers added to this datagroup should be manually classified
@@ -422,7 +437,7 @@
     const datagroups = [cityOwned, ward20TaxSale];//, ward20TaxSale, scavengerSale, userAddedMarkers];
     const datagroupOverlays = [];
     for (const datagroup of datagroups) {
-      datagroupOverlays.push(getDatagroupOverlaySubtree(
+      datagroupOverlays.push(getChildLayerGroupOverlaySubtree(
         datagroup,
         {
           selectAllCheckbox: true,
@@ -444,12 +459,12 @@
       label: getParentOverlayLabel("Map Layers"),
       selectAllCheckbox: false,
       children: [
-        getDatagroupOverlaySubtree(geoBoundaries, {
+        getChildLayerGroupOverlaySubtree(geoBoundaries, {
           radioGroupName: "geoboundaries",
           selectAllCheckbox: false,
         }),
-        getDatagroupOverlaySubtree(ward20Office, { selectAllCheckbox: true }),
-        getDatagroupOverlaySubtree(sunshineGospel, { selectAllCheckbox: true }),
+        getChildLayerGroupOverlaySubtree(ward20Office, { selectAllCheckbox: true }),
+        getChildLayerGroupOverlaySubtree(sunshineGospel, { selectAllCheckbox: true }),
         ...datagroupOverlays,
       ],
     };
@@ -550,7 +565,16 @@
 
   <script>
     $("#loadingIcon").hide();
-    $("#pageContent").show(0, () => map.invalidateSize(false));
+    $("#pageContent").show(0, () => {
+      map.invalidateSize(false);
+      if (favoritedMarkers.localStorageSize() > 0) {
+        if (window.confirm("Do you want to restore your Favorited Markers from your previous session?")) {
+          favoritedMarkers.restoreFromLocalStorage();
+        } else {
+          favoritedMarkers.removeFromLocalStorage();
+        }
+      }
+    });
   </script>
 
 </body>

@@ -17,7 +17,7 @@ class ColorGenerator {
   }
 }
 
-class Datagroup {
+class ChildLayerGroup {
   childLayers = new Map(); // map of LayerInfo objects
   constructor(name) {
     this.name = name;
@@ -31,11 +31,18 @@ class Datagroup {
 }
 
 class MarkerData {
-  constructor(data, datagroup, layerInfo, marker) {
+  constructor(identifier, data, datagroup, layerInfo, marker) {
+    this.identifier = identifier;
     this.data = data;
     this.datagroup = datagroup;
     this.layerInfo = layerInfo;
     this.marker = marker;
+  }
+  toJSON() {
+    return ({
+      "identifier": this.identifier,
+      "datagroupName": this.datagroup.name,
+    });
   }
 }
 
@@ -53,7 +60,7 @@ class Dataset {
   }
 }
 
-class MarkerDataDatagroupNew extends Datagroup {
+class Datagroup extends ChildLayerGroup {
   constructor(name, dataset, options) {
     super(name);
     this.dataset = dataset;
@@ -91,7 +98,7 @@ class MarkerDataDatagroupNew extends Datagroup {
       this.markerOptions,
     );
     layerInfo.addLayer(marker);
-    const markerData = new MarkerData(data, this, layerInfo, marker);
+    const markerData = new MarkerData(identifier, data, this, layerInfo, marker);
     this.#setMarkerData(identifier, markerData);
     marker.setIcon(this.getMarkerIcon(markerData));
     if (this.getMarkerPopupContent) {
@@ -103,7 +110,7 @@ class MarkerDataDatagroupNew extends Datagroup {
   }
 }
 
-class ClassifiableMarkerDataDatagroupNew extends MarkerDataDatagroupNew {
+class AutomaticClassificationDatagroup extends Datagroup {
   constructor(name, dataset, classify, options) {
     super(name, dataset, options);
     this.classify = classify;
@@ -131,66 +138,9 @@ class ClassifiableMarkerDataDatagroupNew extends MarkerDataDatagroupNew {
   }
 }
 
-class MarkerDataDatagroup extends Datagroup {
-  constructor(name, dataset) {
-    super(name);
-    this.dataset = dataset;
-    this.markerData = new Map(); // map of MarkerData objects
-  }
-  hasMarkerData(identifier) {
-    return this.markerData.has(identifier);
-  }
-  getMarkerData(identifier) {
-    return this.hasMarkerData(identifier) ? this.markerData.get(identifier) : undefined;
-  }
-  #setMarkerData(identifier, markerData) {
-    this.markerData.set(identifier.toString(), markerData);
-  }
-  addMarker(identifier, data, layerInfo, getPopupContent, getMarker) {
-    const marker = getMarker
-      ? getMarker([data.latitude, data.longitude], this, layerInfo)
-      : new L.marker([data.latitude, data.longitude], { icon: generateIcon(layerInfo.color) });
-    layerInfo.addLayer(marker);
-    const markerData = new MarkerData(data, this, layerInfo, marker);
-    this.#setMarkerData(identifier, markerData);
-    if (getPopupContent != null) {
-      marker.bindPopup(getPopupContent(markerData), { maxHeight: 200, });
-    }
-  }
-}
-
-class ClassifiableMarkerDataDatagroup extends MarkerDataDatagroup {
-  constructor(name, dataset, classify, getPopupContent, options) {
-    super(name, dataset);
-    this.classify = classify;
-    this.getPopupContent = getPopupContent;
-
-    for (const datum of this.dataset.dataIterator()) {
-      const classification = this.classify(datum);
-      // if the LayerInfo object corresponding to classification doesn't exist yet, create it
-      if (!(this.childLayers.has(classification))) {
-        this.addChildLayer(new LayerInfo(
-          classification,
-          "getColor" in options ? options.getColor() : "black",
-          "getLayer" in options ? options.getLayer(this.dataset.attribution) : L.layerGroup([], { attribution : this.dataset.attribution }),
-          options.trackMarkerCount,
-        ));
-      }
-      const layerInfo = this.getChildLayer(classification);
-      this.addMarker(
-        datum[this.dataset.identifierField],
-        datum,
-        layerInfo,
-        this.getPopupContent,
-        options.getMarker,
-      );
-    }
-  }
-}
-
-class MarkerAndCircleDatagroup extends MarkerDataDatagroup {
+class MarkerAndCircleDatagroup extends Datagroup {
   constructor(name, dataset, options) {
-    super(name, dataset);
+    super(name, dataset, options);
     this.markerName =  "markerName" in options ? options.markerName : name;
     this.circleName =  "circleName" in options ? options.circleName : `Circle around ${name}`;
     const markerColor = "markerColor" in options ? options.markerColor : "black";
@@ -207,7 +157,6 @@ class MarkerAndCircleDatagroup extends MarkerDataDatagroup {
       data[this.dataset.identifierField],
       data,
       this.getChildLayer(this.markerName),
-      "getMarkerPopupContent" in options ? options.getMarkerPopupContent : null,
     )
     // add child layer for circle
     this.addChildLayer(new LayerInfo(
@@ -259,38 +208,6 @@ class MarkerAndCircleDatagroup extends MarkerDataDatagroup {
       .get(0);
   }
 }
-
-class MarkerDatasetDatagroup extends Datagroup {
-  constructor(name, dataset, attribution, classify, getPopupContent, getNewLayer, trackMarkerCount) {
-    super(name);
-    this.dataset = dataset;
-    this.attribution = attribution;
-    this.classify = classify;
-    this.getPopupContent = getPopupContent;
-  }
-  // get data for the given identifier
-  // (assumes entries in dataset are indexed by an identifier property - can be overriden as necessary)
-  getData(identifier) {
-    return identifier in this.dataset ? this.dataset[identifier] : undefined;
-  }
-  // iterate over the dataset
-  // (assumes entries in dataset are indexed by an identifier property - can be overriden as necessary)
-  *dataIterator() {
-    for (const key of Object.keys(this.dataset)) {
-      yield this.dataset[key];
-    }
-  }
-}
-
-const DatagroupAwareMarker = L.Marker.extend({
-  setDatagroupName: function(datagroupName) {
-    L.Util.setOptions(this, { datagroupName: datagroupName });
-    return this;
-  },
-  getDatagroupName: function() {
-    return this.options.datagroupName;
-  }
-});
 
 class LayerInfo {
   constructor(name, color, layer, trackMarkerCount) {
@@ -394,5 +311,66 @@ class HighlightSelect {
         layersToRefresh.forEach((layer) => { layer.refreshStyles() });
       },
     );
+  }
+}
+
+class FavoritedMarkerGroup {
+  constructor(localStorageItemName) {
+    this.favoritedMarkers = new Set();
+    this.sourceDatagroups = new Map();
+    this.localStorageItemName = localStorageItemName;
+  }
+  size() {
+    return this.favoritedMarkers.size;
+  }
+  localStorageSize() {
+    const saved = localStorage.getItem(this.localStorageItemName);
+    return saved ? JSON.parse(saved).length : 0;
+  }
+  getAllMarkers() {
+    // sort primary by datagroup name and secondarily by layerinfo name
+    return [...this.favoritedMarkers.values()].sort(
+      (a, b) => compare(a.datagroup.name, b.datagroup.name, () => compare(a.layerInfo.name, b.layerInfo.name, null))
+    );
+  }
+  has(markerData) {
+    return this.favoritedMarkers.has(markerData);
+  }
+  add(markerData) {
+    this.favoritedMarkers.add(markerData);
+    markerData.marker.setIcon(generateFavoritedIcon(markerData.layerInfo.color));
+    this.saveToLocalStorage();
+  }
+  remove(markerData) {
+    this.favoritedMarkers.delete(markerData);
+    markerData.marker.setIcon(generateIcon(markerData.layerInfo.color));
+    this.saveToLocalStorage();
+  }
+  registerDatagroup(datagroup) {
+    this.sourceDatagroups.set(datagroup.name, datagroup);
+  }
+  saveToLocalStorage() {
+    const toSave = [];
+    this.favoritedMarkers.forEach((markerData) => toSave.push({
+      identifier: markerData.identifier,
+      datagroupName: markerData.datagroup.name,
+    }));
+    localStorage.setItem(this.localStorageItemName, JSON.stringify(toSave));
+  }
+  restoreFromLocalStorage() {
+    const toRestore = localStorage.getItem(this.localStorageItemName);
+    if (toRestore) {
+      for (const item of JSON.parse(toRestore)) {
+        if (this.sourceDatagroups.has(item.datagroupName)) {
+          const markerData = this.sourceDatagroups.get(item.datagroupName).getMarkerData(item.identifier.toString());
+          markerData ? this.add(markerData) : console.error("error: could not find marker data for " + JSON.stringify(item));
+        } else {
+          console.error("error: could not find source datagroup for " + JSON.stringify(item));
+        }
+      }
+    }
+  }
+  removeFromLocalStorage() {
+    localStorage.removeItem(this.localStorageItemName);
   }
 }
