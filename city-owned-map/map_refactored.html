@@ -237,17 +237,22 @@
       );
     }
     
-    $(".leaflet-popup-pane").on("click", ".toggleFavoritedButton", (event) => {
-      const target = $(event.target);
-      const markerData = target.data("markerData");
-      if (favoritedMarkers.has(markerData)) {
-        favoritedMarkers.remove(markerData);
-        target.text("Add to Favorites");
-      } else {
-        favoritedMarkers.add(markerData);
-        target.text("Remove from Favorites");
-      }
-    });
+    $(".leaflet-popup-pane")
+      .on("click", ".toggleFavoritedButton", (event) => {
+        const target = $(event.target);
+        const markerData = target.data("markerData");
+        if (favoritedMarkers.has(markerData)) {
+          favoritedMarkers.remove(markerData);
+          target.text("Add to Favorites");
+        } else {
+          favoritedMarkers.add(markerData);
+          target.text("Remove from Favorites");
+        }
+      })
+      .on("click", ".removeSearchResultButton", (event) => {
+        const markerData = $(event.target).data("markerData");
+        userAddedMarkers.removeSearchResult(markerData);
+      });
 
     function getToggleFavoritedButton(markerData) {
       const initialButtonText = favoritedMarkers.has(markerData) ? "Remove from Favorites" : "Add to Favorites";
@@ -265,10 +270,10 @@
       return {
         getLayerColor: colorGenerator.getNextColor,
         getLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
-        getMarkerPopupContent: getMarkerPopupContentRevised,
+        getMarkerPopupContent: getMarkerPopupContent,
         markerPopupContentOptions: {
           getDataToDisplay: (markerData) => getDataToDisplay(getListOfDataToDisplay(markerData)),
-          getFormElementsToDisplay: (markerData) => [ getToggleFavoritedButton(markerData) ],
+          getFormElementsToDisplay: (markerData) => getToggleFavoritedButton(markerData),
         },
         trackMarkerCount: true,
       };
@@ -280,7 +285,7 @@
       {
         markerColor: "#ff66ff",
         circleColor: "#ff80ff",
-        getMarkerPopupContent: getMarkerPopupContentRevised,
+        getMarkerPopupContent: getMarkerPopupContent,
         markerPopupContentOptions: {
           getDataToDisplay: (markerData) => {
             const data = markerData.data;
@@ -289,7 +294,7 @@
               { label: "Website", data: getOpenInNewTabLink("https://www.sunshinegospel.org/") },
             ]);
           },
-          getFormElementsToDisplay: (markerData) => [ getToggleFavoritedButton(markerData) ],
+          getFormElementsToDisplay: (markerData) => getToggleFavoritedButton(markerData),
         },
       },
     );
@@ -301,7 +306,7 @@
       {
         markerColor: "#0099ff",
         circleColor: "#00ace6",
-        getMarkerPopupContent: getMarkerPopupContentRevised,
+        getMarkerPopupContent: getMarkerPopupContent,
         markerPopupContentOptions: {
           getDataToDisplay: (markerData) => {
             const data = markerData.data;
@@ -310,7 +315,7 @@
               { label: "Website", data: getOpenInNewTabLink("https://www.chicago.gov/city/en/about/wards/20.html") },
             ]);
           },
-          getFormElementsToDisplay: (markerData) => [ getToggleFavoritedButton(markerData) ],
+          getFormElementsToDisplay: (markerData) => getToggleFavoritedButton(markerData),
         },
       },
     );
@@ -402,7 +407,7 @@
       "User-Added Markers",
       new Dataset({}, property_locations_metadata.attribution, "pin"),
       {
-        getMarkerPopupContent: getMarkerPopupContentRevised,
+        getMarkerPopupContent: getMarkerPopupContent,
         markerPopupContentOptions: {
           getDataToDisplay: (markerData) => {
             const data = markerData.data;
@@ -415,7 +420,11 @@
               { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
             ]);
           },
-          getFormElementsToDisplay: (markerData) => [ getToggleFavoritedButton(markerData) ],
+          getFormElementsToDisplay: (markerData) => [
+            getToggleFavoritedButton(markerData),
+            $("<button type='button'>Remove from Map</button>").addClass("removeSearchResultButton")
+              .data("markerData", markerData),
+          ],
         },
       },
     );
@@ -435,6 +444,12 @@
         this.getChildLayer("Search Results"),
       );
       return this.getMarkerData(identifier);
+    }
+    userAddedMarkers.removeSearchResult = function(markerData) {
+      if (window.confirm("Are you sure you want to remove this marker from the map?")) {
+        favoritedMarkers.remove(markerData); // remove marker from favoritedMarkers if it was favorited
+        this.removeMarker(markerData.identifier);
+      }
     }
     favoritedMarkers.registerDatagroup(userAddedMarkers);
 

@@ -30,9 +30,11 @@ input:invalid {
   line-height: 1.5;
 }
 
-.smallHorizontalMargin {
+button {
   margin-left: 5px;
   margin-right: 5px;
+  margin-top: 3px;
+  margin-bottom: 3px;
 }
 
 .parentLayer {

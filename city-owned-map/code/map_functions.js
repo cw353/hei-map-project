@@ -128,7 +128,7 @@ function getPropertyDetailsLink(pin) {
   return `<a href="https://www.cookcountyassessor.com/pin/${pin}" target="_blank" rel="noopener">Assessor's Office</a>`;
 }
 
-function getMarkerPopupContentRevised(markerData, options) {
+function getMarkerPopupContent(markerData, options) {
   const popupContentDiv = $("<div></div>")
     .append($(`<div>${markerData.datagroup.name}</div>`).addClass("center underlined")); // header with datagroup name
   options && "getDataToDisplay" in options && popupContentDiv.append(
@@ -149,7 +149,7 @@ function getSelect(selectLabel, optionList, onSelect, includeConfirmationButton,
   form.append(select);
   if (includeConfirmationButton) {
     form.append(
-      $(`<button type="button">${buttonText}</button>`).addClass("smallHorizontalMargin")
+      $(`<button type="button">${buttonText}</button>`)
         .on("click", () => onSelect(select.val()))
     );
   } else {
@@ -316,7 +316,7 @@ function getPinSearchBar(map, datasetsToSearch, addSearchResultToMap) {
   const showSearchResult = (map, searchResultMarkerData, userFeedbackText, userFeedbackColor) => {
     showMarkerOnMap(map, searchResultMarkerData, () => { searchResultsSpan.css("color", userFeedbackColor).html(userFeedbackText); });
   }
-  const searchButton = $("<button type='button'>Search</button>").addClass("smallHorizontalMargin")
+  const searchButton = $("<button type='button'>Search</button>")
     .on("click", () => {
       searchResultsSpan.html("");
       if (searchInput.validity.patternMismatch || searchInput.value === "") {

@@ -107,6 +107,15 @@ class Datagroup extends ChildLayerGroup {
       this.#setMarkerPopupContent(markerData);
     }
   }
+  // postcondition: the marker has been removed from its parent layer and from this.markerData,
+  // but the associated data in this.dataset has not been modified
+  removeMarker(identifier) {
+    const markerData = this.getMarkerData(identifier);
+    const marker = markerData.marker;
+    marker.closePopup();
+    markerData.layerInfo.layer.removeLayer(marker);
+    this.markerData.delete(identifier);
+  }
   // precondition: this.getMarkerPopupContent != null
   #setMarkerPopupContent(markerData) {
     markerData.marker.setPopupContent(
@@ -190,7 +199,6 @@ class MarkerAndCircleDatagroup extends Datagroup {
       .get(0);
     const messageElement = $("<span></span>").addClass("successMessage");
     const applyChangesButton = $("<button type='button'>Set Radius</button>")
-      .addClass("smallHorizontalMargin")
       .on("click", (event) => {
         messageElement.html("");
         const newRadius = parseFloat(inputElement.value);
@@ -350,9 +358,11 @@ class FavoritedMarkerGroup {
     this.saveToLocalStorage();
   }
   remove(markerData) {
-    this.favoritedMarkers.delete(markerData);
-    markerData.marker.setIcon(generateIcon(markerData.layerInfo.color));
-    this.saveToLocalStorage();
+    if (this.has(markerData)) {
+      this.favoritedMarkers.delete(markerData);
+      markerData.marker.setIcon(generateIcon(markerData.layerInfo.color));
+      this.saveToLocalStorage();
+    }
   }
   registerDatagroup(datagroup) {
     this.sourceDatagroups.set(datagroup.name, datagroup);
