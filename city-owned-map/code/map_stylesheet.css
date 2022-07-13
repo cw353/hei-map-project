@@ -92,6 +92,10 @@ input:invalid {
   font-weight: bold;
 }
 
+.leaflet-popup-content .dataToDisplayLabel {
+  font-weight: bold;
+}
+
 #map {
   display: flex;
   width: 100%;

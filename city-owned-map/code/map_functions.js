@@ -154,14 +154,11 @@ function getMarkerPopupContentNew(markerData, dataToDisplay, buttons) {
 function getMarkerPopupContentRevised(markerData, options) {
   const popupContentDiv = $("<div></div>")
     .append($(`<div>${markerData.datagroup.name}</div>`).addClass("center underlined")); // header with datagroup name
-  const dataList = options && "getDataToDisplay" in options
-    ? options.getDataToDisplay(markerData).map((item) => `<b>${item.label}</b>: ${item.data}`)
-    : null;
-  dataList && popupContentDiv.append(
-    $("<p></p>").addClass("increasedLineHeight").html(dataList.join("<br>")) // data to display
+  options && "getDataToDisplay" in options && popupContentDiv.append(
+    $("<p></p>").append(options.getDataToDisplay(markerData))
   );
-  options && "getButtons" in options && popupContentDiv.append(
-    $("<div></div>").addClass("center").append(options.getButtons(markerData))
+  options && "getFormElementsToDisplay" in options && popupContentDiv.append(
+    $("<div></div>").addClass("center").append(options.getFormElementsToDisplay(markerData))
   );
   return popupContentDiv.get(0); // unwrap to return DOM node
 }

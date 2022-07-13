@@ -251,9 +251,7 @@
               { label: "Data", function: (markerData) => {
                 const markerPopupContentOptions = markerData.datagroup.markerPopupContentOptions;
                 return markerPopupContentOptions && "getDataToDisplay" in markerPopupContentOptions
-                  ? $("<span></span>").addClass("increasedLineHeight")
-                    .html(markerPopupContentOptions.getDataToDisplay(markerData).map((item) => `${item.label}: ${item.data}`).join("<br>"))
-                    .get(0)
+                  ? markerPopupContentOptions.getDataToDisplay(markerData)
                   : null;
               }},
               { label: "Additional Info", function: (markerData) => {
@@ -309,7 +307,7 @@
         markerPopupContentOptions: {
           getDataToDisplay: (markerData) => {
             const data = markerData.data;
-            return [
+            const dataToDisplay = [
               { label: "PIN", data: data.pin },
               { label: "Address", data: data.property_address },
               { label: "Ward", data: data.ward },
@@ -317,8 +315,11 @@
               { label: "Record Last Updated", data: data.last_update },
               { label: "Property Details", data: getPropertyDetailsLink(data.pin) }
             ];
+            return $("<span></span>").addClass("increasedLineHeight")
+              .html(dataToDisplay.map((item) => `<span class='dataToDisplayLabel'>${item.label}</span>: ${item.data}`).join("<br>"))
+              .get(0);
           },
-          getButtons: (markerData) => [ getToggleFavoritedButton(markerData) ],
+          getFormElementsToDisplay: (markerData) => [ getToggleFavoritedButton(markerData) ],
         },
       },
       //() => {return "Test"},
