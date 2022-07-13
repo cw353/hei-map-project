@@ -225,6 +225,52 @@ class MarkerAndCircleDatagroup extends Datagroup {
   }
 }
 
+class SearchResultsDatagroup extends Datagroup {
+  constructor(name, dataset, localStorageItemName, options) {
+    super(name, dataset, options);
+    this.localStorageItemName = localStorageItemName;
+    this.addChildLayer(
+      new LayerInfo(
+        "Search Results",
+        "red",
+        getCheckedInLayer(markerClusterSupportGroup, { attribution: this.dataset.attribution }),
+        false,
+      )
+    );
+    this.restoreFromLocalStorage();
+  }
+  saveToLocalStorage() {
+    const toSave = [];
+    this.markerData.forEach((markerData) => toSave.push(markerData.data));
+    localStorage.setItem(this.localStorageItemName, JSON.stringify(toSave));
+  }
+  restoreFromLocalStorage() {
+    const toRestore = localStorage.getItem(this.localStorageItemName);
+    if (toRestore) {
+      for (const item of JSON.parse(toRestore)) {
+        this.addSearchResult(item, true);
+      }
+    }
+  }
+  addSearchResult(data, skipUpdatingLocalStorage) {
+    const identifier = data[this.dataset.identifierField].toString();
+    this.addMarker(
+      identifier,
+      data,
+      this.getChildLayer("Search Results"),
+    );
+    !skipUpdatingLocalStorage && this.saveToLocalStorage();
+    return this.getMarkerData(identifier);
+  }
+  removeSearchResult(markerData, callback) {
+    if (window.confirm("Are you sure you want to remove this marker from the map?")) {
+      this.removeMarker(markerData.identifier);
+      this.saveToLocalStorage();
+      callback && callback(markerData);
+    }
+  }
+}
+
 class LayerInfo {
   constructor(name, color, layer, trackMarkerCount) {
     this.name = name;
@@ -352,10 +398,10 @@ class FavoritedMarkerGroup {
   has(markerData) {
     return this.favoritedMarkers.has(markerData);
   }
-  add(markerData) {
+  add(markerData, skipUpdatingLocalStorage) {
     this.favoritedMarkers.add(markerData);
     markerData.marker.setIcon(generateFavoritedIcon(markerData.layerInfo.color));
-    this.saveToLocalStorage();
+    !skipUpdatingLocalStorage && this.saveToLocalStorage();
   }
   remove(markerData) {
     if (this.has(markerData)) {
@@ -382,7 +428,7 @@ class FavoritedMarkerGroup {
         if (this.sourceDatagroups.has(item.datagroupName)) {
           const markerData = this.sourceDatagroups.get(item.datagroupName).getMarkerData(item.identifier);
           if (markerData) {
-            this.add(markerData);
+            this.add(markerData, true);
             markerData.datagroup.refreshMarkerPopupContent(markerData.identifier);
           } else {
             console.error("error: could not find marker data for " + JSON.stringify(item));
