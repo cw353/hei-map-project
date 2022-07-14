@@ -517,19 +517,7 @@
       }
     ).addTo(map);
 
-    // add marker cluster legend to map (reference: https://leafletjs.com/examples/choropleth/)
-    const legend = L.control({position: "bottomleft"});
-    legend.onAdd = function(map) {
-      const rangeBounds = [1, 10, 100];
-      const colors = ["rgba(110, 204, 57, 0.8)", "rgba(240, 194, 12, 0.6)", "rgba(241, 128, 23, 0.8)"];
-      const div = L.DomUtil.create("div", "legend");
-      div.innerHTML = "<header>Marker Clusters</header>";
-      for (let i = 0; i < rangeBounds.length; i++) {
-        div.innerHTML += `<p><i style="background-color: ${colors[i]}"></i> ${rangeBounds[i]}` + (rangeBounds[i+1] ? `–${rangeBounds[i+1]} properties<br>` : "+ properties</p>");
-      }
-      return div;
-    }
-    legend.addTo(map);
+    getMarkerClusterLegend("bottomleft").addTo(map);
 
     $("#pinSearchBarDiv").append(
       getPinSearchBar(

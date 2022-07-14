@@ -76,16 +76,16 @@ function generateFavoritedIcon(color) {
 
 function getParentOverlayLabel(name) {
   return (
-    `<span class='parentLayer'>${name}</span>`
+    `<span class='parentOverlayLayer'>${name}</span>`
   );
 }
 
 function getLayerInfoOverlayChild(layerInfo, options) {
-  let label = "";
-  if (layerInfo.color != null) {
-    label += `<span style='color: ${layerInfo.color};'>&#9724;</span> `;
-  }
-  label += `<span class=${options && "labelClassName" in options ? options.labelClassName : "leafLayer"}>${layerInfo.name}`;
+  let label = "<span>";
+  label += layerInfo.color
+    ? `<i class='overlayLegendColor' style='background-color: ${layerInfo.color};'></i> `
+    : "";
+  label += `<span class='leafOverlayLayer'>${layerInfo.name}`;
   if ("markerCount" in layerInfo && layerInfo.markerCount > 0) {
     label += ` (${layerInfo.markerCount}  marker${layerInfo.markerCount > 1 ? "s" : ""})`;
   }
@@ -413,6 +413,22 @@ function getPinSearchBar(map, datasetsToSearch, markerClusterGroup, addSearchRes
       searchButton,
       searchResultsSpan,
     ]);
+}
+
+function getMarkerClusterLegend(position) {
+  // add marker cluster legend to map (reference: https://leafletjs.com/examples/choropleth/)
+  const legend = L.control({position: position});
+  legend.onAdd = function(map) {
+    const rangeBounds = [1, 10, 100];
+    const colors = ["rgba(110, 204, 57, 0.8)", "rgba(240, 194, 12, 0.6)", "rgba(241, 128, 23, 0.8)"];
+    const div = L.DomUtil.create("div", "legend");
+    div.innerHTML = "<header>Marker Clusters</header>";
+    for (let i = 0; i < rangeBounds.length; i++) {
+      div.innerHTML += `<p><i class='circle' style="background-color: ${colors[i]}"></i> ${rangeBounds[i]}` + (rangeBounds[i+1] ? `–${rangeBounds[i+1]} properties<br>` : "+ properties</p>");
+    }
+    return div;
+  }
+  return legend;
 }
 
 /**

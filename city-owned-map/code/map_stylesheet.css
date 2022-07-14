@@ -85,12 +85,12 @@ td ul, .markerClusterPopupContent ul {
   line-height: 1.5;
 }
 
-.parentLayer {
+.parentOverlayLayer {
   font-weight: bold;
   font-size: 1.15em;
 }
 
-.leafLayer {
+.leafOverlayLayer {
   font-style: italic;
 }
 
@@ -128,6 +128,21 @@ td ul, .markerClusterPopupContent ul {
   opacity: 1;  
 }
 
+/* reference: https://leafletjs.com/examples/choropleth/ */
+.overlayLegendColor {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-left: 3px;
+  margin-right: 3px;
+  margin-top: 0;
+  margin-bottom: 0;
+  border-color: black;
+  border-width: 1px;
+  border-style: solid;
+  opacity: 1;  
+}
+
 .darkTooltip {
   color: white;
   background-color: #262626;
@@ -162,6 +177,10 @@ td ul, .markerClusterPopupContent ul {
 
 .leaflet-layerstree-children {
   padding-left: 25px;
+}
+
+.leaflet-layerstree-children-nopad {
+  padding-left: 0;
 }
 
 #map {
