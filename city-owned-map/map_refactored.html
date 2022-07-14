@@ -116,6 +116,7 @@
   <script src="data/geojson/ward_boundaries.js"></script>
   <script src="data/geojson/neighborhood_boundaries.js"></script>
   <!--script src="data/geojson/zoning_districts.js"></script-->
+  <script src="data/geojson/school_locations.js"></script>
   <script src="data/misc/misc.js"></script>
   <script src="data/misc/individual_properties.js"></script>
   <script src="data/city-owned/city_owned_data.js"></script>
@@ -133,8 +134,6 @@
     const map = L.map("map", {
       center: [41.783, -87.621],
       zoom: 12,
-      zoomDelta: 0.5,
-      zoomSnap: 0.5,
       scrollWheelZoom: false,
       zoomControl: false,
     });
@@ -229,8 +228,7 @@
     map.addLayer(geoBoundaries.getChildLayer("Ward Boundaries (2015–2023)").layer);
 
     function getWard(ward) {
-      return ward == null ? "Unknown Ward"
-	  	: ward === 20 ? "Ward 20"
+      return ward === 20 ? "Ward 20"
         : ward <= 10 ? "Wards 01–10"
         : ward < 20 ? "Wards 11–19"
         : ward <= 30 ? "Wards 21–30"
@@ -332,7 +330,7 @@
     const cityOwned = new AutomaticClassificationDatagroup(
       "City-Owned PINs (Possibly for Sale)",
       new Dataset(city_owned_data, city_owned_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
-      (data) => { return ("ward" in data) ? getWard(data.ward) : "Unknown Ward" },
+      (data) => { return data.ward ? getWard(data.ward) : "Unknown Ward" },
       getDefaultAutomaticClassificationOptions(
         (markerData) => {
           const data = markerData.data;
@@ -352,7 +350,7 @@
     const ward20TaxSale = new AutomaticClassificationDatagroup(
       "Tax Sale for Tax Year 2019 (Ward 20)",
       new Dataset(taxsale_ward20_data, taxsale_ward20_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
-      (data) => { return ("classification" in data) ? data.classification : "Unclassified" },
+      (data) => { return data.classification ? data.classification : "Unclassified" },
       getDefaultAutomaticClassificationOptions(
         (markerData) => {
           const data = markerData.data;
@@ -372,7 +370,7 @@
     const scavengerSale = new AutomaticClassificationDatagroup(
       "Scavenger Sale 2022 (Ward 20)",
       new Dataset(scavenger_sale_data, scavenger_sale_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
-      (data) => { return "property_code_class" in data ? data.property_code_class : "Unclassified" },
+      (data) => { return data.property_code_class ? data.property_code_class : "Unclassified" },
       getDefaultAutomaticClassificationOptions(
         (markerData) => {
           const data = markerData.data;
@@ -389,11 +387,40 @@
       ),
     );
 
+    const expandSchoolAbbreviation = function(abbrev) {
+      abbreviations = { ES: "Elementary School", HS : "High School" };
+      return abbrev in abbreviations ? abbreviations[abbrev] : abbrev;
+    }
+    const schoolLocations = new AutomaticClassificationDatagroup(
+      "Chicago Public Schools (2021-2022)",
+      new Dataset(
+        school_locations.data.features,
+        school_locations.metadata.attribution,
+        (data) => data.properties.school_id,
+        (data) => L.GeoJSON.coordsToLatLng(data.geometry.coordinates),
+      ),
+      (data) => {
+        return data.properties.grade_cat
+          ? expandSchoolAbbreviation(data.properties.grade_cat)
+          : "Unknown Category";
+      },
+      getDefaultAutomaticClassificationOptions(
+        (markerData) => {
+          const data = markerData.data.properties;
+          return [
+            { label: "Name", data: data.short_name },
+            { label: "Address", data: data.address },
+            { label: "Type", data: expandSchoolAbbreviation(data.grade_cat) },
+          ];
+        }
+      ),
+    );
+
     const businessLicenses = new AutomaticClassificationDatagroup(
       "Business Licenses in Ward 20",
       new Dataset(business_license_data, business_licenses_metadata.attribution, "license_id"),
       (data) => {
-        return ("license_description" in data)
+        return data.license_description
           ? Array.isArray(data.license_description)
             ? "Multiple Licenses"
             : data.license_description.toString()
@@ -446,7 +473,7 @@
       },
     );
 
-    const datagroups = [ward20Office, sunshineGospel, cityOwned, ward20TaxSale, scavengerSale, businessLicenses, userAddedMarkers];
+    const datagroups = [ward20Office, sunshineGospel, cityOwned, ward20TaxSale, scavengerSale, schoolLocations, businessLicenses, userAddedMarkers];
     const datagroupOverlays = [];
     for (const datagroup of datagroups) {
       favoritedMarkers.registerDatagroup(datagroup);
@@ -577,6 +604,7 @@
           scavenger_sale_metadata,
           property_classification_codes_metadata,
           business_licenses_metadata,
+          school_locations.metadata,
           ward_boundaries_2015_to_2023.metadata,
           ward_boundaries_2023.metadata,
           neighborhood_boundaries.metadata,

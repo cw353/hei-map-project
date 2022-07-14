@@ -50,10 +50,13 @@ class MarkerData {
 }
 
 class Dataset {
-  constructor(data, attribution, identifierField) {
+  constructor(data, attribution, getIdentifier, getLatLng) {
     this.data = data;
     this.attribution = attribution;
-    this.identifierField = identifierField;
+    this.getIdentifier = getIdentifier instanceof Function
+      ? getIdentifier // user provided function
+      : (data) => data[getIdentifier]; // user provided accessor for identifier
+    this.getLatLng = getLatLng ? getLatLng : (data) => [data.latitude, data.longitude];
   }
   // can be overriden
   *dataIterator() {
@@ -109,12 +112,11 @@ class Datagroup extends ChildLayerGroup {
   #setMarkerData(identifier, markerData) {
     this.markerData.set(identifier.toString(), markerData);
   }
+  createNewMarker(data) {
+    return new DatagroupAwareMarker(this.dataset.getLatLng(data), this.markerOptions, this.name);
+  }
   addMarker(identifier, data, layerInfo) {
-    const marker = new DatagroupAwareMarker(
-      [data.latitude, data.longitude],
-      this.markerOptions,
-      this.name,
-    );
+    const marker = this.createNewMarker(data);
     layerInfo.addLayer(marker);
     const markerData = new MarkerData(identifier, data, this, layerInfo, marker);
     this.#setMarkerData(identifier, markerData);
@@ -166,7 +168,7 @@ class AutomaticClassificationDatagroup extends Datagroup {
       }
       const layerInfo = this.getChildLayer(classification);
       this.addMarker(
-        datum[this.dataset.identifierField],
+        this.dataset.getIdentifier(datum),
         datum,
         layerInfo,
       );
@@ -190,7 +192,7 @@ class MarkerAndCircleDatagroup extends Datagroup {
     ));
     const data = this.dataset.data;
     this.addMarker(
-      data[this.dataset.identifierField],
+      this.dataset.getIdentifier(data),
       data,
       this.getChildLayer(this.markerName),
     )
@@ -285,7 +287,7 @@ class SearchResultsDatagroup extends Datagroup {
     localStorage.removeItem(this.localStorageItemName);
   }
   addSearchResult(data, skipUpdatingLocalStorage) {
-    const identifier = data[this.dataset.identifierField];
+    const identifier = this.dataset.getIdentifier(data);
     this.addMarker(
       identifier,
       data,
