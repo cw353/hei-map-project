@@ -258,21 +258,38 @@ class SearchResultsDatagroup extends Datagroup {
     );
     this.restoreFromLocalStorage();
   }
+  localStorageSize() {
+    const saved = localStorage.getItem(this.localStorageItemName);
+    return saved ? JSON.parse(saved).length : 0;
+  }
   saveToLocalStorage() {
-    const toSave = [];
-    this.markerData.forEach((markerData) => toSave.push(markerData.data));
-    localStorage.setItem(this.localStorageItemName, JSON.stringify(toSave));
+    localStorage.setItem(this.localStorageItemName, JSON.stringify([...this.markerData.keys()]));
   }
   restoreFromLocalStorage() {
     const toRestore = localStorage.getItem(this.localStorageItemName);
     if (toRestore) {
-      for (const item of JSON.parse(toRestore)) {
-        this.addSearchResult(item, true);
+      for (const pin of JSON.parse(toRestore)) {
+        getLocationDataViaAjax(
+          pin,
+          (data) => {
+            if (data.length < 1) {
+              console.error(`Error: no data found for user-added PIN ${pin}`);
+            } else {
+              this.addSearchResult(data[0], true);
+            }
+          },
+          (jqxhr, textStatus) => { 
+            console.log(`Error: failed to retrieve data for user-added PIN ${pin} - ${textStatus}`);
+          },
+        );
       }
     }
   }
+  removeFromLocalStorage() {
+    localStorage.removeItem(this.localStorageItemName);
+  }
   addSearchResult(data, skipUpdatingLocalStorage) {
-    const identifier = data[this.dataset.identifierField].toString();
+    const identifier = data[this.dataset.identifierField];
     this.addMarker(
       identifier,
       data,

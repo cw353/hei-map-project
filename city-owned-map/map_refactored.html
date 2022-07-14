@@ -597,14 +597,15 @@
   <script>
     $("#loadingIcon").hide();
     // restore favorited markers from local storage
-    const savedFavoritedMarkersSize = favoritedMarkers.localStorageSize();
-    if (savedFavoritedMarkersSize > 0) {
-      if (window.confirm(`You have ${savedFavoritedMarkersSize} Favorited Marker${savedFavoritedMarkersSize === 1 ? " that was" : "s that were"} saved during your previous session. Do you want to keep ${savedFavoritedMarkersSize === 1 ? "it" : "them"}?`)) {
+    const numSaved = favoritedMarkers.localStorageSize();
+    if (numSaved > 0) {
+      if (window.confirm(`You have ${numSaved} Favorited Marker${numSaved === 1 ? " that was" : "s that were"} saved during your previous session. Do you want to keep ${numSaved === 1 ? "it" : "them"}?`)) {
         favoritedMarkers.restoreFromLocalStorage();
       } else {
         favoritedMarkers.removeFromLocalStorage();
       }
     }
+
     $("#pageContent").show(0, () => {
       map.invalidateSize(false);
     });

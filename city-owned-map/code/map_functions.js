@@ -304,7 +304,7 @@ function searchDatagroupsForIdentifier(identifier, datagroups) {
   return searchResults;
 }
 
-function getDataByPinViaAjax(pin, done, fail, always) {
+function getLocationDataViaAjax(pin, done, fail, always) {
   const jqxhr = $.ajax({
     url: "https://datacatalog.cookcountyil.gov/resource/c49d-89sn.json",
     type: "GET",
@@ -353,7 +353,7 @@ function getPinSearchBar(map, datasetsToSearch, addSearchResultToMap) {
         const numberOfResults = Object.keys(searchResults).length;
         if (numberOfResults < 1) {
           if (window.confirm("This PIN is not on the map. Add a new marker to the map for this PIN?")) {
-            getDataByPinViaAjax(
+            getLocationDataViaAjax(
               pin,
               (data) => {
                 if (data.length < 1) {
@@ -365,7 +365,7 @@ function getPinSearchBar(map, datasetsToSearch, addSearchResultToMap) {
               },
               (jqxhr, textStatus) => { 
                 searchResultsSpan.css("color", "red").text("An error occurred while trying to fetch data for this PIN.");
-                console.log(`Failed to retrieve data for PIN ${pin}: ${textStatus}`);
+                console.error(`Error: failed to retrieve data for PIN ${pin} - ${textStatus}`);
               },
             );
           }
