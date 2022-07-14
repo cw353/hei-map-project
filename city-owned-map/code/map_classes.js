@@ -17,6 +17,22 @@ class ColorGenerator {
   }
 }
 
+const DatagroupAwareMarker = L.Marker.extend({
+  options: {
+    _datagroupName: "Unknown Category",
+  },
+  initialize(latlng, options, datagroupName) {
+    L.Marker.prototype.initialize.call(this, latlng, options);
+    this.setDatagroupName(datagroupName);
+  },
+  setDatagroupName: function(datagroupName) {
+    L.Util.setOptions(this, { _datagroupName: datagroupName });
+  },
+  getDatagroupName: function() {
+    return this.options._datagroupName;
+  }
+});
+
 class MarkerData {
   constructor(identifier, data, datagroup, layerInfo, marker) {
     this.identifier = identifier;
@@ -73,7 +89,6 @@ class Datagroup extends ChildLayerGroup {
         riseOnHover: true,
         riseOffset: 1000000,
         title: `Marker from "${this.name}"`,
-        datagroupName: this.name,
       },
       options.markerOptions,
     );
@@ -95,9 +110,10 @@ class Datagroup extends ChildLayerGroup {
     this.markerData.set(identifier.toString(), markerData);
   }
   addMarker(identifier, data, layerInfo) {
-    const marker = L.marker(
+    const marker = new DatagroupAwareMarker(
       [data.latitude, data.longitude],
       this.markerOptions,
+      this.name,
     );
     layerInfo.addLayer(marker);
     const markerData = new MarkerData(identifier, data, this, layerInfo, marker);
