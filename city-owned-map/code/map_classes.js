@@ -120,7 +120,7 @@ class Datagroup extends ChildLayerGroup {
     this.#setMarkerData(identifier, markerData);
     marker.setIcon(this.getMarkerIcon(markerData));
     if (this.getMarkerPopupContent) {
-      marker.bindPopup("", { maxWidth: 250, maxHeight: 300, });
+      marker.bindPopup("", { maxWidth: 300, minWidth: 250, maxHeight: 300, });
       this.#setMarkerPopupContent(markerData);
     }
   }

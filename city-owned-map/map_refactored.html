@@ -337,7 +337,8 @@
             { label: "PIN", data: data.pin },
             { label: "Address", data: data.property_address },
             { label: "Ward", data: data.ward },
-            { label: "Property Status", data: data.property_status },
+            { label: "Zip Code", data: data.property_zip },
+            { label: "Date of Acquisition", data: data.date_of_acquisition },
             { label: "Record Last Updated", data: data.last_update },
             { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
           ];
@@ -346,7 +347,7 @@
     );
 
     const ward20TaxSale = new AutomaticClassificationDatagroup(
-      "Ward 20 Tax Sale",
+      "Tax Sale for Tax Year 2019 (Ward 20)",
       new Dataset(taxsale_ward20_data, taxsale_ward20_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
       (data) => { return ("classification" in data) ? data.classification : "Unclassified" },
       getDefaultAutomaticClassificationOptions(
@@ -366,7 +367,7 @@
     );
 
     const scavengerSale = new AutomaticClassificationDatagroup(
-      "Scavenger Sale 2022",
+      "Scavenger Sale 2022 (Ward 20)",
       new Dataset(scavenger_sale_data, scavenger_sale_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
       (data) => { return "property_code_class" in data ? data.property_code_class : "Unclassified" },
       getDefaultAutomaticClassificationOptions(
@@ -375,7 +376,7 @@
           return [
             { label: "PIN", data: data.pin },
             { label: "Address", data: data.property_address },
-            { label: "Ward", data: data.ward },
+            { label: "Zip Code", data: data.property_zip },
             { label: "Classification", data: data.property_code_meaning },
             { label: "Delinquent Tax", data: `$${data.delinquent_tax}` },
             { label: "Delinquent Interest", data: `$${data.delinquent_interest}` },
@@ -386,12 +387,14 @@
     );
 
     const businessLicenses = new AutomaticClassificationDatagroup(
-      "Business Licenses",
-      new Dataset(business_license_data, business_licenses_metadata.attribution, "license_number"),
+      "Business Licenses in Ward 20",
+      new Dataset(business_license_data, business_licenses_metadata.attribution, "license_id"),
       (data) => {
-        return ("ward" in data)
-          ? getWard(Array.isArray(data.ward) ? data.ward[0] : data.ward)
-          : "Unknown Ward";
+        return ("license_description" in data)
+          ? Array.isArray(data.license_description)
+            ? "Multiple Licenses"
+            : data.license_description.toString()
+          : "Unknown License"
       },
       getDefaultAutomaticClassificationOptions(
         (markerData) => {
@@ -399,8 +402,7 @@
           return [
             { label: "Business", data: data.doing_business_as_name },
             { label: "Address", data: data.address },
-            { label: "Ward", data: data.ward },
-            { label: "License Number(s)", data: joinArray(data.license_number, ", "), },
+            { label: "Zip Code", data: data.zip_code },
             { label: "License Description(s)", data: joinArray(data.license_description, "; "), },
             { label: "Business Activities", data: joinArray(data.business_activity, "; "), },
           ];
@@ -495,7 +497,7 @@
     $("#pinSearchBarDiv").append(
       getPinSearchBar(
         map,
-        [ cityOwned, ward20TaxSale, scavengerSale, userAddedMarkers, sunshineGospel, ],
+        [ sunshineGospel, cityOwned, ward20TaxSale, userAddedMarkers, ],
         (data) => userAddedMarkers.addSearchResult(data),
       )
     );
@@ -565,7 +567,7 @@
           taxsale_ward20_metadata,
           scavenger_sale_metadata,
           property_classification_codes_metadata,
-          //business_licenses_metadata,
+          business_licenses_metadata,
           ward_boundaries_2015_to_2023.metadata,
           ward_boundaries_2023.metadata,
           neighborhood_boundaries.metadata,
