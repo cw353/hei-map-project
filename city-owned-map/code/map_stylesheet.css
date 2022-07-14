@@ -160,6 +160,10 @@ td ul, .markerClusterPopupContent ul {
   border-width: 2px 2px 0 2px;
 }
 
+.leaflet-layerstree-children {
+  padding-left: 25px;
+}
+
 #map {
   display: flex;
   width: 100%;

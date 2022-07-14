@@ -359,8 +359,8 @@
             { label: "Address", data: data.property_address },
             { label: "Ward", data: data.ward },
             { label: "Classification", data: data.classification },
-            { label: "2019 Tax Due (Including Interest)", data: `$${data.total_due_including_interest}` },
-            { label: "2019 Tax Due (Excluding Interest)", data: `$${data.total_tax_due}` },
+            { label: "2020 Tax Due (Including Interest)", data: data.total_due_including_interest },
+            { label: "2020 Tax Due (Excluding Interest)", data: data.total_tax_due },
             { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
           ];
         }
@@ -379,6 +379,7 @@
             { label: "Address", data: data.property_address },
             { label: "Zip Code", data: data.property_zip },
             { label: "Classification", data: data.property_code_meaning },
+            { label: "Delinquent Tax Year Range", data: data.delinquent_tax_year_range },
             { label: "Delinquent Tax", data: `$${data.delinquent_tax}` },
             { label: "Delinquent Interest", data: `$${data.delinquent_interest}` },
             { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
