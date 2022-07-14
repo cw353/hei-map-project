@@ -121,7 +121,7 @@
   <script src="data/city-owned/city_owned_data.js"></script>
   <script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
   <script src="data/scavenger-sale/scavenger_data.js"></script>
-  <!--script src="data/business-licenses/business_license_data.js"></script-->
+  <script src="data/business-licenses/business_license_data.js"></script>
 
   <script>
 
@@ -178,11 +178,11 @@
       (props, comparand) => { return "pri_neigh" in props && props.pri_neigh === comparand },
     );
 
-    const zoneClassHighlightSelect = new HighlightSelect(
+    /*const zoneClassHighlightSelect = new HighlightSelect(
       "Choose a zone class to highlight: ",
       "Select the zone class that should be highlighted on the map",
       (props, comparand) => { return "zone_class" in props && props.zone_class.startsWith(comparand); },
-    );
+    );*/
 
     // add geographic boundaries
     const geoBoundaries = new ChildLayerGroup("Geographic Boundaries");
@@ -229,7 +229,8 @@
     map.addLayer(geoBoundaries.getChildLayer("Ward Boundaries (2015–2023)").layer);
 
     function getWard(ward) {
-      return ward === 20 ? "Ward 20"
+      return ward == null ? "Unknown Ward"
+	  	: ward === 20 ? "Ward 20"
         : ward <= 10 ? "Wards 01–10"
         : ward < 20 ? "Wards 11–19"
         : ward <= 30 ? "Wards 21–30"
@@ -268,7 +269,7 @@
 
     function getDataToDisplay(dataList) {
       return $("<span></span>").addClass("increasedLineHeight")
-        .html(dataList.map((item) => `<span class='dataToDisplayLabel'>${item.label}</span>: ${item.data}`).join("<br>"))
+        .html(dataList.map((item) => `<span class='dataToDisplayLabel'>${item.label}</span>: ${item.data ? item.data : "unknown"}`).join("<br>"))
         .get(0);
     }
     const colorGenerator = new ColorGenerator();
@@ -384,10 +385,14 @@
       ),
     );
 
-    /*const businessLicenses = new AutomaticClassificationDatagroup(
+    const businessLicenses = new AutomaticClassificationDatagroup(
       "Business Licenses",
       new Dataset(business_license_data, business_licenses_metadata.attribution, "license_number"),
-      (data) => { return ("ward" in data) ? getWard(data.ward) : "Unknown Ward" },
+      (data) => {
+        return ("ward" in data)
+          ? getWard(Array.isArray(data.ward) ? data.ward[0] : data.ward)
+          : "Unknown Ward";
+      },
       getDefaultAutomaticClassificationOptions(
         (markerData) => {
           const data = markerData.data;
@@ -395,13 +400,13 @@
             { label: "Business", data: data.doing_business_as_name },
             { label: "Address", data: data.address },
             { label: "Ward", data: data.ward },
-            { label: "License Number", data: data.license_number },
-            { label: "License Description", data: data.license_description },
-            { label: "Business Activity", data: data.business_activity },
+            { label: "License Number(s)", data: joinArray(data.license_number, ", "), },
+            { label: "License Description(s)", data: joinArray(data.license_description, "; "), },
+            { label: "Business Activities", data: joinArray(data.business_activity, "; "), },
           ];
         }
       ),
-    );*/
+    );
 
     const userAddedMarkers = new SearchResultsDatagroup(
       "User-Added Markers",
@@ -430,7 +435,7 @@
       },
     );
 
-    const datagroups = [ward20Office, sunshineGospel, cityOwned, ward20TaxSale, scavengerSale, userAddedMarkers];
+    const datagroups = [ward20Office, sunshineGospel, cityOwned, ward20TaxSale, scavengerSale, businessLicenses, userAddedMarkers];
     const datagroupOverlays = [];
     for (const datagroup of datagroups) {
       favoritedMarkers.registerDatagroup(datagroup);

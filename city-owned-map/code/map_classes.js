@@ -419,7 +419,7 @@ class HighlightSelect {
 class FavoritedMarkerGroup {
   constructor(localStorageItemName) {
     this.favoritedMarkers = new Set();
-    this.sourceDatagroups = new Map();
+    this.registeredDatagroups = new Map();
     this.localStorageItemName = localStorageItemName;
   }
   size() {
@@ -457,31 +457,36 @@ class FavoritedMarkerGroup {
     }
     this.removeFromLocalStorage();
   }
+  // only markers from registered datagroups will be saved to and restored from local storage
   registerDatagroup(datagroup) {
-    this.sourceDatagroups.set(datagroup.name, datagroup);
+    this.registeredDatagroups.set(datagroup.name, datagroup);
   }
   saveToLocalStorage() {
     const toSave = [];
-    this.favoritedMarkers.forEach((markerData) => toSave.push({
-      identifier: markerData.identifier,
-      datagroupName: markerData.datagroup.name,
-    }));
+    this.favoritedMarkers.forEach((markerData) => {
+      if (this.registeredDatagroups.has(markerData.datagroup.name)) {
+        toSave.push({
+          identifier: markerData.identifier,
+          datagroupName: markerData.datagroup.name,
+        })
+      }
+    });
     localStorage.setItem(this.localStorageItemName, JSON.stringify(toSave));
   }
   restoreFromLocalStorage() {
     const toRestore = localStorage.getItem(this.localStorageItemName);
     if (toRestore) {
       for (const item of JSON.parse(toRestore)) {
-        if (this.sourceDatagroups.has(item.datagroupName)) {
-          const markerData = this.sourceDatagroups.get(item.datagroupName).getMarkerData(item.identifier);
+        if (this.registeredDatagroups.has(item.datagroupName)) {
+          const markerData = this.registeredDatagroups.get(item.datagroupName).getMarkerData(item.identifier);
           if (markerData) {
             this.add(markerData, true);
             markerData.datagroup.refreshMarkerPopupContent(markerData.identifier);
           } else {
-            console.error("error: could not find marker data for " + JSON.stringify(item));
+            console.error("Error: could not find marker data for " + JSON.stringify(item));
           }
         } else {
-          console.error("error: could not find source datagroup for " + JSON.stringify(item));
+          console.error("Error: could not find source datagroup for " + JSON.stringify(item));
         }
       }
     }

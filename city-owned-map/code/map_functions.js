@@ -205,6 +205,10 @@ function compare(a, b, tiebreakerFunction) {
   return a < b ? -1 : a > b ? 1 : (tiebreakerFunction != null) ? tiebreakerFunction() : 0;
 }
 
+function joinArray(toJoin, separator) {
+  return Array.isArray(toJoin) ? toJoin.join(separator) : toJoin;
+}
+
 function generateTable(caption, data, columns) {
   const headerCells = $("<tr></tr>").append(columns.map((col) => `<th>${col.label}</th>`));
   const bodyRows = data.map((datum) => {
@@ -338,7 +342,7 @@ function showMarkerOnMap(map, markerData, callback) {
 }
 
 function getPinSearchBar(map, datasetsToSearch, addSearchResultToMap) {
-  const searchInput = $("<input type='search' inputmode='numeric' pattern='([\s-]*\\d[\\s-]*){14}'></input")
+  const searchInput = $("<input type='search' inputmode='numeric' pattern='([\\s-]*\\d[\\s-]*){14}'></input")
     .attr("title", "Enter the PIN to search for")
     .get(0);
   const searchResultsSpan = $("<span></span>");
