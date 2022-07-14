@@ -142,14 +142,16 @@ function getMarkerPopupContent(markerData, options) {
 
 // if includeConfirmationButton is true, then a button will be included as a child of the returned element
 // and onSelect will be called when that button is clicked rather than when an option is chosen
-function getSelect(selectLabel, optionList, onSelect, includeConfirmationButton, buttonText) {
+function getSelect(selectLabel, selectTitleText, optionList, onSelect, includeConfirmationButton, buttonText, buttonTitleText) {
   const form = $(`<span><label>${selectLabel}</label></span>`);
   const select = $("<select></select>")
+    .attr("title", selectTitleText)
     .html(optionList.map((option) => { return `<option value="${option}">${option}</option>` }));
   form.append(select);
   if (includeConfirmationButton) {
     form.append(
       $(`<button type="button">${buttonText}</button>`)
+        .attr("title", buttonTitleText)
         .on("click", () => onSelect(select.val()))
     );
   } else {
@@ -162,8 +164,8 @@ function getToggleVisibilityButton(element, showButtonText, hideButtonText, call
   const getButtonText = () => { return element.is(":visible") ? hideButtonText : showButtonText; };
   const button = $(`<button type='button'>${getButtonText()}</button>`);
   return button.on("click", (event) => element.toggle(() => {
-      button.text(getButtonText());
-      callback && callback();
+    button.text(getButtonText());
+    callback && callback();
   }))
 }
 
@@ -261,6 +263,7 @@ function generateFavoritedMarkersTable(favoritedMarkers) {
         return $("<div></div>").addClass("center")
           .append(
             $("<button type='button'>Show on Map</button>").addClass("showOnMapButton")
+              .attr("title", "Show this marker on the map")
               .data("markerData", markerData)
           )
           .get(0);
@@ -335,12 +338,15 @@ function showMarkerOnMap(map, markerData, callback) {
 }
 
 function getPinSearchBar(map, datasetsToSearch, addSearchResultToMap) {
-  const searchInput = $("<input type='search' inputmode='numeric' pattern='([\s-]*\\d[\\s-]*){14}'></input").get(0);
+  const searchInput = $("<input type='search' inputmode='numeric' pattern='([\s-]*\\d[\\s-]*){14}'></input")
+    .attr("title", "Enter the PIN to search for")
+    .get(0);
   const searchResultsSpan = $("<span></span>");
   const showSearchResult = (map, searchResultMarkerData, userFeedbackText, userFeedbackColor) => {
     showMarkerOnMap(map, searchResultMarkerData, () => { searchResultsSpan.css("color", userFeedbackColor).html(userFeedbackText); });
   }
   const searchButton = $("<button type='button'>Search</button>")
+    .attr("title", "Search for the PIN")
     .on("click", () => {
       searchResultsSpan.html("");
       if (searchInput.validity.patternMismatch || searchInput.value === "") {
@@ -373,17 +379,21 @@ function getPinSearchBar(map, datasetsToSearch, addSearchResultToMap) {
           const finalSearchResult = Object.values(searchResults)[0];
           showSearchResult(map, finalSearchResult, "The results of your search have been displayed on the map.", "green");
         } else {
-          searchResultsSpan.css("color", "black").html(getSelect(
-            "Choose a dataset: ",
-            [...Object.keys(searchResults)].sort(),
-            (selection) => {
-              searchResultsSpan.html("");
-              const finalSearchResult = searchResults[selection];
-              showSearchResult(map, finalSearchResult, "The results of your search have been displayed on the map.", "green");
-            },
-            true,
-            "Confirm",
-          ));
+          searchResultsSpan.css("color", "black").html(
+            getSelect(
+              "Choose a category: ",
+              "Select a category to search for the PIN in",
+              [...Object.keys(searchResults)].sort(),
+              (selection) => {
+                searchResultsSpan.html("");
+                const finalSearchResult = searchResults[selection];
+                showSearchResult(map, finalSearchResult, "The results of your search have been displayed on the map.", "green");
+              },
+              true,
+              "Confirm",
+              "Confirm your category selection",
+            )
+          );
         }
       }
     });

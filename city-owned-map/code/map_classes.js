@@ -213,11 +213,13 @@ class MarkerAndCircleDatagroup extends Datagroup {
   getRadiusInputElement() {
     const circle = this.getChildLayer(this.circleName).layer;
     const inputElement = $("<input type='number' min='0'/>")
+      .attr("title", "Enter the new radius for the circle")
       .addClass("radiusInput validInput")
       .val(circle.getRadius() / 1000) // meters to kilometers
       .get(0);
     const messageElement = $("<span></span>").addClass("successMessage");
     const applyChangesButton = $("<button type='button'>Set Radius</button>")
+      .attr("title", "Apply your changes to the circle radius")
       .on("click", (event) => {
         messageElement.html("");
         const newRadius = parseFloat(inputElement.value);
@@ -391,8 +393,9 @@ class BoundaryLayerInfo extends LayerInfo {
 
 class HighlightSelect {
   #defaultOption = "-- None --";
-  constructor(label, highlightFunction) {
+  constructor(label, selectTitleText, highlightFunction) {
     this.label = label;
+    this.selectTitleText = selectTitleText;
     this.comparand = this.#defaultOption;
     this.optionSet = new Set([this.#defaultOption]);
     this.highlightFunction = (props) => { return highlightFunction(props, this.comparand); }
@@ -403,6 +406,7 @@ class HighlightSelect {
   getHighlightSelectElement(sort, layersToRefresh) {
     return getSelect(
       this.label,
+      this.selectTitleText,
       sort ? [...this.optionSet.values()].sort() : [...this.optionSet.values()],
       (value) => {
         this.comparand = value;

@@ -95,6 +95,9 @@
       </div>
     </div>
     <div id="aboutMapTab">
+      <p class='italic'>
+        This is a map of properties that may be of interest to Sunshine Gospel Ministries' Housing Equity Initiative (HEI). This map was created by Claire Wagner, a member of the Wheaton College Summer 2022 Research Team.
+      </p>
       <div id="datasetTableDiv" class="center"></div>
     </div>
 
@@ -164,17 +167,20 @@
 
     const wardHighlightSelect = new HighlightSelect(
       "Choose a ward to highlight: ",
+      "Select the ward that should be highlighted on the map",
       (props, comparand) => { return "ward" in props && ("Ward " + props.ward) === comparand },
     );
     for (let i = 1; i < 51; i++) { wardHighlightSelect.addOption("Ward " + i); }
 
     const neighborhoodHighlightSelect = new HighlightSelect(
       "Choose a neighborhood to highlight: ",
+      "Select the neighborhood that should be highlighted on the map",
       (props, comparand) => { return "pri_neigh" in props && props.pri_neigh === comparand },
     );
 
     const zoneClassHighlightSelect = new HighlightSelect(
       "Choose a zone class to highlight: ",
+      "Select the zone class that should be highlighted on the map",
       (props, comparand) => { return "zone_class" in props && props.zone_class.startsWith(comparand); },
     );
 
@@ -510,7 +516,7 @@
 
     const additionalMapControlsDiv = $("#additionalMapControls");
     getToggleVisibilityButton(
-      additionalMapControlsDiv, "+ Show Additional Map Controls", "- Hide Additional Map Controls", false,
+      additionalMapControlsDiv, "+ Show Additional Map Controls", "- Hide Additional Map Controls", null,
     )
     .insertBefore(additionalMapControlsDiv.hide());
 
@@ -545,11 +551,6 @@
     ]));
 
     $("#aboutMapTab")
-      .append(
-        "<p class='italic'>This is a map of properties that may be of interest to Sunshine Gospel Ministries'"
-        + " Housing Equity Initiative (HEI). This map was created by the Wheaton College 2022"
-        + " Summer Research Team.</p>"
-      )
       .append(generateMetadataTable(
         "Data Used in This Map",
         [
@@ -569,13 +570,15 @@
     
     $("#favoritedMarkersButtonsDiv").append([
       $("<button type='button'>Delete All Favorited Markers</button>")
+        .attr("title", "Permanently delete all Favorited Markers")
         .on("click", (event) => {
           if (favoritedMarkers.size() > 0 && window.confirm("Are you sure you want to delete all of your Favorited Markers?")) {
             favoritedMarkers.removeAll();
             generateFavoritedMarkersContent();
           }
         }),
-      $("<button type='button'>Export All Favorited Markers as JSON</button>")
+      $("<button type='button'>Export All Favorited Markers</button>")
+        .attr("title", "Export all Favorited Markers in JSON format")
         .on("click", (event) => {
           const toExport = JSON.stringify(
             favoritedMarkers.getAll().map((markerData) => {
