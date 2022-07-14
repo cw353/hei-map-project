@@ -391,7 +391,7 @@ function getPinSearchBar(map, datasetsToSearch, addSearchResultToMap) {
   
   return $("<div></div>").addClass("formContainer")
     .append([
-      $("<label>Search for a PIN: </label>").append(searchInput),
+      $(`<label>Search for a ${getOpenInNewTabLink("https://www.cookcountyclerkil.gov/property-taxes/about-property-index-number-pin", "PIN")} on the map: </label>`).append(searchInput),
       searchButton,
       searchResultsSpan,
     ]);

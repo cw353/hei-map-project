@@ -72,6 +72,7 @@ class Datagroup extends ChildLayerGroup {
       {
         riseOnHover: true,
         riseOffset: 1000000,
+        title: `Marker from "${this.name}"`,
         datagroupName: this.name,
       },
       options.markerOptions,

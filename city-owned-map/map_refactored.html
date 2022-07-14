@@ -30,6 +30,14 @@
   <!--script src="https://unpkg.com/leaflet.markercluster.layersupport@2.0.1/dist/leaflet.markercluster.layersupport.js"
     integrity="sha512-Utd3nyu+vSSF4E6z/hcIzoi2mCedtng1MTF2sZWLnlL2BCwSyyvwT2otaWEiVmkgCpfTy6C/RVxo5WIoJ9zY3Q=="
     crossorigin=""></script-->
+
+  <!-- Leaflet.Fullscreen CDN -->
+  <!--link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css"
+    integrity="sha512-Tbna5DrK+N26ZZczWjdHj7BHyU3vUAjA7JsGhIyTM/7jBiy4f4DbiScuLQxaxB51+Gh/+a+Z7AwQmh2FyafjLg=="
+    crossorigin=""/>
+  <script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js"
+    integrity="sha512-gyvCiKy2sIRwqd5QeTyyeJBTPx5OQdyluEFSIe1KnKDi0DM0w/T+T8iczSYRRcwmMYGVixYL2QGKJ+8XylbyTA=="
+    crossorigin=""></script-->
   
   <!-- jQuery -->
   <!--script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"
@@ -46,6 +54,13 @@
   <link rel="stylesheet" href="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
   <script src="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
   <script src="libraries/jquery-3.6.0.js"></script>
+  <!-- Leaflet.Fullscreen CDN -->
+  <link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css"
+    integrity="sha512-Tbna5DrK+N26ZZczWjdHj7BHyU3vUAjA7JsGhIyTM/7jBiy4f4DbiScuLQxaxB51+Gh/+a+Z7AwQmh2FyafjLg=="
+    crossorigin=""/>
+  <script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js"
+    integrity="sha512-gyvCiKy2sIRwqd5QeTyyeJBTPx5OQdyluEFSIe1KnKDi0DM0w/T+T8iczSYRRcwmMYGVixYL2QGKJ+8XylbyTA=="
+    crossorigin=""></script>
 
   <!-- External files for stylesheets, functions, and data -->
   <link rel="stylesheet" href="code/map_stylesheet.css"/>
@@ -115,9 +130,18 @@
     const map = L.map("map", {
       center: [41.783, -87.621],
       zoom: 12,
+      zoomDelta: 0.5,
+      zoomSnap: 0.5,
       scrollWheelZoom: false,
-      doubleClickZoom: false,
+      zoomControl: false,
     });
+    map.addControl(new L.Control.Fullscreen({
+      title: {
+        "false": "Enter fullscreen mode",
+        "true": "Exit fullscreen mode",
+      }
+    }));
+    map.addControl(L.control.zoom());
 
     // add tiles to map - reference: https://leafletjs.com/examples/layers-control/
     const osmtiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
