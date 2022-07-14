@@ -324,7 +324,7 @@ function showMarkerOnMap(map, markerData, callback) {
   if (!map.hasLayer(layer)) {
     map.addLayer(layer);
   }
-  map.flyTo(marker.getLatLng(), map.getMaxZoom());
+  map.flyTo(marker.getLatLng(), map.getMaxZoom(), { duration: 0.2, });
   markerClusterSupportGroup.zoomToShowLayer(
     marker,
     () => { 

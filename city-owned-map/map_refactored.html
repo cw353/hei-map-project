@@ -86,7 +86,7 @@
 
     <div id="favoritedMarkersTab">
       <p class="italic">
-        To add a marker to your Favorited Markers, click on the marker on the map. If the marker can be added to your Favorited Markers, a popup with a button labeled "Add to Favorites" will appear. Click the button to add the marker to your Favorited Markers.
+        To add a marker to your Favorited Markers, click on the marker on the map. If the marker can be added to your Favorited Markers, a popup with a button labeled "Add to Favorited Markers" will appear. Click the button to add the marker to your Favorited Markers.
       </p>
       <p id="favoritedMarkersOverviewParagraph" class="italic"></p>
       <div id="favoritedMarkersDetailsDiv">
@@ -240,10 +240,10 @@
         const markerData = target.data("markerData");
         if (favoritedMarkers.has(markerData)) {
           favoritedMarkers.remove(markerData);
-          target.text("Add to Favorites");
+          target.text("Add to Favorited Markers");
         } else {
           favoritedMarkers.add(markerData);
-          target.text("Remove from Favorites");
+          target.text("Remove from Favorited Markers");
         }
       })
       .on("click", ".removeSearchResultButton", (event) => {
@@ -255,8 +255,8 @@
       });
 
     function getToggleFavoritedButton(markerData) {
-      const initialButtonText = favoritedMarkers.has(markerData) ? "Remove from Favorites" : "Add to Favorites";
-      return $(`<button type='button'>${initialButtonText}</button>`).addClass("toggleFavoritedButton")
+      return $(`<button type='button'></button>`).addClass("toggleFavoritedButton")
+        .text(favoritedMarkers.has(markerData) ? "Remove from Favorited Markers" : "Add to Favorited Markers")
         .data("markerData", markerData);
     }
 
