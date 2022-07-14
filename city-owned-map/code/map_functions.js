@@ -325,29 +325,34 @@ function getLocationDataViaAjax(pin, done, fail, always) {
   always && jqxhr.always(always);
 }
 
-function showMarkerOnMap(map, markerData, callback) {
+function showMarkerOnMap(map, markerData, markerClusterGroup, callback) {
   const marker = markerData.marker;
   const layer = markerData.layerInfo.layer;
+  const postZoomCallback = () => {
+    marker.openPopup();
+    callback && callback();
+  }
   if (!map.hasLayer(layer)) {
     map.addLayer(layer);
   }
-  map.flyTo(marker.getLatLng(), map.getMaxZoom(), { duration: 0.2, });
-  markerClusterSupportGroup.zoomToShowLayer(
-    marker,
-    () => { 
-      marker.openPopup();
-      callback && callback();
-    },
-  );
+  // workaround to avoid problems with markers not being shown because of marker clustering
+  map.setView(marker.getLatLng(), 12, { animate: false });
+  map.setZoom(map.getMaxZoom(), { animate: false });
+  markerClusterGroup
+    ? markerClusterGroup.zoomToShowLayer(
+        marker,
+        postZoomCallback,
+      )
+    : postZoomCallback();
 }
 
-function getPinSearchBar(map, datasetsToSearch, addSearchResultToMap) {
+function getPinSearchBar(map, datasetsToSearch, markerClusterGroup, addSearchResultToMap) {
   const searchInput = $("<input type='search' inputmode='numeric' pattern='([\\s-]*\\d[\\s-]*){14}'></input")
     .attr("title", "Enter the PIN to search for")
     .get(0);
   const searchResultsSpan = $("<span></span>");
   const showSearchResult = (map, searchResultMarkerData, userFeedbackText, userFeedbackColor) => {
-    showMarkerOnMap(map, searchResultMarkerData, () => { searchResultsSpan.css("color", userFeedbackColor).html(userFeedbackText); });
+    showMarkerOnMap(map, searchResultMarkerData, markerClusterGroup, () => { searchResultsSpan.css("color", userFeedbackColor).html(userFeedbackText); });
   }
   const searchButton = $("<button type='button'>Search</button>")
     .attr("title", "Search for the PIN")

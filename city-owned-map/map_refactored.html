@@ -155,7 +155,6 @@
     // marker cluster support group for all clusterable markers
     const markerClusterSupportGroup = L.markerClusterGroup.layerSupport({
       maxClusterRadius: 50,
-      disableClusteringAtZoom: map.getMaxZoom(),
     }).addTo(map);
 
     // popup that describes marker cluster content when user mouses over marker cluster
@@ -239,27 +238,7 @@
     }
 
     const favoritedMarkers = new FavoritedMarkerGroup("hei-map-favorited-markers");
-    
-    $(".leaflet-popup-pane")
-      .on("click", ".toggleFavoritedButton", (event) => {
-        const target = $(event.target);
-        const markerData = target.data("markerData");
-        if (favoritedMarkers.has(markerData)) {
-          favoritedMarkers.remove(markerData);
-          target.text("Add to Favorited Markers");
-        } else {
-          favoritedMarkers.add(markerData);
-          target.text("Remove from Favorited Markers");
-        }
-      })
-      .on("click", ".removeSearchResultButton", (event) => {
-        const markerData = $(event.target).data("markerData");
-        userAddedMarkers.removeSearchResult(
-          markerData,
-          (markerData) => favoritedMarkers.remove(markerData), // remove from Favorited Markers if favorited
-        );
-      });
-
+  
     function getToggleFavoritedButton(markerData) {
       return $(`<button type='button'></button>`).addClass("toggleFavoritedButton")
         .text(favoritedMarkers.has(markerData) ? "Remove from Favorited Markers" : "Add to Favorited Markers")
@@ -554,7 +533,8 @@
     $("#pinSearchBarDiv").append(
       getPinSearchBar(
         map,
-        [ sunshineGospel, cityOwned, taxSale2019, userAddedMarkers, ],
+        [ sunshineGospel, cityOwned, taxSale2019, taxSale2020, scavengerSale, userAddedMarkers, ],
+        markerClusterSupportGroup,
         (data) => userAddedMarkers.addSearchResult(data),
       )
     );
@@ -590,7 +570,7 @@
     favoritedMarkersTableDiv.on("click", ".showOnMapButton", (event) => {
       const markerData = $(event.target).data("markerData");
       $("#mapTabItem").trigger("click");
-      showMarkerOnMap(map, markerData);
+      showMarkerOnMap(map, markerData, markerClusterSupportGroup);
     });
     function generateFavoritedMarkersContent() {
       const numFavoritedMarkers = favoritedMarkers.size();
@@ -633,6 +613,26 @@
           //zoning_districts.metadata,        
         ],
       ));
+
+    $(".leaflet-popup-pane")
+      .on("click", ".toggleFavoritedButton", (event) => {
+        const target = $(event.target);
+        const markerData = target.data("markerData");
+        if (favoritedMarkers.has(markerData)) {
+          favoritedMarkers.remove(markerData);
+          target.text("Add to Favorited Markers");
+        } else {
+          favoritedMarkers.add(markerData);
+          target.text("Remove from Favorited Markers");
+        }
+      })
+      .on("click", ".removeSearchResultButton", (event) => {
+        const markerData = $(event.target).data("markerData");
+        userAddedMarkers.removeSearchResult(
+          markerData,
+          (markerData) => favoritedMarkers.remove(markerData), // remove from Favorited Markers if favorited
+        );
+      });
     
     $("#favoritedMarkersButtonsDiv").append([
       $("<button type='button'>Delete All Favorited Markers</button>")
