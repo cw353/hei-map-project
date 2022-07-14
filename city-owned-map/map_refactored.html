@@ -152,6 +152,7 @@
     // marker cluster support group for all clusterable markers
     const markerClusterSupportGroup = L.markerClusterGroup.layerSupport({
       maxClusterRadius: 50,
+      disableClusteringAtZoom: map.getMaxZoom(),
     }).addTo(map);
 
     // popup that describes marker cluster content when user mouses over marker cluster

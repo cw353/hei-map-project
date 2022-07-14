@@ -324,12 +324,11 @@ function showMarkerOnMap(map, markerData, callback) {
   if (!map.hasLayer(layer)) {
     map.addLayer(layer);
   }
-  map.setZoom(12); // workaround to avoid overlapping markers preventing popup from opening correctly
+  map.flyTo(marker.getLatLng(), map.getMaxZoom());
   markerClusterSupportGroup.zoomToShowLayer(
     marker,
     () => { 
       marker.openPopup();
-      map.panTo(marker.getLatLng()); // center map on marker
       callback && callback();
     },
   );
