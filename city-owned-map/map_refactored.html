@@ -120,7 +120,8 @@
   <script src="data/misc/misc.js"></script>
   <script src="data/misc/individual_properties.js"></script>
   <script src="data/city-owned/city_owned_data.js"></script>
-  <script src="data/tax-sale/tax_sale_ward20_tax_year_2019.js"></script>
+  <script src="data/tax-sale/taxsale_2019.js"></script>
+  <script src="data/tax-sale/taxsale_2020.js"></script>
   <script src="data/scavenger-sale/scavenger_data.js"></script>
   <script src="data/business-licenses/business_license_data.js"></script>
 
@@ -347,9 +348,29 @@
       ),
     );
 
-    const ward20TaxSale = new AutomaticClassificationDatagroup(
-      "Tax Sale for Tax Year 2019 (Ward 20)",
-      new Dataset(taxsale_ward20_data, taxsale_ward20_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
+    const taxSale2019 = new AutomaticClassificationDatagroup(
+      "Tax Sale for Tax Year 2019 in Ward 20",
+      new Dataset(taxsale_2019_data, taxsale_2019_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
+      (data) => { return data.classification ? data.classification : "Unclassified" },
+      getDefaultAutomaticClassificationOptions(
+        (markerData) => {
+          const data = markerData.data;
+          return [
+            { label: "PIN", data: data.pin },
+            { label: "Address", data: data.property_address },
+            { label: "Ward", data: data.ward },
+            { label: "Classification", data: data.classification },
+            { label: "2019 Tax Due (Including Interest)", data: `$${data.total_due_including_interest}` },
+            { label: "2019 Tax Due (Excluding Interest)", data: `$${data.total_tax_due}` },
+            { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
+          ];
+        }
+      ),
+    );
+
+    const taxSale2020 = new AutomaticClassificationDatagroup(
+      "Tax Sale for Tax Year 2020 in Ward 20",
+      new Dataset(taxsale_2020_data, taxsale_2020_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
       (data) => { return data.classification ? data.classification : "Unclassified" },
       getDefaultAutomaticClassificationOptions(
         (markerData) => {
@@ -368,7 +389,7 @@
     );
 
     const scavengerSale = new AutomaticClassificationDatagroup(
-      "Scavenger Sale 2022 (Ward 20)",
+      "Scavenger Sale 2022 in Ward 20",
       new Dataset(scavenger_sale_data, scavenger_sale_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
       (data) => { return data.property_code_class ? data.property_code_class : "Unclassified" },
       getDefaultAutomaticClassificationOptions(
@@ -473,7 +494,7 @@
       },
     );
 
-    const datagroups = [ward20Office, sunshineGospel, cityOwned, ward20TaxSale, scavengerSale, schoolLocations, businessLicenses, userAddedMarkers];
+    const datagroups = [ward20Office, sunshineGospel, cityOwned, taxSale2019, taxSale2020, scavengerSale, schoolLocations, businessLicenses, userAddedMarkers];
     const datagroupOverlays = [];
     for (const datagroup of datagroups) {
       favoritedMarkers.registerDatagroup(datagroup);
@@ -533,7 +554,7 @@
     $("#pinSearchBarDiv").append(
       getPinSearchBar(
         map,
-        [ sunshineGospel, cityOwned, ward20TaxSale, userAddedMarkers, ],
+        [ sunshineGospel, cityOwned, taxSale2019, userAddedMarkers, ],
         (data) => userAddedMarkers.addSearchResult(data),
       )
     );
@@ -600,7 +621,8 @@
           property_locations_metadata,
           ward_offices_metadata,
           city_owned_metadata,
-          taxsale_ward20_metadata,
+          taxsale_2019_metadata,
+          taxsale_2020_metadata,
           scavenger_sale_metadata,
           property_classification_codes_metadata,
           business_licenses_metadata,
