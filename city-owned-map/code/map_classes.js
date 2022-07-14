@@ -158,14 +158,11 @@ class AutomaticClassificationDatagroup extends Datagroup {
       const classification = this.classify(datum);
       // if the LayerInfo object corresponding to classification doesn't exist yet, create it
       if (!(this.childLayers.has(classification))) {
-        this.addChildLayer(new LayerInfo(
-          classification,
-          "getLayerColor" in options ? options.getLayerColor() : "blue",
-          "getLayer" in options
-            ? options.getLayer(this.dataset.attribution)
-            : L.layerGroup([], { attribution : this.dataset.attribution }),
-          options.trackMarkerCount,
-        ));
+        this.addChildLayer(
+          "getLayerInfo" in options
+            ? options.getLayerInfo(classification, this.dataset.attribution)
+            : new LayerInfo(classification, "blue", L.layerGroup([], { attribution : this.dataset.attribution }), false)
+        );
       }
       const layerInfo = this.getChildLayer(classification);
       this.addMarker(
@@ -251,12 +248,9 @@ class SearchResultsDatagroup extends Datagroup {
     super(name, dataset, options);
     this.localStorageItemName = localStorageItemName;
     this.addChildLayer(
-      new LayerInfo(
-        "Search Results",
-        "red",
-        getCheckedInLayer(markerClusterSupportGroup, { attribution: this.dataset.attribution }),
-        false,
-      )
+      "getLayerInfo" in options
+        ? options.getLayerInfo("Search Results", this.dataset.attribution)
+        : new LayerInfo("Search Results", "blue", L.layerGroup([], { attribution : this.dataset.attribution }), false)
     );
     this.restoreFromLocalStorage();
   }

@@ -275,14 +275,17 @@
     const colorGenerator = new ColorGenerator();
     const getDefaultAutomaticClassificationOptions = (getListOfDataToDisplay) => {
       return {
-        getLayerColor: colorGenerator.getNextColor,
-        getLayer: (attribution) => getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
+        getLayerInfo: (name, attribution) => new LayerInfo(
+          name,
+          colorGenerator.getNextColor(),
+          getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
+          true,
+        ),
         getMarkerPopupContent: getMarkerPopupContent,
         markerPopupContentOptions: {
           getDataToDisplay: (markerData) => getDataToDisplay(getListOfDataToDisplay(markerData)),
           getFormElementsToDisplay: (markerData) => getToggleFavoritedButton(markerData),
         },
-        trackMarkerCount: true,
       };
     };
 
@@ -415,6 +418,12 @@
       new Dataset({}, property_locations_metadata.attribution, "pin"),
       "hei-map-user-search-results",
       {
+        getLayerInfo: (name, attribution) => new LayerInfo(
+          name,
+          "red",
+          getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
+          false,
+        ),
         getMarkerPopupContent: getMarkerPopupContent,
         markerPopupContentOptions: {
           getDataToDisplay: (markerData) => {
