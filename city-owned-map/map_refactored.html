@@ -11,13 +11,25 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"
     integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
     crossorigin=""></script>
-
-  <!-- External files for stylesheets, functions, and data -->
-  <link rel="stylesheet" href="code/map_stylesheet.css"/>
     
 </head>
 
 <body>
+
+  <style>
+    #loadingDiv {
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    #loadingText {
+      font-size: 5em;
+      font-style: italic;
+      margin-top: 50px;
+      margin-bottom: 25px;
+    }
+  </style>
 
   <div id="loadingDiv" class="center">
     <p id="loadingText">
@@ -117,7 +129,8 @@
   <link rel="stylesheet" href="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
   <script src="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
 
-  <!-- Code and data for the map -->
+  <!-- Stylesheets, code, and data -->
+  <link rel="stylesheet" href="code/map_stylesheet.css"/>
   <script src="code/map_functions.js"></script>
   <script src="code/map_classes.js"></script>
   <script src="data/geojson/ward_boundaries.js"></script>

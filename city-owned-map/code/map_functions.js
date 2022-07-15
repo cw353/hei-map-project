@@ -96,6 +96,7 @@ function getLayerInfoOverlayChild(layerInfo, options) {
     label: label,
     layer: layerInfo.layer,
     radioGroup: options && "radioGroupName" in options ? options.radioGroupName : "",
+    customClassName: "additionalPadding",
   };
 }
 

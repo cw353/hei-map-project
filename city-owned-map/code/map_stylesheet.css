@@ -175,12 +175,8 @@ td ul, .markerClusterPopupContent ul {
   border-width: 2px 2px 0 2px;
 }
 
-.leaflet-layerstree-children {
-  padding-left: 25px;
-}
-
-.leaflet-layerstree-children-nopad {
-  padding-left: 0;
+.additionalPadding {
+  padding-left: 20px;
 }
 
 #map {
@@ -189,19 +185,6 @@ td ul, .markerClusterPopupContent ul {
   height: 70vh;
   left: 0;
   top: 0;
-}
-
-#loadingDiv {
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-
-#loadingText {
-  font-size: 5em;
-  font-style: italic;
-  margin-top: 50px;
-  margin-bottom: 25px;
 }
 
 #pageHeader {

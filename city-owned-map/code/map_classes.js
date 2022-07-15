@@ -109,7 +109,7 @@ class Datagroup extends ChildLayerGroup {
     const identifierAsString = identifier.toString();
     return this.hasMarkerData(identifierAsString) ? this.markerData.get(identifierAsString) : undefined;
   }
-  #setMarkerData(identifier, markerData) {
+  _setMarkerData(identifier, markerData) {
     this.markerData.set(identifier.toString(), markerData);
   }
   createNewMarker(data) {
@@ -119,11 +119,11 @@ class Datagroup extends ChildLayerGroup {
     const marker = this.createNewMarker(data);
     layerInfo.addLayer(marker);
     const markerData = new MarkerData(identifier, data, this, layerInfo, marker);
-    this.#setMarkerData(identifier, markerData);
+    this._setMarkerData(identifier, markerData);
     marker.setIcon(this.getMarkerIcon(markerData));
     if (this.getMarkerPopupContent) {
       marker.bindPopup("", { maxWidth: 300, minWidth: 250, maxHeight: 300, });
-      this.#setMarkerPopupContent(markerData);
+      this._setMarkerPopupContent(markerData);
     }
   }
   // postcondition: the marker has been removed from its parent layer and from this.markerData,
@@ -136,7 +136,7 @@ class Datagroup extends ChildLayerGroup {
     this.markerData.delete(identifier);
   }
   // precondition: this.getMarkerPopupContent != null
-  #setMarkerPopupContent(markerData) {
+  _setMarkerPopupContent(markerData) {
     const marker = markerData.marker;
     marker.closePopup();
     marker.setPopupContent(
@@ -146,7 +146,7 @@ class Datagroup extends ChildLayerGroup {
   refreshMarkerPopupContent(identifier) {
     const markerData = this.getMarkerData(identifier);
     if (markerData && this.getMarkerPopupContent) {
-      this.#setMarkerPopupContent(markerData);
+      this._setMarkerPopupContent(markerData);
     }
   }
 }
