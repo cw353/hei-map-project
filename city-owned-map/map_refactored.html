@@ -6,60 +6,10 @@
   <meta name="author" content="Claire Wagner (Summer 2022 Wheaton College Research Team)">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Map of Properties of Interest to HEI</title>
-
-  <!-- Leaflet CDN -->
-  <!--link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
-    integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
-    crossorigin=""/>
-  <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
-    integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
-    crossorigin=""></script-->
-
-  <!-- Leaflet.markercluster CDN -->
-  <!--link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
-    integrity="sha512-RLEjtaFGdC4iQMJDbMzim/dOvAu+8Qp9sw7QE4wIMYcg2goVoivzwgSZq9CsIxp4xKAZPKh5J2f2lOko2Ze6FQ=="
-    crossorigin=""/>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"
-    integrity="sha512-BBToHPBStgMiw0lD4AtkRIZmdndhB6aQbXpX7omcrXeG2PauGBl2lzq2xUZTxaLxYz5IDHlmneCZ1IJ+P3kYtQ=="
-    crossorigin=""/>
-  <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"
-    integrity="sha512-MQlyPV+ol2lp4KodaU/Xmrn+txc1TP15pOBF/2Sfre7MRsA/pB4Vy58bEqe9u7a7DczMLtU5wT8n7OblJepKbg=="
-    crossorigin=""></script-->
-
-  <!-- Leaflet.MarkerCluster.LayerSupport CDN -->
-  <!--script src="https://unpkg.com/leaflet.markercluster.layersupport@2.0.1/dist/leaflet.markercluster.layersupport.js"
-    integrity="sha512-Utd3nyu+vSSF4E6z/hcIzoi2mCedtng1MTF2sZWLnlL2BCwSyyvwT2otaWEiVmkgCpfTy6C/RVxo5WIoJ9zY3Q=="
-    crossorigin=""></script-->
-
-  <!-- Leaflet.Fullscreen CDN -->
-  <!--link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css"
-    integrity="sha512-Tbna5DrK+N26ZZczWjdHj7BHyU3vUAjA7JsGhIyTM/7jBiy4f4DbiScuLQxaxB51+Gh/+a+Z7AwQmh2FyafjLg=="
-    crossorigin=""/>
-  <script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js"
-    integrity="sha512-gyvCiKy2sIRwqd5QeTyyeJBTPx5OQdyluEFSIe1KnKDi0DM0w/T+T8iczSYRRcwmMYGVixYL2QGKJ+8XylbyTA=="
-    crossorigin=""></script-->
   
   <!-- jQuery -->
-  <!--script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"
     integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
-    crossorigin=""></script-->
-
-  <!-- Local copies of Leaflet plugin scripts and stylesheets -->
-  <link rel="stylesheet" href="libraries/leaflet/leaflet.css"/>
-  <script src="libraries/leaflet/leaflet-src.js"></script>
-  <link rel="stylesheet" href="libraries/leaflet/plugins/MarkerCluster/MarkerCluster.css"/>
-  <link rel="stylesheet" href="libraries/leaflet/plugins/MarkerCluster/MarkerCluster.Default.css"/>
-  <script src="libraries/leaflet/plugins/MarkerCluster/leaflet.markercluster-src.js"></script>
-  <script src="libraries/leaflet/plugins/MarkerClusterLayerSupport/layersupport.js"></script>
-  <link rel="stylesheet" href="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
-  <script src="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
-  <script src="libraries/jquery-3.6.0.js"></script>
-  <!-- Leaflet.Fullscreen CDN -->
-  <link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css"
-    integrity="sha512-Tbna5DrK+N26ZZczWjdHj7BHyU3vUAjA7JsGhIyTM/7jBiy4f4DbiScuLQxaxB51+Gh/+a+Z7AwQmh2FyafjLg=="
-    crossorigin=""/>
-  <script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js"
-    integrity="sha512-gyvCiKy2sIRwqd5QeTyyeJBTPx5OQdyluEFSIe1KnKDi0DM0w/T+T8iczSYRRcwmMYGVixYL2QGKJ+8XylbyTA=="
     crossorigin=""></script>
 
   <!-- External files for stylesheets, functions, and data -->
@@ -69,7 +19,24 @@
 
 <body>
 
+  <div id="loadingDiv" class="center">
+    <p id="loadingText">
+      Please wait for the map to load...
+    </p>
+    <svg  xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 100 100">
+      <title>Loading Icon (Azizsoft, CC BY-SA 4.0)</title>
+      <desc>Azizsoft, CC BY-SA 4.0, via Wikimedia Commons (https://upload.wikimedia.org/wikipedia/commons/0/08/Loadin_8_part.svg)</desc>
+      <style type="text/css">
+        .c{cy:50px;cx:50px;r:35px;fill:none;stroke-width:15;stroke-dashoffset:-4;stroke:#000;}.a{opacity: 0.2;stroke-dasharray:20 7.5;}
+        .b{stroke-dasharray:20 200;transform-origin:50px;animation:d 1s steps(8) 0s infinite;}
+        @keyframes d{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+      </style>
+      <circle class="a c"/><circle class="b c"/>
+    </svg>
+  </div>
+
   <div id="pageContent">
+    
     <div id="pageHeader"></div>
     <div id="tabDiv"></div>
     
@@ -103,14 +70,54 @@
 
   </div>
 
-  </div>
-
-  <img id="loadingIcon" src="https://upload.wikimedia.org/wikipedia/commons/2/28/InternetSlowdown_Day.gif" alt="loading icon (Darmokand, CC BY-SA 4.0 license)"/>
-
   <script>
     $("#pageContent").hide();
   </script>
 
+  <!-- Leaflet CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+    integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+    crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+    integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+    crossorigin=""></script>
+
+  <!-- Leaflet.markercluster CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
+    integrity="sha512-RLEjtaFGdC4iQMJDbMzim/dOvAu+8Qp9sw7QE4wIMYcg2goVoivzwgSZq9CsIxp4xKAZPKh5J2f2lOko2Ze6FQ=="
+    crossorigin=""/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"
+    integrity="sha512-BBToHPBStgMiw0lD4AtkRIZmdndhB6aQbXpX7omcrXeG2PauGBl2lzq2xUZTxaLxYz5IDHlmneCZ1IJ+P3kYtQ=="
+    crossorigin=""/>
+  <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"
+    integrity="sha512-MQlyPV+ol2lp4KodaU/Xmrn+txc1TP15pOBF/2Sfre7MRsA/pB4Vy58bEqe9u7a7DczMLtU5wT8n7OblJepKbg=="
+    crossorigin=""></script>
+
+  <!-- Leaflet.MarkerCluster.LayerSupport CDN -->
+  <script src="https://unpkg.com/leaflet.markercluster.layersupport@2.0.1/dist/leaflet.markercluster.layersupport.js"
+    integrity="sha512-Utd3nyu+vSSF4E6z/hcIzoi2mCedtng1MTF2sZWLnlL2BCwSyyvwT2otaWEiVmkgCpfTy6C/RVxo5WIoJ9zY3Q=="
+    crossorigin=""></script>
+
+  <!-- Leaflet.Fullscreen CDN -->
+  <link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css"
+    integrity="sha512-Tbna5DrK+N26ZZczWjdHj7BHyU3vUAjA7JsGhIyTM/7jBiy4f4DbiScuLQxaxB51+Gh/+a+Z7AwQmh2FyafjLg=="
+    crossorigin=""/>
+  <script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js"
+    integrity="sha512-gyvCiKy2sIRwqd5QeTyyeJBTPx5OQdyluEFSIe1KnKDi0DM0w/T+T8iczSYRRcwmMYGVixYL2QGKJ+8XylbyTA=="
+    crossorigin=""></script>
+  
+  <!-- Local copies of Leaflet plugin scripts and stylesheets -->
+  <!--script src="libraries/jquery-3.6.0.js"></script>
+  <link rel="stylesheet" href="libraries/leaflet/leaflet.css"/>
+  <script src="libraries/leaflet/leaflet-src.js"></script>
+  <link rel="stylesheet" href="libraries/leaflet/plugins/MarkerCluster/MarkerCluster.css"/>
+  <link rel="stylesheet" href="libraries/leaflet/plugins/MarkerCluster/MarkerCluster.Default.css"/>
+  <script src="libraries/leaflet/plugins/MarkerCluster/leaflet.markercluster-src.js"></script>
+  <script src="libraries/leaflet/plugins/MarkerClusterLayerSupport/layersupport.js"></script-->
+  <link rel="stylesheet" href="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
+  <script src="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
+
+  <!-- Code and data for the map -->
   <script src="code/map_functions.js"></script>
   <script src="code/map_classes.js"></script>
   <script src="data/geojson/ward_boundaries.js"></script>
@@ -653,7 +660,6 @@
   </script>
 
   <script>
-    $("#loadingIcon").hide();
     // restore favorited markers from local storage
     const numSaved = favoritedMarkers.localStorageSize();
     if (numSaved > 0) {
@@ -663,7 +669,7 @@
         favoritedMarkers.removeFromLocalStorage();
       }
     }
-
+    $("#loadingDiv").hide();
     $("#pageContent").show(0, () => {
       map.invalidateSize(false);
     });

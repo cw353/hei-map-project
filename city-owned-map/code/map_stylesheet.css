@@ -191,17 +191,20 @@ td ul, .markerClusterPopupContent ul {
   top: 0;
 }
 
-#loadingIcon {
-  display: block;
-  margin: auto;
-  width: 50%;
+#loadingDiv {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+#loadingText {
+  font-size: 5em;
+  font-style: italic;
+  margin-top: 50px;
+  margin-bottom: 25px;
 }
 
 #pageHeader {
   text-align: center;
   font-size: 12px;
-}
-
-#pinSearchInput {
-  width: 12em;
 }

@@ -15,6 +15,7 @@ function generateIcon(color) {
         x="0px" y="0px" viewBox="0 0 1920 1080" style="enable-background:new 0 0 1920 1080;"
         xml:space="preserve"
       >
+        <desc>Based on an icon created by Naomi Wagner based on https://www.onlinewebfonts.com/icon/467018 (CC BY license)</desc>
         <style type="text/css">
           .svgIconStyle{stroke:#000000;stroke-width:30;stroke-miterlimit:10;}
         </style>
@@ -48,6 +49,7 @@ function generateFavoritedIcon(color) {
         x="0px" y="0px" width="${width}" height="${height}" viewBox="0 0 1920 1080"
         style="enable-background:new 0 0 1920 1080;" xml:space="preserve"
       >
+        <desc>Based on an icon created by Naomi Wagner based on https://www.onlinewebfonts.com/icon/467018 (CC BY license)</desc>
         <style type="text/css">
           .svgIconStyle{stroke:${outlineColor};stroke-width:50;stroke-miterlimit:10;}
         </style>
