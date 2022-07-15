@@ -520,6 +520,8 @@
       label: getParentOverlayLabel("Map Layers"),
       selectAllCheckbox: false,
       children: [
+        { label: "<span id='layerControlTreeExpandAll' class='leafOverlayLayer pointerCursor'>Expand all</span>" },
+        { label: "<span id='layerControlTreeCollapseAll' class='leafOverlayLayer pointerCursor'>Collapse all</span>" },
         getChildLayerGroupOverlaySubtree(geoBoundaries, {
           radioGroupName: "geoboundaries",
           selectAllCheckbox: false,
@@ -536,6 +538,11 @@
         hideSingleBase: true,
       }
     ).addTo(map);
+
+    $("#layerControlTreeExpandAll")
+      .on("click", (event) => layerControlTree.expandTree(true));
+    $("#layerControlTreeCollapseAll")
+      .on("click", (event) => layerControlTree.collapseTree(true));
 
     getMarkerClusterLegend("bottomleft").addTo(map);
 
