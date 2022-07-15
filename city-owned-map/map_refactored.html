@@ -56,6 +56,7 @@
       <div id="pinSearchBarDiv"></div>
       <div id="additionalMapControlsContainer" class="formContainer">
         <div id="additionalMapControls">
+          <div id="customDefaultExtentDiv" class="formContainer"></div>
           <div id="highlightSelectDiv"></div>
           <div id="radiiInputDiv"></div>
         </div>
@@ -128,6 +129,8 @@
   <script src="libraries/leaflet/plugins/MarkerClusterLayerSupport/layersupport.js"></script-->
   <link rel="stylesheet" href="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
   <script src="libraries/leaflet/plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
+  <link rel="stylesheet" href="libraries/leaflet/plugins/defaultextent/leaflet.defaultextent.css"/>
+  <script src="libraries/leaflet/plugins/defaultextent/leaflet.defaultextent.js"></script>
 
   <!-- Stylesheets, code, and data -->
   <link rel="stylesheet" href="code/map_stylesheet.css"/>
@@ -153,8 +156,8 @@
 
     // create map
     const map = L.map("map", {
-      center: [41.783, -87.621],
-      zoom: 12,
+      center: { lat: 41.79153671046777, lng: -87.62755393981935 },
+      zoom: 13,
       scrollWheelZoom: false,
       zoomControl: false,
     });
@@ -164,7 +167,9 @@
         "true": "Exit fullscreen mode",
       }
     }));
+    map.on("click", ()=>console.log(map.getZoom(), map.getCenter()));
     map.addControl(L.control.zoom());
+    const defaultExtentControl = L.control.defaultExtent({ title: "Zoom to Home View" }).addTo(map);
 
     // add tiles to map - reference: https://leafletjs.com/examples/layers-control/
     const osmtiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -553,6 +558,15 @@
         markerClusterSupportGroup,
         (data) => userAddedMarkers.addSearchResult(data),
       )
+    );
+
+    $("#customDefaultExtentDiv").append(
+      $("<button type='button'>Set Current Map View As Home View</button>")
+        .attr("title", "Set the current map view as the Home View (the view that the map zooms to when you click the \"Home\" button on the map)")
+        .on("click", (event) => {
+          defaultExtentControl.setCenter(map.getCenter());
+          defaultExtentControl.setZoom(map.getZoom());
+        })
     );
 
     const highlightSelectItems = [
