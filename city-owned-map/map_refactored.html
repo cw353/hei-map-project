@@ -167,7 +167,6 @@
         "true": "Exit fullscreen mode",
       }
     }));
-    map.on("click", ()=>console.log(map.getZoom(), map.getCenter()));
     map.addControl(L.control.zoom());
     const defaultExtentControl = L.control.defaultExtent({ title: "Zoom to Home View" }).addTo(map);
 
