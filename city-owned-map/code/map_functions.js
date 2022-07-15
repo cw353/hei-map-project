@@ -85,9 +85,9 @@ function getParentOverlayLabel(name) {
 function getLayerInfoOverlayChild(layerInfo, options) {
   let label = "<span>";
   label += layerInfo.color
-    ? `<i class='overlayLegendColor' style='background-color: ${layerInfo.color};'></i> `
+    ? `<i class='overlayLegendColor' style='background-color: ${layerInfo.color};'></i>`
     : "";
-  label += `<span class='leafOverlayLayer'>${layerInfo.name}`;
+  label += ` <span class='leafOverlayLayer'>${layerInfo.name}`;
   if ("markerCount" in layerInfo && layerInfo.markerCount > 0) {
     label += ` (${layerInfo.markerCount}  marker${layerInfo.markerCount > 1 ? "s" : ""})`;
   }
