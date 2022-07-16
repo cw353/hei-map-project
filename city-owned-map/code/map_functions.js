@@ -456,20 +456,36 @@ function getMarkerClusterLegend(position) {
 function getCheckbox(value, labelClass, checked) {
   return $("<span></span>")
     .append([
-      $(`<input type='checkbox' value='${value}'` + (checked ? " checked " : "") + `id='${value}'>`),
-      $(`<label for=${value}>${value}</label>`).addClass(labelClass),
+      $(`<input type="checkbox" value="${value}"` + (checked ? " checked " : "") + `id="${value}">`),
+      $(`<label for="${value}">${value}</label>`).addClass(labelClass),
     ]);
+    // !!! to do : escape " !!!
 }
 
-function getHeatmapSelect(datagroups) {
+function updateHeatLayer(map, heatlayer, data) {
+  if (data && data.length > 0) {
+    if (!map.hasLayer(heatlayer)) {
+      map.addLayer(heatlayer);
+    }
+    heatlayer.setLatLngs(data);
+  } else if (map.hasLayer(heatlayer)) {
+    map.removeLayer(heatlayer);
+  }
+}
+
+function getHeatmapSelect(map, heatlayer, datagroups) {
   function getApplyChangesButton(selectedDatagroup, checkboxDiv) {
     return $("<button type='button'>Apply Changes</button>")
     .on("click", () => {
+      const data = [];
       const checkedCheckboxes = checkboxDiv.find("input:checked");
       for (let i = 0; i < checkedCheckboxes.length; i++) {
         const childLayerName = checkedCheckboxes.eq(i).val();
-        console.log(`name = ${childLayerName}, color = ${selectedDatagroup.getChildLayer(childLayerName).color}`);
+        selectedDatagroup.getChildLayer(childLayerName).layer.eachLayer((marker) => {
+          data.push(marker.getLatLng());
+        });
       }
+      updateHeatLayer(map, heatlayer, data);
     });
   }
   const defaultValue = "-- None --";
@@ -485,7 +501,9 @@ function getHeatmapSelect(datagroups) {
     Object.keys(datagroupMap).sort(),
     (value) => {
       checkboxDiv.html("");
-      if (value !== defaultValue) {
+      if (value === defaultValue) {
+        updateHeatLayer(map, heatlayer, []);
+      } else {
         checkboxDiv.text("Choose subcategories: ");
         const selectedDatagroup = datagroupMap[value];
         for (const childLayerName of [...selectedDatagroup.childLayers.keys()].sort()) {

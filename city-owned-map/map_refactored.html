@@ -353,14 +353,6 @@
       ),
     );
 
-    const cityOwnedHeatData = [];
-    for (const datum of cityOwned.dataset.dataIterator()) {
-      cityOwnedHeatData.push([datum.latitude, datum.longitude]);
-    }
-    const cityOwnedHeat = L.heatLayer(
-      cityOwnedHeatData,
-    );
-
     const taxSale2019 = new AutomaticClassificationDatagroup(
       "Tax Sale for Tax Year 2019 in Ward 20",
       new Dataset(taxsale_2019_data, taxsale_2019_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
@@ -540,7 +532,6 @@
           radioGroupName: "geoboundaries",
           selectAllCheckbox: false,
         }),
-        { label: "City-Owned Heat Map", layer: cityOwnedHeat },
         ...datagroupOverlays,
       ],
     };
@@ -699,8 +690,10 @@
         }),
     ]);
 
+    const heatlayer = L.heatLayer([]);
+
     $("#heatmapSelectDiv")
-      .append(getHeatmapSelect(datagroups));
+      .append(getHeatmapSelect(map, heatlayer, datagroups));
     
     console.log("Ending inline script");
     
