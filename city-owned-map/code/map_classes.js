@@ -17,7 +17,7 @@ class ColorGenerator {
   }
 }
 
-const DatagroupAwareMarker = L.Marker.extend({
+L.Marker.DatagroupAwareMarker = L.Marker.extend({
   options: {
     _datagroupName: "Unknown Category",
   },
@@ -113,7 +113,7 @@ class Datagroup extends ChildLayerGroup {
     this.markerData.set(identifier.toString(), markerData);
   }
   createNewMarker(data) {
-    return new DatagroupAwareMarker(this.dataset.getLatLng(data), this.markerOptions, this.name);
+    return new L.Marker.DatagroupAwareMarker(this.dataset.getLatLng(data), this.markerOptions, this.name);
   }
   addMarker(identifier, data, layerInfo) {
     const marker = this.createNewMarker(data);

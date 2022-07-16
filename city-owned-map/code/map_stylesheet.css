@@ -69,6 +69,10 @@ td ul, .markerClusterPopupContent ul {
   font-style: italic;
 }
 
+.bordered {
+  border: 1px solid black;
+}
+
 .formContainer {
   margin: 10px;
 }

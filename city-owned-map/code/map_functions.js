@@ -282,7 +282,7 @@ function generateFavoritedMarkersTable(favoritedMarkers) {
 function getMarkerClusterTooltipContent(childMarkers) {
   const childDatagroups = {};
   for (const marker of childMarkers) {
-    const datagroupName = marker instanceof DatagroupAwareMarker ? marker.getDatagroupName() : "Unknown Category";
+    const datagroupName = marker instanceof L.Marker.DatagroupAwareMarker ? marker.getDatagroupName() : "Unknown Category";
     if (datagroupName in childDatagroups) {
       childDatagroups[datagroupName]++;
     } else {
