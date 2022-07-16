@@ -388,12 +388,12 @@ class BoundaryLayerInfo extends LayerInfo {
 }
 
 class HighlightSelect {
-  #defaultOption = "-- None --";
+  _defaultOption = "-- None --";
   constructor(label, selectTitleText, highlightFunction) {
     this.label = label;
     this.selectTitleText = selectTitleText;
-    this.comparand = this.#defaultOption;
-    this.optionSet = new Set([this.#defaultOption]);
+    this.comparand = this._defaultOption;
+    this.optionSet = new Set([this._defaultOption]);
     this.highlightFunction = (props) => { return highlightFunction(props, this.comparand); }
   }
   addOption(option) {

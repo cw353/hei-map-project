@@ -452,3 +452,53 @@ function getMarkerClusterLegend(position) {
     URL.revokeObjectURL(url);  
   }, 0);
 }
+
+function getCheckbox(value, labelClass, checked) {
+  return $("<span></span>")
+    .append([
+      $(`<input type='checkbox' value='${value}'` + (checked ? " checked " : "") + `id='${value}'>`),
+      $(`<label for=${value}>${value}</label>`).addClass(labelClass),
+    ]);
+}
+
+function getHeatmapSelect(datagroups) {
+  function getApplyChangesButton(selectedDatagroup, checkboxDiv) {
+    return $("<button type='button'>Apply Changes</button>")
+    .on("click", () => {
+      const checkedCheckboxes = checkboxDiv.find("input:checked");
+      for (let i = 0; i < checkedCheckboxes.length; i++) {
+        const childLayerName = checkedCheckboxes.eq(i).val();
+        console.log(`name = ${childLayerName}, color = ${selectedDatagroup.getChildLayer(childLayerName).color}`);
+      }
+    });
+  }
+  const defaultValue = "-- None --";
+  const datagroupMap = {};
+  datagroupMap[defaultValue] = null;
+  for (const datagroup of datagroups) {
+    datagroupMap[datagroup.name] = datagroup;
+  }
+  const checkboxDiv = $("<div></div>");
+  const datagroupSelect = getSelect(
+    "Select a data category to show as a heatmap: ",
+    "Select a category of data to show on the map as a heatmap",
+    Object.keys(datagroupMap).sort(),
+    (value) => {
+      checkboxDiv.html("");
+      if (value !== defaultValue) {
+        checkboxDiv.text("Choose subcategories: ");
+        const selectedDatagroup = datagroupMap[value];
+        for (const childLayerName of [...selectedDatagroup.childLayers.keys()].sort()) {
+          checkboxDiv.append([
+            getCheckbox(childLayerName, "italic", true)
+          ]);
+        }
+        checkboxDiv.append(getApplyChangesButton(selectedDatagroup, checkboxDiv));
+      }
+    },
+  );
+
+  return $("<div></div>")
+    .append(datagroupSelect)
+    .append(checkboxDiv);
+}

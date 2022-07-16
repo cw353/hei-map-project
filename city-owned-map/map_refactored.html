@@ -8,9 +8,10 @@
   <title>Map of Properties of Interest to HEI</title>
   
   <!-- jQuery -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+  <!--script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"
     integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
-    crossorigin=""></script>
+    crossorigin=""></script-->
+  <script src="offline/jquery-3.6.0.js"></script>
     
 </head>
 
@@ -53,10 +54,11 @@
     <div id="tabDiv"></div>
     
     <div id="mapTab">
+      <div id="customDefaultExtentDiv" class="formContainer"></div>
       <div id="pinSearchBarDiv"></div>
+      <div id="heatmapSelectDiv" class="formContainer"></div>
       <div id="additionalMapControlsContainer" class="formContainer">
         <div id="additionalMapControls">
-          <div id="customDefaultExtentDiv" class="formContainer"></div>
           <div id="highlightSelectDiv"></div>
           <div id="radiiInputDiv"></div>
         </div>
@@ -88,15 +90,15 @@
   </script>
 
   <!-- Leaflet CDN -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+  <!--link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
     integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
     crossorigin=""/>
   <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
     integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
-    crossorigin=""></script>
+    crossorigin=""></script-->
 
   <!-- Leaflet.markercluster CDN -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
+  <!--link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
     integrity="sha512-RLEjtaFGdC4iQMJDbMzim/dOvAu+8Qp9sw7QE4wIMYcg2goVoivzwgSZq9CsIxp4xKAZPKh5J2f2lOko2Ze6FQ=="
     crossorigin=""/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"
@@ -104,33 +106,33 @@
     crossorigin=""/>
   <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"
     integrity="sha512-MQlyPV+ol2lp4KodaU/Xmrn+txc1TP15pOBF/2Sfre7MRsA/pB4Vy58bEqe9u7a7DczMLtU5wT8n7OblJepKbg=="
-    crossorigin=""></script>
+    crossorigin=""></script-->
 
   <!-- Leaflet.MarkerCluster.LayerSupport CDN -->
-  <script src="https://unpkg.com/leaflet.markercluster.layersupport@2.0.1/dist/leaflet.markercluster.layersupport.js"
+  <!--script src="https://unpkg.com/leaflet.markercluster.layersupport@2.0.1/dist/leaflet.markercluster.layersupport.js"
     integrity="sha512-Utd3nyu+vSSF4E6z/hcIzoi2mCedtng1MTF2sZWLnlL2BCwSyyvwT2otaWEiVmkgCpfTy6C/RVxo5WIoJ9zY3Q=="
-    crossorigin=""></script>
+    crossorigin=""></script-->
 
   <!-- Leaflet.Fullscreen CDN -->
-  <link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css"
+  <!--link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css"
     integrity="sha512-Tbna5DrK+N26ZZczWjdHj7BHyU3vUAjA7JsGhIyTM/7jBiy4f4DbiScuLQxaxB51+Gh/+a+Z7AwQmh2FyafjLg=="
     crossorigin=""/>
   <script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js"
     integrity="sha512-gyvCiKy2sIRwqd5QeTyyeJBTPx5OQdyluEFSIe1KnKDi0DM0w/T+T8iczSYRRcwmMYGVixYL2QGKJ+8XylbyTA=="
-    crossorigin=""></script>
+    crossorigin=""></script-->
   
   <!-- Local copies of Leaflet plugin scripts and stylesheets -->
-  <!--script src="offline/jquery-3.6.0.js"></script>
   <link rel="stylesheet" href="offline/leaflet/leaflet.css"/>
   <script src="offline/leaflet/leaflet-src.js"></script>
   <link rel="stylesheet" href="offline/leaflet/plugins/MarkerCluster/MarkerCluster.css"/>
   <link rel="stylesheet" href="offline/leaflet/plugins/MarkerCluster/MarkerCluster.Default.css"/>
   <script src="offline/leaflet/plugins/MarkerCluster/leaflet.markercluster-src.js"></script>
-  <script src="offline/leaflet/plugins/MarkerClusterLayerSupport/layersupport.js"></script-->
+  <script src="offline/leaflet/plugins/MarkerClusterLayerSupport/layersupport.js"></script>
   <link rel="stylesheet" href="code/leaflet-plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
   <script src="code/leaflet-plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
   <link rel="stylesheet" href="code/leaflet-plugins/defaultextent/leaflet.defaultextent.css"/>
   <script src="code/leaflet-plugins/defaultextent/leaflet.defaultextent.js"></script>
+  <script src="code/leaflet-plugins/heat/leaflet-heat.js"></script>
 
   <!-- Stylesheets, code, and data -->
   <link rel="stylesheet" href="code/map_stylesheet.css"/>
@@ -161,12 +163,12 @@
       scrollWheelZoom: false,
       zoomControl: false,
     });
-    map.addControl(new L.Control.Fullscreen({
+    /*map.addControl(new L.Control.Fullscreen({
       title: {
         "false": "Enter fullscreen mode",
         "true": "Exit fullscreen mode",
       }
-    }));
+    }));*/
     map.addControl(L.control.zoom());
     const defaultExtentControl = L.control.defaultExtent({ title: "Zoom to Home View" }).addTo(map);
 
@@ -351,6 +353,14 @@
       ),
     );
 
+    const cityOwnedHeatData = [];
+    for (const datum of cityOwned.dataset.dataIterator()) {
+      cityOwnedHeatData.push([datum.latitude, datum.longitude]);
+    }
+    const cityOwnedHeat = L.heatLayer(
+      cityOwnedHeatData,
+    );
+
     const taxSale2019 = new AutomaticClassificationDatagroup(
       "Tax Sale for Tax Year 2019 in Ward 20",
       new Dataset(taxsale_2019_data, taxsale_2019_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
@@ -530,6 +540,7 @@
           radioGroupName: "geoboundaries",
           selectAllCheckbox: false,
         }),
+        { label: "City-Owned Heat Map", layer: cityOwnedHeat },
         ...datagroupOverlays,
       ],
     };
@@ -687,6 +698,9 @@
           downloadDataAsFile(toExport, "favorited_markers.json", "application/json");
         }),
     ]);
+
+    $("#heatmapSelectDiv")
+      .append(getHeatmapSelect(datagroups));
     
     console.log("Ending inline script");
     
