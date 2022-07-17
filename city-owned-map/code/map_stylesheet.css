@@ -89,7 +89,7 @@ td ul, .markerClusterPopupContent ul {
   line-height: 1.5;
 }
 
-.parentOverlayLayer {
+.parentOverlayLayer, .controlHeader {
   font-weight: bold;
   font-size: 1.15em;
 }
@@ -102,14 +102,14 @@ td ul, .markerClusterPopupContent ul {
   width: 3.5em;
 }
 
-/* reference: https://leafletjs.com/examples/choropleth/ */
-/*.legend {
-  padding: 6px 8px;
-  background: rgba(255,255,255);
-  box-shadow: 0 0 15px rgba(0,0,0,0.2);
-  border-radius: 5px;
-  border: 0.5px solid rgb(78, 78, 78, 0.7);
-}*/
+.leaflet-control-layers-scrollbar {
+  max-height: 45%;
+}
+
+.scrollable {
+  overflow: scroll;
+  max-height: 45%;
+}
 
 .legend, .heatLayerControl {
   padding: 6px 10px 6px 6px;

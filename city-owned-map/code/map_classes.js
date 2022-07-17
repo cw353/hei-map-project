@@ -500,6 +500,8 @@ L.Control.HeatLayerControl = L.Control.extend({
     selectLabelText: "Select category for heatmap: ",
     selectTitleText: "Select a category of data to show on the map as a heatmap",
     className: "heatLayerControl",
+    collapsedText: "&#9660; Show Heatmap Options",
+    expandedText: "&#9650; Hide Heatmap Options",
   },
   initialize(options) {
     L.Util.setOptions(this, options);
@@ -514,57 +516,97 @@ L.Control.HeatLayerControl = L.Control.extend({
     this._removeEventListeners();
   },
   _initContainer() {
+    this._visibilityToggle = $(`<div>${this.options.collapsedText}</div>`).addClass("center pointerCursor controlHeader");
     this._select = $(`<select id="${this.options.selectId}"></select>`)
       .attr("title", this.options.selectTitleText)
       .html(Object.keys(this._datagroupMap).sort().map(
         (option) => { return `<option value="${option}">${option}</option>` }
       ));
+    this._checkboxDiv = $("<div></div>").addClass("scrollable");
+    this._button = $("<button type='button'>Apply Changes</button>");
+    this._subcategoryDiv = $("<div></div>")
+      .append([
+        this._checkboxDiv,
+        $("<div></div>").addClass("center").append(this._button),
+      ])
+      .hide(0);
     this._contents = $("<div></div>")
       .append([
         $(`<label for="${this.options.selectId}">${this.options.selectLabelText}</label><br>`),
         this._select,
+        this._subcategoryDiv,
       ])
       .hide(0);
-    this._icon = $("<span>Heatmap</span>");
     this._container = $("<div></div>")
       .addClass("leaflet-bar" + ("className" in this.options ? ` ${this.options.className}` : ""))
       .append([
-        this._icon,
+        this._visibilityToggle,
         this._contents,
       ]);
   },
-  _mouseoverHandler() {
-    this._icon.hide(0);
-    this._contents.show(0);
+  _updateHeatLayer(data) {
+    if (data && data.length > 0) {
+      if (!this._map.hasLayer(this._heatLayer)) {
+        this._map.addLayer(this._heatLayer);
+      }
+      this._heatLayer.setLatLngs(data);
+    } else if (this._map.hasLayer(this._heatLayer)) {
+      this._map.removeLayer(this._heatLayer);
+    }
   },
-  _mouseoutHandler() {
-    this._contents.hide(0);
-    this._icon.show(0);
-  },
-  _toggleVisibilityHandler() {
-    this._icon.toggle();
+  _toggleContentsHandler() {
     this._contents.toggle();
+    this._visibilityToggle.html(
+      this._contents.is(":visible") ? this.options.expandedText : this.options.collapsedText
+    );
   },
   _selectChangeHandler() {
-    const value = this._select.value;
+    const value = this._select.val();
     this._selectedDatagroup = (value === this.options.selectNoneValue)
       ? null
       : this._datagroupMap[value];
     if (this._selectedDatagroup) {
+      this._checkboxDiv.html("Choose subcategories: <br>");
+      this._selectedDatagroup = this._datagroupMap[value];
+      for (const childLayerName of [...this._selectedDatagroup.childLayers.keys()].sort()) {
+        this._checkboxDiv.append(
+          $("<div></div>").append(getCheckbox(childLayerName, "italic", true))
+        );
+      }
+      // source: Leaflet
+      this._subcategoryDiv.css("max-height", (this._map.getSize().y - (this._container.offsetTop + 50)) + "px");
+      this._subcategoryDiv.show(0);
+    } else {
+      this._subcategoryDiv.hide(0);
+      this._updateHeatLayer(null);
     }
+  },
+  _updateHeatLayerHandler() {
+    const data = [];
+    const checkedCheckboxes = this._checkboxDiv.find("input:checked");
+    for (let i = 0; i < checkedCheckboxes.length; i++) {
+      const childLayerName = checkedCheckboxes.eq(i).val();
+      this._selectedDatagroup.getChildLayer(childLayerName).layer.eachLayer((marker) => {
+        data.push(marker.getLatLng());
+      });
+    }
+    this._updateHeatLayer(data);
+    //this._subcategoryDiv.hide(0);
   },
   _addEventListeners() {
     L.DomEvent.disableClickPropagation(this._container.get(0));
+    L.DomEvent.disableScrollPropagation(this._container.get(0));
+    L.DomEvent.on(this._visibilityToggle.get(0), "click", this._toggleContentsHandler, this);
     L.DomEvent.on(this._select.get(0), "change", this._selectChangeHandler, this);
-    //L.DomEvent.on(this._icon.get(0), "click", this._toggleVisibilityHandler, this);
-    L.DomEvent.on(this._container.get(0), "mouseover", this._mouseoverHandler, this);
-    L.DomEvent.on(this._container.get(0), "mouseout", this._mouseoutHandler, this);
+    L.DomEvent.on(this._button.get(0), "click", this._updateHeatLayerHandler, this);
   },
   _removeEventListeners() {
-    L.DomEvent.off(this._select, "change", this._selectChangeHandler, this);
-  },
+    L.DomEvent.off(this._visibilityToggle.get(0), "click", this._toggleContentsHandler, this);
+    L.DomEvent.off(this._select.get(0), "change", this._selectChangeHandler, this);
+    L.DomEvent.off(this._button.get(0), "click", this._updateHeatLayerHandler, this);  },
 });
 L.Control.HeatLayerControl.addInitHook(function() {
+  this._heatLayer = L.heatLayer([], this.options.heatLayerOptions);
   this._datagroupMap = {};
   this._datagroupMap[this.options.selectNoneValue] = null;
   for (const datagroup of this.options.datagroups) {

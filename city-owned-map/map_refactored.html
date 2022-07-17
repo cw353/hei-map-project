@@ -545,6 +545,11 @@
       }
     ).addTo(map);
 
+    map.addControl(new L.Control.HeatLayerControl({
+      position: "topright",
+      datagroups: [cityOwned, taxSale2019, taxSale2020, scavengerSale, schoolLocations, businessLicenses, userAddedMarkers],
+    }));
+
     $("#layerControlTreeExpandAll")
       .on("click", (event) => layerControlTree.expandTree(true));
     $("#layerControlTreeCollapseAll")
@@ -694,12 +699,6 @@
 
     $("#heatmapSelectDiv")
       .append(getHeatmapSelect(map, heatlayer, datagroups));
-
-    map.addControl(new L.Control.HeatLayerControl({
-      position: "topleft",
-      selectNoneValue: "NULL",
-      datagroups: [cityOwned, taxSale2019, taxSale2020, scavengerSale, schoolLocations, businessLicenses, userAddedMarkers],
-    }));
     
     console.log("Ending inline script");
     
