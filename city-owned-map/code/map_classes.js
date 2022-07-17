@@ -491,3 +491,83 @@ class FavoritedMarkerGroup {
     localStorage.removeItem(this.localStorageItemName);
   }
 }
+
+L.Control.HeatLayerControl = L.Control.extend({
+  options: {
+    selectNoneValue: "-- None --",
+    datagroups: [],
+    selectId: "heatLayerControlSelect",
+    selectLabelText: "Select category for heatmap: ",
+    selectTitleText: "Select a category of data to show on the map as a heatmap",
+    className: "heatLayerControl",
+  },
+  initialize(options) {
+    L.Util.setOptions(this, options);
+  },
+  onAdd: function(map) {
+    this._map = map;
+    this._initContainer();
+    this._addEventListeners();
+    return this._container.get(0);
+  },
+  onRemove: function() {
+    this._removeEventListeners();
+  },
+  _initContainer() {
+    this._select = $(`<select id="${this.options.selectId}"></select>`)
+      .attr("title", this.options.selectTitleText)
+      .html(Object.keys(this._datagroupMap).sort().map(
+        (option) => { return `<option value="${option}">${option}</option>` }
+      ));
+    this._contents = $("<div></div>")
+      .append([
+        $(`<label for="${this.options.selectId}">${this.options.selectLabelText}</label><br>`),
+        this._select,
+      ])
+      .hide(0);
+    this._icon = $("<span>Heatmap</span>");
+    this._container = $("<div></div>")
+      .addClass("leaflet-bar" + ("className" in this.options ? ` ${this.options.className}` : ""))
+      .append([
+        this._icon,
+        this._contents,
+      ]);
+  },
+  _mouseoverHandler() {
+    this._icon.hide(0);
+    this._contents.show(0);
+  },
+  _mouseoutHandler() {
+    this._contents.hide(0);
+    this._icon.show(0);
+  },
+  _toggleVisibilityHandler() {
+    this._icon.toggle();
+    this._contents.toggle();
+  },
+  _selectChangeHandler() {
+    const value = this._select.value;
+    this._selectedDatagroup = (value === this.options.selectNoneValue)
+      ? null
+      : this._datagroupMap[value];
+    if (this._selectedDatagroup) {
+    }
+  },
+  _addEventListeners() {
+    L.DomEvent.disableClickPropagation(this._container.get(0));
+    L.DomEvent.on(this._select.get(0), "change", this._selectChangeHandler, this);
+    //L.DomEvent.on(this._icon.get(0), "click", this._toggleVisibilityHandler, this);
+    L.DomEvent.on(this._container.get(0), "mouseover", this._mouseoverHandler, this);
+    L.DomEvent.on(this._container.get(0), "mouseout", this._mouseoutHandler, this);
+  },
+  _removeEventListeners() {
+    L.DomEvent.off(this._select, "change", this._selectChangeHandler, this);
+  },
+});
+L.Control.HeatLayerControl.addInitHook(function() {
+  this._datagroupMap = {};
+  this._datagroupMap[this.options.selectNoneValue] = null;
+  for (const datagroup of this.options.datagroups) {
+    this._datagroupMap[datagroup.name] = datagroup;
+  }
+});

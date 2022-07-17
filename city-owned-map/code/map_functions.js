@@ -157,7 +157,7 @@ function getSelect(selectLabel, selectTitleText, optionList, onSelect, includeCo
         .attr("title", buttonTitleText)
         .on("click", () => onSelect(select.val()))
     );
-  } else {
+  } else if (onSelect) {
     select.on("change", (event) => onSelect(event.target.value));
   }
   return form;
@@ -424,7 +424,7 @@ function getMarkerClusterLegend(position) {
   legend.onAdd = function(map) {
     const rangeBounds = [1, 10, 100];
     const colors = ["rgba(110, 204, 57, 0.8)", "rgba(240, 194, 12, 0.6)", "rgba(241, 128, 23, 0.8)"];
-    const div = L.DomUtil.create("div", "legend");
+    const div = L.DomUtil.create("div", "legend leaflet-bar");
     div.innerHTML = "<header>Marker Clusters</header>";
     for (let i = 0; i < rangeBounds.length; i++) {
       div.innerHTML += `<p><i class='circle' style="background-color: ${colors[i]}"></i> ${rangeBounds[i]}` + (rangeBounds[i+1] ? `–${rangeBounds[i+1]} properties<br>` : "+ properties</p>");
