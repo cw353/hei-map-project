@@ -544,41 +544,32 @@
       ]
     };
 
-    const overlayTree = {
-      label: getParentOverlayLabel("Map Layers"),
-      selectAllCheckbox: false,
-      children: [
-        { label: "<span id='layerControlTreeExpandAll' class='leafOverlayLayer pointerCursor'>Expand all</span>" },
-        { label: "<span id='layerControlTreeCollapseAll' class='leafOverlayLayer pointerCursor'>Collapse all</span>" },
-        getChildLayerGroupOverlaySubtree(geoBoundaries, {
-          radioGroupName: "geoboundaries",
-          selectAllCheckbox: false,
-        }),
-        ...datagroupOverlays,
-      ],
-    };
+    const overlayTree = [
+      getChildLayerGroupOverlaySubtree(geoBoundaries, {
+        radioGroupName: "geoboundaries",
+        selectAllCheckbox: false,
+      }),
+      ...datagroupOverlays,
+    ];
 
     const layerControlTree = L.control.layers.tree(
       baseTree,
       overlayTree,
       {
-        collapsed : false,
+        collapsed : true,
         hideSingleBase: true,
+        collapseAll: "<span class='leafOverlayLayer'>Collapse all</span>",
+        expandAll: "<span class='leafOverlayLayer'>Expand all</span>",
       }
     ).addTo(map);
 
+    const markerClusterLegend = getMarkerClusterLegend("bottomleft").addTo(map);
+
     map.addControl(new L.Control.HeatLayerControl({
-      position: "topright",
+      position: "topleft",
       datagroups: [cityOwned, taxSale2019, taxSale2020, scavengerSale, schoolLocations, businessLicenses, crimes, userAddedMarkers],
     }));
-
-    $("#layerControlTreeExpandAll")
-      .on("click", (event) => layerControlTree.expandTree(true));
-    $("#layerControlTreeCollapseAll")
-      .on("click", (event) => layerControlTree.collapseTree(true));
-
-    getMarkerClusterLegend("bottomleft").addTo(map);
-
+    
     $("#pinSearchBarDiv").append(
       getPinSearchBar(
         map,
