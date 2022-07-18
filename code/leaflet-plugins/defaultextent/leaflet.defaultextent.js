@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2014 Alex Nguyen, MIT License
+ * Source: https://github.com/nguyenning/Leaflet.defaultextent
+ * Modified by Claire Wagner
+ */
 
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
@@ -15,9 +20,13 @@ return (function () {
   L.Control.DefaultExtent = L.Control.extend({
     options: {
       position: 'topleft',
-      text: 'Default Extent',
-      title: 'Zoom to default extent',
-      className: 'leaflet-control-defaultextent'
+      toggleText: 'Home View',
+      toggleTitle: 'Set and go to Home View',
+      zoomToHomeViewButtonText: "Go to Home View",
+      zoomToHomeViewButtonTitle: "",
+      setHomeViewButtonText: "Set Current View as Home View",
+      setHomeButtonTitle: "Set the current map view as Home View",
+      className: 'leaflet-control-defaultextent',
     },
     onAdd: function (map) {
       this._map = map;
@@ -35,26 +44,61 @@ return (function () {
       var container = L.DomUtil.create('div', 'leaflet-bar ' +
         this.options.className);
       this._container = container;
-      this._fullExtentButton = this._createExtentButton(container);
+      this._contents = this._createContents();
+      this._toggleButton = $(this._createToggleButton(container));
+      this._container.appendChild(this._contents.get(0));
 
       L.DomEvent.disableClickPropagation(container);
 
       this._map.whenReady(this._whenReady, this);
 
+      L.DomEvent
+        .on(this._container, 'mousedown dblclick', L.DomEvent.stopPropagation)
+        .on(this._container, 'mouseover', this._showContents, this)
+        .on(this._container, 'mouseout', this._hideContents, this);
+
       return this._container;
     },
-    _createExtentButton: function () {
+    _createContents: function() {
+      return $("<div></div>")
+        .addClass("leaflet-control-defaultextent-contents")
+        .append([
+          this._createZoomToHomeViewButton(),
+          "<br>",
+          this._createSetHomeViewButton(),
+        ])
+        .hide(0);
+    },
+    _createZoomToHomeViewButton: function() {
+      return $("<button type='button'></button>")
+        .text(this.options.zoomToHomeViewButtonText)
+        .attr("title", this.options.zoomToHomeViewButtonTitle)
+        .on("click", () => this._zoomToDefault());
+    },
+    _createSetHomeViewButton: function() {
+      return $("<button type='button'></button>")
+        .text(this.options.setHomeViewButtonText)
+        .attr("title", this.options.setHomeViewButtonTitle)
+        .on("click", () => {
+          this.setCenter(this._map.getCenter());
+          this.setZoom(this._map.getZoom());
+        });
+    },
+    _createToggleButton: function () {
       var link = L.DomUtil.create('a', this.options.className + '-toggle',
         this._container);
       link.href = '#';
-      link.innerHTML = this.options.text;
-      link.title = this.options.title;
-
-      L.DomEvent
-        .on(link, 'mousedown dblclick', L.DomEvent.stopPropagation)
-        .on(link, 'click', L.DomEvent.stop)
-        .on(link, 'click', this._zoomToDefault, this);
+      link.innerHTML = this.options.toggleText;
+      link.toggleTitle = this.options.toggleTitle;
       return link;
+    },
+    _showContents: function() {
+      this._toggleButton.hide();
+      this._contents.show();
+    },
+    _hideContents: function() {
+      this._toggleButton.show();
+      this._contents.hide();
     },
     _whenReady: function () {
       if (!this._center) {
@@ -67,7 +111,7 @@ return (function () {
     },
     _zoomToDefault: function () {
       this._map.setView(this._center, this._zoom);
-    }
+    },
   });
 
   L.Map.addInitHook(function () {

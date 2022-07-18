@@ -11,6 +11,15 @@
   display: block;
 }
 
+/* Begin CSS added by Claire Wagner */
+.leaflet-control-defaultextent-contents {
+  padding: 6px 10px 6px 6px;
+  color: #333;
+  background: #fff;
+  border: 2px solid rgba(0,0,0,0.2);
+}
+/* End CSS added by Claire Wagner */
+
 /* CSS for high-resolution devices */
 @media only screen and (-Webkit-min-device-pixel-ratio: 1.5),
 only screen and (-moz-min-device-pixel-ratio: 1.5),
