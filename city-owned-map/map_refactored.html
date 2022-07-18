@@ -56,7 +56,6 @@
     <div id="mapTab">
       <div id="customDefaultExtentDiv" class="formContainer"></div>
       <div id="pinSearchBarDiv"></div>
-      <div id="heatmapSelectDiv" class="formContainer"></div>
       <div id="additionalMapControlsContainer" class="formContainer">
         <div id="additionalMapControls">
           <div id="highlightSelectDiv"></div>
@@ -130,6 +129,8 @@
   <script src="offline/leaflet/plugins/MarkerClusterLayerSupport/layersupport.js"></script>
   <link rel="stylesheet" href="code/leaflet-plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
   <script src="code/leaflet-plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
+  <link rel="stylesheet" href="code/leaflet-plugins/fullscreen/leaflet.fullscreen.css"/>
+  <script src="code/leaflet-plugins/fullscreen/Leaflet.fullscreen.js"></script>
   <link rel="stylesheet" href="code/leaflet-plugins/defaultextent/leaflet.defaultextent.css"/>
   <script src="code/leaflet-plugins/defaultextent/leaflet.defaultextent.js"></script>
   <script src="code/leaflet-plugins/heat/leaflet-heat.js"></script>
@@ -163,12 +164,12 @@
       scrollWheelZoom: false,
       zoomControl: false,
     });
-    /*map.addControl(new L.Control.Fullscreen({
+    map.addControl(new L.Control.Fullscreen({
       title: {
         "false": "Enter fullscreen mode",
         "true": "Exit fullscreen mode",
       }
-    }));*/
+    }));
     map.addControl(L.control.zoom());
     const defaultExtentControl = L.control.defaultExtent({ title: "Zoom to Home View" }).addTo(map);
 
@@ -694,11 +695,6 @@
           downloadDataAsFile(toExport, "favorited_markers.json", "application/json");
         }),
     ]);
-
-    const heatlayer = L.heatLayer([]);
-
-    $("#heatmapSelectDiv")
-      .append(getHeatmapSelect(map, heatlayer, datagroups));
     
     console.log("Ending inline script");
     

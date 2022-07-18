@@ -107,8 +107,9 @@ td ul, .markerClusterPopupContent ul {
 }
 
 .scrollable {
-  overflow: scroll;
-  max-height: 45%;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding-right: 5px;
 }
 
 .legend, .heatLayerControl {

@@ -500,8 +500,8 @@ L.Control.HeatLayerControl = L.Control.extend({
     selectLabelText: "Select category for heatmap: ",
     selectTitleText: "Select a category of data to show on the map as a heatmap",
     className: "heatLayerControl",
-    collapsedText: "&#9660; Show Heatmap Options",
-    expandedText: "&#9650; Hide Heatmap Options",
+    collapsedText: "&#9660; Heatmap Options",
+    expandedText: "&#9650; Heatmap Options",
   },
   initialize(options) {
     L.Util.setOptions(this, options);
@@ -510,7 +510,7 @@ L.Control.HeatLayerControl = L.Control.extend({
     this._map = map;
     this._initContainer();
     this._addEventListeners();
-    return this._container.get(0);
+    return this._container;
   },
   onRemove: function() {
     this._removeEventListeners();
@@ -522,7 +522,7 @@ L.Control.HeatLayerControl = L.Control.extend({
       .html(Object.keys(this._datagroupMap).sort().map(
         (option) => { return `<option value="${option}">${option}</option>` }
       ));
-    this._checkboxDiv = $("<div></div>").addClass("scrollable");
+    this._checkboxDiv = $("<div></div>");
     this._button = $("<button type='button'>Apply Changes</button>");
     this._subcategoryDiv = $("<div></div>")
       .append([
@@ -538,11 +538,12 @@ L.Control.HeatLayerControl = L.Control.extend({
       ])
       .hide(0);
     this._container = $("<div></div>")
-      .addClass("leaflet-bar" + ("className" in this.options ? ` ${this.options.className}` : ""))
+      .addClass("leaflet-bar scrollable" + ("className" in this.options ? ` ${this.options.className}` : ""))
       .append([
         this._visibilityToggle,
         this._contents,
-      ]);
+      ])
+      .get(0);
   },
   _updateHeatLayer(data) {
     if (data && data.length > 0) {
@@ -573,8 +574,8 @@ L.Control.HeatLayerControl = L.Control.extend({
           $("<div></div>").append(getCheckbox(childLayerName, "italic", true))
         );
       }
-      // source: Leaflet
-      this._subcategoryDiv.css("max-height", (this._map.getSize().y - (this._container.offsetTop + 50)) + "px");
+      // modified from Leaflet source code
+      this._container.style.maxHeight = (this._map.getSize().y - (this._container.offsetTop + 50)) + "px";
       this._subcategoryDiv.show(0);
     } else {
       this._subcategoryDiv.hide(0);
@@ -594,8 +595,8 @@ L.Control.HeatLayerControl = L.Control.extend({
     //this._subcategoryDiv.hide(0);
   },
   _addEventListeners() {
-    L.DomEvent.disableClickPropagation(this._container.get(0));
-    L.DomEvent.disableScrollPropagation(this._container.get(0));
+    L.DomEvent.disableClickPropagation(this._container);
+    L.DomEvent.disableScrollPropagation(this._container);
     L.DomEvent.on(this._visibilityToggle.get(0), "click", this._toggleContentsHandler, this);
     L.DomEvent.on(this._select.get(0), "change", this._selectChangeHandler, this);
     L.DomEvent.on(this._button.get(0), "click", this._updateHeatLayerHandler, this);
