@@ -245,6 +245,25 @@ class MarkerAndCircleDatagroup extends Datagroup {
   }
 }
 
+function setLocalStorageItem(key, data) {
+  try {
+    localStorage.set(key, data);
+  } catch(e) {
+    console.error(`Error while attempting to set local storage for "${key}" - "${e}"`);
+  }
+}
+
+function getLocalStorageItem(key) {
+  let toReturn = null;
+  try {
+    toReturn = localStorage.get
+  } catch(e) {
+    console.error(`Error while attempting to get local storage for "${key}" - "${e}"`);
+  } finally {
+    return toReturn;
+  }
+}
+
 class SearchResultsDatagroup extends Datagroup {
   constructor(name, dataset, localStorageItemName, options) {
     super(name, dataset, options);
@@ -257,14 +276,14 @@ class SearchResultsDatagroup extends Datagroup {
     this.restoreFromLocalStorage();
   }
   localStorageSize() {
-    const saved = localStorage.getItem(this.localStorageItemName);
+    const saved = getLocalStorageItem(this.localStorageItemName);
     return saved ? JSON.parse(saved).length : 0;
   }
   saveToLocalStorage() {
-    localStorage.setItem(this.localStorageItemName, JSON.stringify([...this.markerData.keys()]));
+    setLocalStorageItem(this.localStorageItemName, JSON.stringify([...this.markerData.keys()]));
   }
   restoreFromLocalStorage() {
-    const toRestore = localStorage.getItem(this.localStorageItemName);
+    const toRestore = getLocalStorageItem(this.localStorageItemName);
     if (toRestore) {
       for (const pin of JSON.parse(toRestore)) {
         getLocationDataViaAjax(
@@ -422,7 +441,7 @@ class FavoritedMarkerGroup {
     return this.favoritedMarkers.size;
   }
   localStorageSize() {
-    const saved = localStorage.getItem(this.localStorageItemName);
+    const saved = getLocalStorageItem(this.localStorageItemName);
     return saved ? JSON.parse(saved).length : 0;
   }
   getAll() {
@@ -467,10 +486,10 @@ class FavoritedMarkerGroup {
         })
       }
     });
-    localStorage.setItem(this.localStorageItemName, JSON.stringify(toSave));
+    setLocalStorageItem(this.localStorageItemName, JSON.stringify(toSave));
   }
   restoreFromLocalStorage() {
-    const toRestore = localStorage.getItem(this.localStorageItemName);
+    const toRestore = getLocalStorageItem(this.localStorageItemName);
     if (toRestore) {
       for (const item of JSON.parse(toRestore)) {
         if (this.registeredDatagroups.has(item.datagroupName)) {
