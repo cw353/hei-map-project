@@ -567,7 +567,11 @@
     const heatLayerControl = L.control.heatLayer({
       position: "topleft",
       datagroups: [cityOwned, taxSale2019, taxSale2020, scavengerSale, schoolLocations, businessLicenses, crimes, userAddedMarkers],
-      getBottomOffset: () => { return markerClusterLegend._container.offsetParent.clientHeight + 30 },
+      getBottomOffset: () => {
+        return 30 + (markerClusterLegend._container.offsetParent
+          ? markerClusterLegend._container.offsetParent.clientHeight
+          : 0);
+      },
     }).addTo(map);
     
     $("#pinSearchBarDiv").append(
