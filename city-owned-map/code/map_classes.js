@@ -502,6 +502,7 @@ L.Control.HeatLayerControl = L.Control.extend({
     className: "heatLayerControl",
     collapsedText: "&#9660; Heatmap",
     expandedText: "&#9650; Heatmap",
+    getBottomOffset: () => { return 50; }, // based on line 155 of https://github.com/Leaflet/Leaflet/blob/v1.8.0/src/control/Control.Layers.js
   },
   initialize(options) {
     L.Util.setOptions(this, options);
@@ -547,9 +548,10 @@ L.Control.HeatLayerControl = L.Control.extend({
       ])
       .get(0);
   },
-  _updateHeight() {
-    // modified from Leaflet source code
-    this._container.style.maxHeight = (this._map.getSize().y - (this._container.offsetTop + 50)) + "px";
+  updateHeight() {
+    // based on line 155 of https://github.com/Leaflet/Leaflet/blob/v1.8.0/src/control/Control.Layers.js
+    const offset = this._container.offsetTop + this.options.getBottomOffset();
+    this._container.style.maxHeight = (this._map.getSize().y - offset) + "px";
   },
   _updateHeatLayer(data, attribution) {
     // remove heatlayer from map before updating it
@@ -568,7 +570,7 @@ L.Control.HeatLayerControl = L.Control.extend({
     this._visibilityToggle.html(
       this._contents.is(":visible") ? this.options.expandedText : this.options.collapsedText
     );
-    this._updateHeight();
+    this.updateHeight();
   },
   _selectChangeHandler() {
     const value = this._select.val();
@@ -600,7 +602,7 @@ L.Control.HeatLayerControl = L.Control.extend({
       this._subcategoryDiv.hide(0);
       this._updateHeatLayer(null);
     }
-    this._updateHeight();
+    this.updateHeight();
   },
   _updateHeatLayerHandler() {
     const data = [];
