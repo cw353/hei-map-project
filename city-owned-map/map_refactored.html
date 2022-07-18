@@ -150,6 +150,7 @@
   <script src="data/tax-sale/taxsale_2020.js"></script>
   <script src="data/scavenger-sale/scavenger_data.js"></script>
   <script src="data/business-licenses/business_license_data.js"></script>
+  <script src="data/crime/crime_data.js"></script>
 
   <script>
 
@@ -468,6 +469,26 @@
       ),
     );
 
+    const crimes = new AutomaticClassificationDatagroup(
+      "Crimes Within the Past Year in Ward 20",
+      new Dataset(crime_data, crimes_metadata.attribution, "case_number"),
+      (data) => {
+        return data.primary_description ? data.primary_description: "Unknown Category"
+      },
+      getDefaultAutomaticClassificationOptions(
+        (markerData) => {
+          const data = markerData.data;
+          return [
+            { label: "Block Address", data: data.block },
+            { label: "Date of Occurrence", data: data.date_of_occurrence },
+            { label: "Primary Description", data: data.primary_description },
+            { label: "Secondary Description", data: data.secondary_description, },
+            { label: "Location Description", data: data.location_description, },
+          ];
+        }
+      ),
+    );
+
     const userAddedMarkers = new SearchResultsDatagroup(
       "User-Added Markers",
       new Dataset({}, property_locations_metadata.attribution, "pin"),
@@ -501,7 +522,7 @@
       },
     );
 
-    const datagroups = [ward20Office, sunshineGospel, cityOwned, taxSale2019, taxSale2020, scavengerSale, schoolLocations, businessLicenses, userAddedMarkers];
+    const datagroups = [ward20Office, sunshineGospel, cityOwned, taxSale2019, taxSale2020, scavengerSale, schoolLocations, businessLicenses, crimes, userAddedMarkers];
     const datagroupOverlays = [];
     for (const datagroup of datagroups) {
       favoritedMarkers.registerDatagroup(datagroup);
@@ -537,6 +558,11 @@
       ],
     };
 
+    map.addControl(new L.Control.HeatLayerControl({
+      position: "topright",
+      datagroups: [cityOwned, taxSale2019, taxSale2020, scavengerSale, schoolLocations, businessLicenses, crimes, userAddedMarkers],
+    }));
+
     const layerControlTree = L.control.layers.tree(
       baseTree,
       overlayTree,
@@ -545,11 +571,6 @@
         hideSingleBase: true,
       }
     ).addTo(map);
-
-    map.addControl(new L.Control.HeatLayerControl({
-      position: "topright",
-      datagroups: [cityOwned, taxSale2019, taxSale2020, scavengerSale, schoolLocations, businessLicenses, userAddedMarkers],
-    }));
 
     $("#layerControlTreeExpandAll")
       .on("click", (event) => layerControlTree.expandTree(true));
@@ -643,6 +664,7 @@
           scavenger_sale_metadata,
           property_classification_codes_metadata,
           business_licenses_metadata,
+          crimes_metadata,
           school_locations.metadata,
           ward_boundaries_2015_to_2023.metadata,
           ward_boundaries_2023.metadata,
