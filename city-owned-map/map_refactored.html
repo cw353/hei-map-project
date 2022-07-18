@@ -54,10 +54,10 @@
     <div id="tabDiv"></div>
     
     <div id="mapTab">
-      <div id="customDefaultExtentDiv" class="formContainer"></div>
       <div id="pinSearchBarDiv"></div>
       <div id="additionalMapControlsContainer" class="formContainer">
         <div id="additionalMapControls">
+          <div id="customDefaultExtentDiv" class="formContainer"></div>
           <div id="highlightSelectDiv"></div>
           <div id="radiiInputDiv"></div>
         </div>
@@ -558,11 +558,6 @@
       ],
     };
 
-    map.addControl(new L.Control.HeatLayerControl({
-      position: "topright",
-      datagroups: [cityOwned, taxSale2019, taxSale2020, scavengerSale, schoolLocations, businessLicenses, crimes, userAddedMarkers],
-    }));
-
     const layerControlTree = L.control.layers.tree(
       baseTree,
       overlayTree,
@@ -571,6 +566,11 @@
         hideSingleBase: true,
       }
     ).addTo(map);
+
+    map.addControl(new L.Control.HeatLayerControl({
+      position: "topright",
+      datagroups: [cityOwned, taxSale2019, taxSale2020, scavengerSale, schoolLocations, businessLicenses, crimes, userAddedMarkers],
+    }));
 
     $("#layerControlTreeExpandAll")
       .on("click", (event) => layerControlTree.expandTree(true));

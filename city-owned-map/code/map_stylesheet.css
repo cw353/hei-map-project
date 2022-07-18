@@ -102,6 +102,10 @@ td ul, .markerClusterPopupContent ul {
   width: 3.5em;
 }
 
+.additionalTopMargin {
+  margin-top: 10px;
+}
+
 .leaflet-control-layers-scrollbar {
   max-height: 45%;
 }

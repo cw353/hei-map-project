@@ -277,7 +277,7 @@ class SearchResultsDatagroup extends Datagroup {
             }
           },
           (jqxhr, textStatus) => { 
-            console.log(`Error: failed to retrieve data for user-added PIN ${pin} - ${textStatus}`);
+            console.error(`Error: failed to retrieve data for user-added PIN ${pin} - ${textStatus}`);
           },
         );
       }
@@ -497,11 +497,11 @@ L.Control.HeatLayerControl = L.Control.extend({
     selectNoneValue: "-- None --",
     datagroups: [],
     selectId: "heatLayerControlSelect",
-    selectLabelText: "Select category for heatmap: ",
+    selectLabelText: "Select category to show as heatmap: ",
     selectTitleText: "Select a category of data to show on the map as a heatmap",
     className: "heatLayerControl",
-    collapsedText: "&#9660; Heatmap Options",
-    expandedText: "&#9650; Heatmap Options",
+    collapsedText: "&#9660; Heatmap",
+    expandedText: "&#9650; Heatmap",
   },
   initialize(options) {
     L.Util.setOptions(this, options);
@@ -514,6 +514,7 @@ L.Control.HeatLayerControl = L.Control.extend({
   },
   onRemove: function() {
     this._removeEventListeners();
+    this._subcategoryDiv.empty();
   },
   _initContainer() {
     this._visibilityToggle = $(`<div>${this.options.collapsedText}</div>`).addClass("center pointerCursor controlHeader");
@@ -527,12 +528,13 @@ L.Control.HeatLayerControl = L.Control.extend({
     this._subcategoryDiv = $("<div></div>")
       .append([
         this._checkboxDiv,
-        $("<div></div>").addClass("center").append(this._button),
+        $("<div></div>").addClass("center additionalTopMargin").append(this._button),
       ])
       .hide(0);
     this._contents = $("<div></div>")
       .append([
-        $(`<label for="${this.options.selectId}">${this.options.selectLabelText}</label><br>`),
+        $(`<label for="${this.options.selectId}">${this.options.selectLabelText}</label><br>`)
+          .addClass("bolded"),
         this._select,
         this._subcategoryDiv,
       ])
@@ -545,14 +547,20 @@ L.Control.HeatLayerControl = L.Control.extend({
       ])
       .get(0);
   },
-  _updateHeatLayer(data) {
-    if (data && data.length > 0) {
-      if (!this._map.hasLayer(this._heatLayer)) {
-        this._map.addLayer(this._heatLayer);
-      }
-      this._heatLayer.setLatLngs(data);
-    } else if (this._map.hasLayer(this._heatLayer)) {
+  _updateHeight() {
+    // modified from Leaflet source code
+    this._container.style.maxHeight = (this._map.getSize().y - (this._container.offsetTop + 50)) + "px";
+  },
+  _updateHeatLayer(data, attribution) {
+    // remove heatlayer from map before updating it
+    if (this._map.hasLayer(this._heatLayer)) {
       this._map.removeLayer(this._heatLayer);
+    }
+    // if valid data was provided, update heatlayer and add it to map
+    if (data && data.length > 0) {
+      this._heatLayer.options.attribution = attribution ? attribution : "";
+      this._map.addLayer(this._heatLayer);
+      this._heatLayer.setLatLngs(data);
     }
   },
   _toggleContentsHandler() {
@@ -560,6 +568,7 @@ L.Control.HeatLayerControl = L.Control.extend({
     this._visibilityToggle.html(
       this._contents.is(":visible") ? this.options.expandedText : this.options.collapsedText
     );
+    this._updateHeight();
   },
   _selectChangeHandler() {
     const value = this._select.val();
@@ -567,32 +576,42 @@ L.Control.HeatLayerControl = L.Control.extend({
       ? null
       : this._datagroupMap[value];
     if (this._selectedDatagroup) {
-      this._checkboxDiv.html("Choose subcategories: <br>");
+      this._checkboxDiv.html("<br><span class='bolded'>Choose subcategories:</span><br>");
+      this._checkboxDiv.append([
+        $("<span>Check all</span>").addClass("italic pointerCursor")
+          .on("click", (event) => {
+            this._checkboxDiv.find("input[type='checkbox']:not(:checked)").prop("checked", true);
+          }),
+        "<br>",
+        $("<span>Uncheck all</span>").addClass("italic pointerCursor")
+        .on("click", (event) => {
+          this._checkboxDiv.find("input[type='checkbox']:checked").prop("checked", false);
+        }),
+        "<br>",
+      ]);
       this._selectedDatagroup = this._datagroupMap[value];
       for (const childLayerName of [...this._selectedDatagroup.childLayers.keys()].sort()) {
         this._checkboxDiv.append(
-          $("<div></div>").append(getCheckbox(childLayerName, "italic", true))
+          $("<div></div>").addClass("additionalPadding").append(getCheckbox(childLayerName, "italic", true))
         );
       }
-      // modified from Leaflet source code
-      this._container.style.maxHeight = (this._map.getSize().y - (this._container.offsetTop + 50)) + "px";
       this._subcategoryDiv.show(0);
     } else {
       this._subcategoryDiv.hide(0);
       this._updateHeatLayer(null);
     }
+    this._updateHeight();
   },
   _updateHeatLayerHandler() {
     const data = [];
-    const checkedCheckboxes = this._checkboxDiv.find("input:checked");
+    const checkedCheckboxes = this._checkboxDiv.find("input[type='checkbox']:checked");
     for (let i = 0; i < checkedCheckboxes.length; i++) {
       const childLayerName = checkedCheckboxes.eq(i).val();
       this._selectedDatagroup.getChildLayer(childLayerName).layer.eachLayer((marker) => {
         data.push(marker.getLatLng());
       });
     }
-    this._updateHeatLayer(data);
-    //this._subcategoryDiv.hide(0);
+    this._updateHeatLayer(data, this._selectedDatagroup.dataset.attribution);
   },
   _addEventListeners() {
     L.DomEvent.disableClickPropagation(this._container);
