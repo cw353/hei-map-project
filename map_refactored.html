@@ -137,6 +137,7 @@
   <link rel="stylesheet" href="code/map_stylesheet.css"/>
   <script src="code/map_functions.js"></script>
   <script src="code/map_classes.js"></script>
+  <script src="code/heatlayercontrol.js"></script>
   <script src="data/geojson/ward_boundaries.js"></script>
   <script src="data/geojson/neighborhood_boundaries.js"></script>
   <!--script src="data/geojson/zoning_districts.js"></script-->
@@ -563,7 +564,7 @@
 
     const markerClusterLegend = getMarkerClusterLegend("bottomleft").addTo(map);
 
-    const heatLayerControl = new L.Control.HeatLayerControl({
+    const heatLayerControl = L.control.heatLayer({
       position: "topleft",
       datagroups: [cityOwned, taxSale2019, taxSale2020, scavengerSale, schoolLocations, businessLicenses, crimes, userAddedMarkers],
       getBottomOffset: () => { return markerClusterLegend._container.offsetParent.clientHeight + 30 },
