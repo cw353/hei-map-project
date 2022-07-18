@@ -96,7 +96,6 @@ function getLayerInfoOverlayChild(layerInfo, options) {
     label: label,
     layer: layerInfo.layer,
     radioGroup: options && "radioGroupName" in options ? options.radioGroupName : "",
-    customClassName: "additionalPadding",
   };
 }
 
@@ -286,7 +285,7 @@ function generatePluginsAttribution(plugins, className) {
       $("<ul></ul>")
         .append(
           plugins.sort((a, b) => compare(a.name.toLowerCase(), b.name.toLowerCase(), null)).map((plugin) => {
-            return `<li>${getOpenInNewTabLink(plugin.link, plugin.name)} (${plugin.license})</li>`;
+            return `<li>${plugin.modified ? "A modified version of " : ""}${getOpenInNewTabLink(plugin.link, plugin.name)} (${plugin.license})</li>`;
           })
         )
     );

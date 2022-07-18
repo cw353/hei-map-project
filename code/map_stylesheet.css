@@ -191,8 +191,16 @@ td ul, .markerClusterPopupContent ul {
   border-width: 2px 2px 0 2px;
 }
 
+.leaflet-layerstree-children {
+  padding-left: 30px;
+}
+
+.leaflet-layerstree-children-nopad {
+  padding-left: 0px;
+}
+
 .additionalPadding {
-  padding-left: 20px;
+  padding-left: 10px;
 }
 
 .pointerCursor {

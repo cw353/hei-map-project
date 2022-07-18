@@ -1,9 +1,6 @@
 /*
  * Control like L.Control.Layers, but showing layers in a tree.
  * Do not forget to include the css file.
- * Source: https://github.com/jjimenezshaw/Leaflet.Control.Layers.Tree
- * BSD 3-Clause License, copyright (c) 2017, Javier Jimenez Shaw
- * Modified by Claire Wagner
  */
 
 (function(L) {
@@ -394,11 +391,7 @@
                     selAllNodes.splice(0, 0, container);
                 }
                 tree.children.forEach(function(child) {
-                    // begin code modified by Claire Wagner
-                    // original code: var node = creator('div', this.cls.node, children)
-                    var nodeClass = this.cls.node + (child.customClassName ? ` ${child.customClassName}` : "");
-                    var node = creator('div', nodeClass, children)
-                    // end code modified by Claire Wagner
+                    var node = creator('div', this.cls.node, children)
                     this._iterateTreeLayout(child, node, overlay, selAllNodes);
                 }, this);
                 if (selAll) {

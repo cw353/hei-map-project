@@ -54,9 +54,9 @@
     <div id="tabDiv"></div>
     
     <div id="mapTab">
-      <div id="pinSearchBarDiv"></div>
       <div id="additionalMapControlsContainer" class="formContainer">
         <div id="additionalMapControls">
+          <div id="pinSearchBarDiv"></div>
           <div id="highlightSelectDiv"></div>
           <div id="radiiInputDiv"></div>
         </div>
@@ -132,12 +132,12 @@
   <link rel="stylesheet" href="code/leaflet-plugins/defaultextent/leaflet.defaultextent.css"/>
   <script src="code/leaflet-plugins/defaultextent/leaflet.defaultextent.js"></script>
   <script src="code/leaflet-plugins/heat/leaflet-heat.js"></script>
+  <script src="code/leaflet-plugins/heatlayercontrol.js"></script>
 
   <!-- Stylesheets, code, and data -->
   <link rel="stylesheet" href="code/map_stylesheet.css"/>
   <script src="code/map_functions.js"></script>
   <script src="code/map_classes.js"></script>
-  <script src="code/heatlayercontrol.js"></script>
   <script src="data/geojson/ward_boundaries.js"></script>
   <script src="data/geojson/neighborhood_boundaries.js"></script>
   <!--script src="data/geojson/zoning_districts.js"></script-->
@@ -628,7 +628,8 @@
     }
 
     $("#tabDiv").append(getTabs([
-      { label: "Map", id: "mapTabItem", tabContent: $("#mapTab"), callback: () => map.invalidateSize(false), initiallyActive: true },
+      { label: "Map", id: "mapTabItem", tabContent: $("#mapTab"
+      ), callback: () => map.invalidateSize(false), initiallyActive: true },
       { label: "About This Map", id: "aboutMapTabItem", tabContent: $("#aboutMapTab"), },
       {
         label: "Favorited Markers",
@@ -644,9 +645,9 @@
         generatePluginsAttribution([
           { name: "Leaflet.markercluster", link: "https://github.com/Leaflet/Leaflet.markercluster", license: "MIT License" },
           { name: "Leaflet.MarkerCluster.LayerSupport", link: "https://github.com/ghybs/Leaflet.MarkerCluster.LayerSupport", license: "MIT License" },
-          { name: "Leaflet.Control.Layers.Tree", link: "https://github.com/jjimenezshaw/Leaflet.Control.Layers.Tree", license: "BSD 3-Clause License" },
+          { name: "Leaflet.Control.Layers.Tree", link: "https://github.com/jjimenezshaw/Leaflet.Control.Layers.Tree", license: "BSD 3-Clause License"},
           { name: "Leaflet.fullscreen", link: "https://github.com/Leaflet/Leaflet.fullscreen", license: "ISC License" },
-          { name: "Leaflet.defaultextent", link: "https://github.com/nguyenning/Leaflet.defaultextent", license: "MIT License" },
+          { name: "Leaflet.defaultextent", link: "https://github.com/nguyenning/Leaflet.defaultextent", license: "MIT License", modified: true, },
           { name: "Leaflet.heat", link: "https://github.com/Leaflet/Leaflet.heat", license: "BSD 2-Clause \"Simplified\" License" },
         ], "italic"),
         generateMetadataTable(
