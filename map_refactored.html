@@ -569,10 +569,6 @@
       datagroups: [cityOwned, taxSale2019, taxSale2020, scavengerSale, schoolLocations, businessLicenses, crimes, userAddedMarkers],
       getBottomOffset: () => { return markerClusterLegend._container.offsetParent.clientHeight + 30 },
     }).addTo(map);
-
-    map.on("fullscreenchange", () => {
-      heatLayerControl.updateHeight();
-    });
     
     $("#pinSearchBarDiv").append(
       getPinSearchBar(

@@ -567,7 +567,7 @@ L.Control.HeatLayerControl = L.Control.extend({
       ])
       .get(0);
   },
-  updateHeight() {
+  _updateHeight() {
     // based on line 155 of https://github.com/Leaflet/Leaflet/blob/v1.8.0/src/control/Control.Layers.js
     const offset = this._container.offsetTop + this.options.getBottomOffset();
     this._container.style.maxHeight = (this._map.getSize().y - offset) + "px";
@@ -589,7 +589,7 @@ L.Control.HeatLayerControl = L.Control.extend({
     this._visibilityToggle.html(
       this._contents.is(":visible") ? this.options.expandedText : this.options.collapsedText
     );
-    this.updateHeight();
+    this._updateHeight();
   },
   _selectChangeHandler() {
     const value = this._select.val();
@@ -621,7 +621,7 @@ L.Control.HeatLayerControl = L.Control.extend({
       this._subcategoryDiv.hide(0);
       this._updateHeatLayer(null);
     }
-    this.updateHeight();
+    this._updateHeight();
   },
   _updateHeatLayerHandler() {
     const data = [];
@@ -640,11 +640,14 @@ L.Control.HeatLayerControl = L.Control.extend({
     L.DomEvent.on(this._visibilityToggle.get(0), "click", this._toggleContentsHandler, this);
     L.DomEvent.on(this._select.get(0), "change", this._selectChangeHandler, this);
     L.DomEvent.on(this._button.get(0), "click", this._updateHeatLayerHandler, this);
+    map.on("resize", this._updateHeight, this);
   },
   _removeEventListeners() {
     L.DomEvent.off(this._visibilityToggle.get(0), "click", this._toggleContentsHandler, this);
     L.DomEvent.off(this._select.get(0), "change", this._selectChangeHandler, this);
-    L.DomEvent.off(this._button.get(0), "click", this._updateHeatLayerHandler, this);  },
+    L.DomEvent.off(this._button.get(0), "click", this._updateHeatLayerHandler, this);
+    map.off("resize", this._updateHeight, this);
+  },
 });
 L.Control.HeatLayerControl.addInitHook(function() {
   this._heatLayer = L.heatLayer([], this.options.heatLayerOptions);
