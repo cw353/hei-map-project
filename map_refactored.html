@@ -523,7 +523,7 @@
 
     const datagroups = [ward20Office, sunshineGospel, cityOwned, taxSale2019, taxSale2020, scavengerSale, schoolLocations, businessLicenses, crimes, userAddedMarkers];
     const datagroupOverlays = [];
-    for (const datagroup of datagroups) {
+    for (const datagroup of datagroups.sort((a, b) => compare(a.name, b.name))) {
       favoritedMarkers.registerDatagroup(datagroup);
       datagroupOverlays.push(getChildLayerGroupOverlaySubtree(
         datagroup,
