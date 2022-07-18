@@ -76,9 +76,6 @@
       </div>
     </div>
     <div id="aboutMapTab">
-      <p class='italic'>
-        This is a map of properties that may be of interest to Sunshine Gospel Ministries' Housing Equity Initiative (HEI). This map was created by Claire Wagner, a member of the Wheaton College Summer 2022 Research Team.
-      </p>
       <div id="datasetTableDiv" class="center"></div>
     </div>
 
@@ -120,17 +117,19 @@
     integrity="sha512-gyvCiKy2sIRwqd5QeTyyeJBTPx5OQdyluEFSIe1KnKDi0DM0w/T+T8iczSYRRcwmMYGVixYL2QGKJ+8XylbyTA=="
     crossorigin=""></script-->
   
-  <!-- Local copies of Leaflet plugin scripts and stylesheets -->
+  <!-- Local copies of libraries and plugins available via CDN -->
   <link rel="stylesheet" href="offline/leaflet/leaflet.css"/>
   <script src="offline/leaflet/leaflet-src.js"></script>
   <link rel="stylesheet" href="offline/leaflet/plugins/MarkerCluster/MarkerCluster.css"/>
   <link rel="stylesheet" href="offline/leaflet/plugins/MarkerCluster/MarkerCluster.Default.css"/>
   <script src="offline/leaflet/plugins/MarkerCluster/leaflet.markercluster-src.js"></script>
   <script src="offline/leaflet/plugins/MarkerClusterLayerSupport/layersupport.js"></script>
+  <link rel="stylesheet" href="offline/leaflet/plugins/fullscreen/leaflet.fullscreen.css"/>
+  <script src="offline/leaflet/plugins/fullscreen/Leaflet.fullscreen.js"></script>
+
+  <!-- Local copies of Leaflet plugins not available via CDN -->
   <link rel="stylesheet" href="code/leaflet-plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
   <script src="code/leaflet-plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
-  <link rel="stylesheet" href="code/leaflet-plugins/fullscreen/leaflet.fullscreen.css"/>
-  <script src="code/leaflet-plugins/fullscreen/Leaflet.fullscreen.js"></script>
   <link rel="stylesheet" href="code/leaflet-plugins/defaultextent/leaflet.defaultextent.css"/>
   <script src="code/leaflet-plugins/defaultextent/leaflet.defaultextent.js"></script>
   <script src="code/leaflet-plugins/heat/leaflet-heat.js"></script>
@@ -649,25 +648,36 @@
     ]));
 
     $("#aboutMapTab")
-      .append(generateMetadataTable(
-        "Data Used in This Map",
-        [
-          property_locations_metadata,
-          ward_offices_metadata,
-          city_owned_metadata,
-          taxsale_2019_metadata,
-          taxsale_2020_metadata,
-          scavenger_sale_metadata,
-          property_classification_codes_metadata,
-          business_licenses_metadata,
-          crimes_metadata,
-          school_locations.metadata,
-          ward_boundaries_2015_to_2023.metadata,
-          ward_boundaries_2023.metadata,
-          neighborhood_boundaries.metadata,
-          //zoning_districts.metadata,        
-        ],
-      ));
+      .append([
+        `<p class='italic'>This is a map of properties that may be of interest to Sunshine Gospel Ministries' ${getOpenInNewTabLink("https://www.sunshinegospel.org/hei/", "Housing Equity Initiative")} (HEI). This map was created by Claire Wagner, a member of the Wheaton College Summer 2022 Research Team.</p>`,
+        generatePluginsAttribution([
+          { name: "Leaflet.markercluster", link: "https://github.com/Leaflet/Leaflet.markercluster", license: "MIT License" },
+          { name: "Leaflet.MarkerCluster.LayerSupport", link: "https://github.com/ghybs/Leaflet.MarkerCluster.LayerSupport", license: "MIT License" },
+          { name: "Leaflet.Control.Layers.Tree", link: "https://github.com/jjimenezshaw/Leaflet.Control.Layers.Tree", license: "BSD 3-Clause License" },
+          { name: "Leaflet.fullscreen", link: "https://github.com/Leaflet/Leaflet.fullscreen", license: "ISC License" },
+          { name: "Leaflet.defaultextent", link: "https://github.com/nguyenning/Leaflet.defaultextent", license: "MIT License" },
+          { name: "Leaflet.heat", link: "https://github.com/Leaflet/Leaflet.heat", license: "BSD 2-Clause \"Simplified\" License" },
+        ], "italic"),
+        generateMetadataTable(
+          "Data Used in This Map",
+          [
+            property_locations_metadata,
+            ward_offices_metadata,
+            city_owned_metadata,
+            taxsale_2019_metadata,
+            taxsale_2020_metadata,
+            scavenger_sale_metadata,
+            property_classification_codes_metadata,
+            business_licenses_metadata,
+            crimes_metadata,
+            school_locations.metadata,
+            ward_boundaries_2015_to_2023.metadata,
+            ward_boundaries_2023.metadata,
+            neighborhood_boundaries.metadata,
+            //zoning_districts.metadata,        
+          ],
+        )
+      ]);
 
     $(".leaflet-popup-pane")
       .on("click", ".toggleFavoritedButton", (event) => {

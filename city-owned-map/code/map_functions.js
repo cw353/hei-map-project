@@ -279,6 +279,19 @@ function generateFavoritedMarkersTable(favoritedMarkers) {
   );
 }
 
+function generatePluginsAttribution(plugins, className) {
+  return $("<p></p>").addClass(className)
+    .text("This map uses the following Leaflet plugins:")
+    .append(
+      $("<ul></ul>")
+        .append(
+          plugins.sort((a, b) => compare(a.name.toLowerCase(), b.name.toLowerCase(), null)).map((plugin) => {
+            return `<li>${getOpenInNewTabLink(plugin.link, plugin.name)} (${plugin.license})</li>`;
+          })
+        )
+    );
+}
+
 function getMarkerClusterTooltipContent(childMarkers) {
   const childDatagroups = {};
   for (const marker of childMarkers) {
