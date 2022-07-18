@@ -17,7 +17,7 @@ function generateIcon(color) {
       >
         <desc>Based on an icon created by Naomi Wagner based on https://www.onlinewebfonts.com/icon/467018 (CC BY license)</desc>
         <style type="text/css">
-          .svgIconStyle{stroke:#000000;stroke-width:30;stroke-miterlimit:10;}
+          .svgIconStyle{stroke:#000000;stroke-width:45;stroke-miterlimit:10;}
         </style>
         <g>
           <path class="svgIconStyle" fill="${color}"" d="M939,50.7c9.8-0.7,19.6-1.2,29.7-0.9c17.9,0.5,35.8,1.8,53.4,5.2c104.3,20.6,185.6,75.2,242.1,165.4
@@ -51,7 +51,7 @@ function generateFavoritedIcon(color) {
       >
         <desc>Based on an icon created by Naomi Wagner based on https://www.onlinewebfonts.com/icon/467018 (CC BY license)</desc>
         <style type="text/css">
-          .svgIconStyle{stroke:${outlineColor};stroke-width:50;stroke-miterlimit:10;}
+          .svgIconStyle{stroke:${outlineColor};stroke-width:45;stroke-miterlimit:10;}
         </style>
         <g>
           <path class="svgIconStyle" fill=${color} d="M938.9,50.4c28.4-1.7,56.9-0.1,83.2,5c104.3,20.6,185.6,75.2,242.1,165.4c32.8,52.4,49.8,110,51.9,171.9

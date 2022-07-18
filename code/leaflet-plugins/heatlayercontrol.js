@@ -6,8 +6,10 @@ L.Control.HeatLayer = L.Control.extend({
     selectLabelText: "Select category to show as heatmap: ",
     selectTitleText: "Select a category of data to show on the map as a heatmap",
     className: "heatLayerControl",
-    collapsedText: "&#9660; Heatmap",
-    expandedText: "&#9650; Heatmap",
+    collapsedToggleText: "&#9660; Heatmap",
+    collapsedToggleTitle: "Click to show heatmap options",
+    expandedToggleText: "&#9650; Heatmap",
+    expandedToggleTitle: "Click to hide heatmap options",
     getBottomOffset: () => { return 50; }, // based on line 155 of https://github.com/Leaflet/Leaflet/blob/v1.8.0/src/control/Control.Layers.js
   },
   initialize(options) {
@@ -24,7 +26,9 @@ L.Control.HeatLayer = L.Control.extend({
     this._subcategoryDiv.empty();
   },
   _initContainer() {
-    this._visibilityToggle = $(`<div>${this.options.collapsedText}</div>`).addClass("center pointerCursor controlHeader");
+    this._visibilityToggle = $(`<div>${this.options.collapsedToggleText}</div>`)
+      .attr("title", this.options.collapsedToggleTitle)
+      .addClass("center pointerCursor controlHeader");
     this._select = $(`<select id="${this.options.selectId}"></select>`)
       .attr("title", this.options.selectTitleText)
       .html(Object.keys(this._datagroupMap).sort().map(
@@ -38,7 +42,7 @@ L.Control.HeatLayer = L.Control.extend({
         $("<div></div>").addClass("center additionalTopMargin").append(this._button),
       ])
       .hide(0);
-    this._contents = $("<div></div>")
+    this._contents = $("<div></div>").addClass("formContainer")
       .append([
         $(`<label for="${this.options.selectId}">${this.options.selectLabelText}</label><br>`)
           .addClass("bolded"),
@@ -73,9 +77,17 @@ L.Control.HeatLayer = L.Control.extend({
   },
   _toggleContentsHandler() {
     this._contents.toggle();
-    this._visibilityToggle.html(
-      this._contents.is(":visible") ? this.options.expandedText : this.options.collapsedText
-    );
+    this._visibilityToggle
+      .attr("title", 
+        this._contents.is(":visible")
+          ? this.options.expandedToggleTitle
+          : this.options.collapsedToggleTitle
+      )
+      .html(
+        this._contents.is(":visible")
+          ? this.options.expandedToggleText
+          : this.options.collapsedToggleText
+      );
     this._updateHeight();
   },
   _selectChangeHandler() {
@@ -100,7 +112,7 @@ L.Control.HeatLayer = L.Control.extend({
       this._selectedDatagroup = this._datagroupMap[value];
       for (const childLayerName of [...this._selectedDatagroup.childLayers.keys()].sort()) {
         this._checkboxDiv.append(
-          $("<div></div>").addClass("additionalPadding").append(getCheckbox(childLayerName, "italic", true))
+          $("<div></div>").addClass("smallLeftPadding").append(getCheckbox(childLayerName, "italic", true))
         );
       }
       this._subcategoryDiv.show(0);
