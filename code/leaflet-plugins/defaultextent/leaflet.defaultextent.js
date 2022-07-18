@@ -23,10 +23,13 @@ return (function () {
       toggleText: 'Home View',
       toggleTitle: 'Set and go to Home View',
       zoomToHomeViewButtonText: "Go to Home View",
-      zoomToHomeViewButtonTitle: "",
+      zoomToHomeViewButtonTitle: "Zoom to Home View on the map",
       setHomeViewButtonText: "Set Current View as Home View",
-      setHomeButtonTitle: "Set the current map view as Home View",
+      setHomeViewButtonTitle: "Set the current view on the map as Home View",
       className: 'leaflet-control-defaultextent',
+    },
+    initialize(options) {
+      L.Util.setOptions(this, options);
     },
     onAdd: function (map) {
       this._map = map;

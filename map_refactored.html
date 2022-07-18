@@ -170,7 +170,7 @@
       }
     }));
     map.addControl(L.control.zoom());
-    const defaultExtentControl = L.control.defaultExtent({ title: "Zoom to Home View" }).addTo(map);
+    const defaultExtentControl = L.control.defaultExtent({ position: "topleft" }).addTo(map);
 
     // add tiles to map - reference: https://leafletjs.com/examples/layers-control/
     const osmtiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
