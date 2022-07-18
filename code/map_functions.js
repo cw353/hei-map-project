@@ -373,7 +373,7 @@ function getPinSearchBar(map, datasetsToSearch, markerClusterGroup, addSearchRes
   const searchButton = $("<button type='button'>Search</button>")
     .attr("title", "Search for the PIN")
     .on("click", () => {
-      searchResultsSpan.html("");
+      searchResultsSpan.empty();
       if (searchInput.validity.patternMismatch || searchInput.value === "") {
         searchInput.setCustomValidity("Please enter a valid 14-digit PIN.");
         searchInput.reportValidity();
@@ -410,7 +410,7 @@ function getPinSearchBar(map, datasetsToSearch, markerClusterGroup, addSearchRes
               "Select a category to search for the PIN in",
               [...Object.keys(searchResults)].sort(),
               (selection) => {
-                searchResultsSpan.html("");
+                searchResultsSpan.empty();
                 const finalSearchResult = searchResults[selection];
                 showSearchResult(map, finalSearchResult, "The results of your search have been displayed on the map.", "green");
               },
@@ -484,52 +484,4 @@ function updateHeatLayer(map, heatlayer, data) {
   } else if (map.hasLayer(heatlayer)) {
     map.removeLayer(heatlayer);
   }
-}
-
-function getHeatmapSelect(map, heatlayer, datagroups) {
-  function getApplyChangesButton(selectedDatagroup, checkboxDiv) {
-    return $("<button type='button'>Apply Changes</button>")
-    .on("click", () => {
-      const data = [];
-      const checkedCheckboxes = checkboxDiv.find("input:checked");
-      for (let i = 0; i < checkedCheckboxes.length; i++) {
-        const childLayerName = checkedCheckboxes.eq(i).val();
-        selectedDatagroup.getChildLayer(childLayerName).layer.eachLayer((marker) => {
-          data.push(marker.getLatLng());
-        });
-      }
-      updateHeatLayer(map, heatlayer, data);
-    });
-  }
-  const defaultValue = "-- None --";
-  const datagroupMap = {};
-  datagroupMap[defaultValue] = null;
-  for (const datagroup of datagroups) {
-    datagroupMap[datagroup.name] = datagroup;
-  }
-  const checkboxDiv = $("<div></div>");
-  const datagroupSelect = getSelect(
-    "Select a data category to show as a heatmap: ",
-    "Select a category of data to show on the map as a heatmap",
-    Object.keys(datagroupMap).sort(),
-    (value) => {
-      checkboxDiv.html("");
-      if (value === defaultValue) {
-        updateHeatLayer(map, heatlayer, []);
-      } else {
-        checkboxDiv.text("Choose subcategories: ");
-        const selectedDatagroup = datagroupMap[value];
-        for (const childLayerName of [...selectedDatagroup.childLayers.keys()].sort()) {
-          checkboxDiv.append([
-            getCheckbox(childLayerName, "italic", true)
-          ]);
-        }
-        checkboxDiv.append(getApplyChangesButton(selectedDatagroup, checkboxDiv));
-      }
-    },
-  );
-
-  return $("<div></div>")
-    .append(datagroupSelect)
-    .append(checkboxDiv);
 }

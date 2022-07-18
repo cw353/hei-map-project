@@ -220,7 +220,7 @@ class MarkerAndCircleDatagroup extends Datagroup {
     const applyChangesButton = $("<button type='button'>Set Radius</button>")
       .attr("title", "Apply your changes to the circle radius")
       .on("click", (event) => {
-        messageElement.html("");
+        messageElement.empty();
         const newRadius = parseFloat(inputElement.value);
         if (inputElement.validity.rangeUnderflow) {
           inputElement.setCustomValidity("Please enter a positive number.");
@@ -247,7 +247,7 @@ class MarkerAndCircleDatagroup extends Datagroup {
 
 function setLocalStorageItem(key, data) {
   try {
-    localStorage.set(key, data);
+    localStorage.setItem(key, data);
   } catch(e) {
     console.error(`Error while attempting to set local storage for "${key}" - "${e}"`);
   }
@@ -256,7 +256,7 @@ function setLocalStorageItem(key, data) {
 function getLocalStorageItem(key) {
   let toReturn = null;
   try {
-    toReturn = localStorage.get
+    toReturn = localStorage.getItem(key);
   } catch(e) {
     console.error(`Error while attempting to get local storage for "${key}" - "${e}"`);
   } finally {
