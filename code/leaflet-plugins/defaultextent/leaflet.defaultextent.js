@@ -67,25 +67,53 @@ return (function () {
         .addClass("leaflet-control-defaultextent-contents")
         .append([
           this._createZoomToHomeViewButton(),
-          "<br>",
           this._createSetHomeViewButton(),
         ])
         .hide(0);
     },
+    _createButtonDiv: function(buttonText, buttonTitle, onClick) {
+      const feedbackSpan = $("<span></span>")
+        .html("&#x2705;")
+        .css("color", "green")
+        .hide(0);
+      const button = $("<button type='button'></button>")
+        .text(buttonText)
+        .attr("title", buttonTitle)
+        .on("click", () => {
+          onClick();
+          feedbackSpan.show(0);
+          setTimeout(function() {
+            feedbackSpan.fadeOut(200);
+          }, 1500);
+        });
+      return $("<div></div>").append([
+        button,
+        feedbackSpan,
+      ]);
+    },
     _createZoomToHomeViewButton: function() {
-      return $("<button type='button'></button>")
-        .text(this.options.zoomToHomeViewButtonText)
-        .attr("title", this.options.zoomToHomeViewButtonTitle)
-        .on("click", () => this._zoomToDefault());
+      return this._createButtonDiv(
+        this.options.zoomToHomeViewButtonText,
+        this.options.zoomToHomeViewButtonTitle,
+        () => { this._zoomToDefault(); }
+      );
     },
     _createSetHomeViewButton: function() {
-      return $("<button type='button'></button>")
+      return this._createButtonDiv(
+        this.options.setHomeViewButtonText,
+        this.options.setHomeViewButtonTitle,
+        () => {
+          this.setCenter(this._map.getCenter());
+          this.setZoom(this._map.getZoom());
+        }
+      );
+      /*return $("<button type='button'></button>")
         .text(this.options.setHomeViewButtonText)
         .attr("title", this.options.setHomeViewButtonTitle)
         .on("click", () => {
           this.setCenter(this._map.getCenter());
           this.setZoom(this._map.getZoom());
-        });
+        });*/
     },
     _createToggleButton: function () {
       var link = L.DomUtil.create('a', this.options.className + '-toggle',
