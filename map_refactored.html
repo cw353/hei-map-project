@@ -557,22 +557,22 @@
       }
     ).addTo(map);
 
-    // add marker cluster legend to map (reference: https://leafletjs.com/examples/choropleth/)
     const legend = L.control({position: "bottomleft"});
 
     const heatLayerControl = L.control.heatLayer({
-      position: "topright",
+      position: "topleft",
       heatLayerOptions: {
         gradient: {.4:"blue", .6:"cyan",.7:"lime",.8:"yellow",1:"red"}, // based on https://github.com/Leaflet/Leaflet.heat/blob/gh-pages/dist/leaflet-heat.js
       },
       datagroups: [cityOwned, taxSale2019, taxSale2020, scavengerSale, schoolLocations, businessLicenses, crimes, userAddedMarkers],
-      /*getBottomOffset: () => {
+      getBottomOffset: () => {
         return 30 + (legend._container.offsetParent
           ? legend._container.offsetParent.clientHeight
           : 0);
-      },*/
+      },
     });
 
+    // reference: https://leafletjs.com/examples/choropleth/
     legend.onAdd = function(map) {
       const rangeBounds = [1, 10, 100];
       const colors = ["rgba(110, 204, 57, 0.8)", "rgba(240, 194, 12, 0.6)", "rgba(241, 128, 23, 0.8)"];
