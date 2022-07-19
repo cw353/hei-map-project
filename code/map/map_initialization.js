@@ -8,10 +8,12 @@ const map = L.map("map", {
   zoomControl: false,
 });
 
+map.attributionControl.addAttribution("&copy; " + getOpenInNewTabLink("https://github.com/cw353/", "Claire Wagner"));
+
 // add tiles to map - reference: https://leafletjs.com/examples/layers-control/
 const osmtiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
-  attribution: "&copy; " + getOpenInNewTabLink("http://www.openstreetmap.org/copyright", "OpenStreetMap"),
+  attribution: getOpenInNewTabLink("http://www.openstreetmap.org/copyright", "OpenStreetMap"),
 }).addTo(map);
 
 // marker cluster support group for all clusterable markers
