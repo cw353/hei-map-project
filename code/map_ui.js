@@ -113,10 +113,31 @@ $("#favoritedMarkersButtonsDiv").append([
     }),
 ]);
 
+let restoreHeatLayer = false; // whether or not to restore heat layer after switching back to map tab
+const heatLayer = heatLayerControl.getHeatLayer();
+
 $("#tabDiv").append(getTabs([
-  { label: "Map", id: "mapTabItem", tabContent: $("#mapTab"), callback: () => map.invalidateSize(false), initiallyActive: true, },
+  {
+    label: "Map", id: "mapTabItem", tabContent: $("#mapTab"),
+    prehide: () => {
+      // remove heat layer to avoid problems with invalid map size
+      if (map.hasLayer(heatLayer)) {
+        map.removeLayer(heatLayer);
+        restoreHeatLayer = true;
+      }
+    },
+    postshow: () => {
+      map.invalidateSize(false);
+      // restore heat layer if necessary
+      if (restoreHeatLayer && !map.hasLayer(heatLayer)) {
+        map.addLayer(heatLayer);
+        restoreHeatLayer = false;
+      }
+    },
+    initiallyActive: true,
+  },
   { label: "About This Map", id: "aboutMapTabItem", tabContent: aboutMapTab, },
-  { label: "Favorited Markers", id: "favoritedMarkersTabItem", tabContent: $("#favoritedMarkersTab"), callback: generateFavoritedMarkersContent, },
+  { label: "Favorited Markers", id: "favoritedMarkersTabItem", tabContent: $("#favoritedMarkersTab"), postshow: generateFavoritedMarkersContent, }
 ]));
 
 // restore favorited markers from local storage

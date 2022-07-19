@@ -27,6 +27,12 @@ L.Control.HeatLayer = L.Control.extend({
     this._removeEventListeners();
     this._subcategoryDiv.empty();
   },
+  getHeatLayer() {
+    return this._heatLayer;
+  },
+  getHeatLayerGradient() {
+    return this._heatLayer.options.gradient;
+  },
   _initContainer() {
     this._visibilityToggle = $(`<div>${this.options.collapsedToggleText}</div>`)
       .attr("title", this.options.collapsedToggleTitle)
@@ -59,9 +65,6 @@ L.Control.HeatLayer = L.Control.extend({
         this._contents,
       ])
       .get(0);
-  },
-  getHeatLayerGradient() {
-    return this._heatLayer.options.gradient;
   },
   _updateHeight() {
     // based on line 155 of https://github.com/Leaflet/Leaflet/blob/v1.8.0/src/control/Control.Layers.js

@@ -184,10 +184,11 @@ function getTabs(tabs) {
     for (const tab of tabs) {
       if (tab.label === activeTabLabel) {
         tab.tabElement.addClass("activeTab");
-        "callback" in tab ? tab.tabContent.show(0, tab.callback) : tab.tabContent.show(0);
+        "postshow" in tab ? tab.tabContent.show(0, tab.postshow) : tab.tabContent.show(0);
       } else {
         tab.tabElement.removeClass("activeTab");
-        "callback" in tab ? tab.tabContent.hide(0, tab.callback) : tab.tabContent.hide(0);
+        "prehide" in tab && tab.prehide();
+        tab.tabContent.hide(0);
       }
     };
   }
