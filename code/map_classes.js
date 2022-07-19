@@ -211,9 +211,9 @@ class MarkerAndCircleDatagroup extends Datagroup {
   }
   getRadiusInputElement() {
     const circle = this.getChildLayer(this.circleName).layer;
-    const inputElement = $("<input type='number' min='0'/>")
+    const inputElement = $("<input type='number' min='0' step='any'/>")
       .attr("title", "Enter the new radius for the circle")
-      .addClass("radiusInput validInput")
+      .addClass("radiusInput")
       .val(circle.getRadius() / 1000) // meters to kilometers
       .get(0);
     const messageElement = $("<span></span>").addClass("successMessage");
