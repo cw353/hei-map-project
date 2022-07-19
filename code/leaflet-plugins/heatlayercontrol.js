@@ -58,6 +58,9 @@ L.Control.HeatLayer = L.Control.extend({
       ])
       .get(0);
   },
+  getHeatLayerGradient() {
+    return this._heatLayer.options.gradient;
+  },
   _updateHeight() {
     // based on line 155 of https://github.com/Leaflet/Leaflet/blob/v1.8.0/src/control/Control.Layers.js
     const offset = this._container.offsetTop + this.options.getBottomOffset();

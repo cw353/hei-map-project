@@ -272,11 +272,6 @@
         .data("markerData", markerData);
     }
 
-    function getDataToDisplay(dataList) {
-      return $("<span></span>").addClass("increasedLineHeight")
-        .html(dataList.map((item) => `<span class='dataToDisplayLabel'>${item.label}</span>: ${item.data ? item.data : "unknown"}`).join("<br>"))
-        .get(0);
-    }
     const colorGenerator = new ColorGenerator();
     const getDefaultAutomaticClassificationOptions = (getListOfDataToDisplay) => {
       return {
@@ -562,17 +557,40 @@
       }
     ).addTo(map);
 
-    const markerClusterLegend = getMarkerClusterLegend("bottomleft").addTo(map);
+    // add marker cluster legend to map (reference: https://leafletjs.com/examples/choropleth/)
+    const legend = L.control({position: "bottomleft"});
 
     const heatLayerControl = L.control.heatLayer({
-      position: "topleft",
-      datagroups: [cityOwned, taxSale2019, taxSale2020, scavengerSale, schoolLocations, businessLicenses, crimes, userAddedMarkers],
-      getBottomOffset: () => {
-        return 30 + (markerClusterLegend._container.offsetParent
-          ? markerClusterLegend._container.offsetParent.clientHeight
-          : 0);
+      position: "topright",
+      heatLayerOptions: {
+        gradient: {.4:"blue", .6:"cyan",.7:"lime",.8:"yellow",1:"red"}, // based on https://github.com/Leaflet/Leaflet.heat/blob/gh-pages/dist/leaflet-heat.js
       },
-    }).addTo(map);
+      datagroups: [cityOwned, taxSale2019, taxSale2020, scavengerSale, schoolLocations, businessLicenses, crimes, userAddedMarkers],
+      /*getBottomOffset: () => {
+        return 30 + (legend._container.offsetParent
+          ? legend._container.offsetParent.clientHeight
+          : 0);
+      },*/
+    });
+
+    legend.onAdd = function(map) {
+      const rangeBounds = [1, 10, 100];
+      const colors = ["rgba(110, 204, 57, 0.8)", "rgba(240, 194, 12, 0.6)", "rgba(241, 128, 23, 0.8)"];
+      const div = L.DomUtil.create("div", "legend leaflet-bar");
+      div.innerHTML = "<header>Marker Clusters</header>";
+      for (let i = 0; i < rangeBounds.length; i++) {
+        div.innerHTML += `<p><i class='circle' style="background-color: ${colors[i]}"></i> ${rangeBounds[i]}` + (rangeBounds[i+1] ? `–${rangeBounds[i+1]} properties<br>` : "+ properties</p>");
+      }
+      div.innerHTML += "<hr><header>Heatmap</header>";
+      div.innerHTML += "<span class='gradientLabel', style='float: left'>Less<br>Dense</span>";
+      div.innerHTML += "<span class='gradientLabel', style='float: right'>More<br>Dense</span>";
+      const gradient = heatLayerControl.getHeatLayerGradient();
+      const gradientColors = Object.keys(gradient).sort().map((intensity) => gradient[intensity]);
+      div.innerHTML += `<i class='bar' style="background: linear-gradient(to right, ${gradientColors.join(", ")})"></i>`;
+      return div;
+    }
+    legend.addTo(map);
+    heatLayerControl.addTo(map);
     
     $("#pinSearchBarDiv").append(
       getPinSearchBar(

@@ -130,6 +130,12 @@ function getPropertyDetailsLink(pin) {
   return `<a href="https://www.cookcountyassessor.com/pin/${pin}" target="_blank" rel="noopener">Assessor's Office</a>`;
 }
 
+function getDataToDisplay(dataList) {
+  return $("<span></span>").addClass("increasedLineHeight")
+    .html(dataList.map((item) => `<span class='dataToDisplayLabel'>${item.label}</span>: ${item.data ? item.data : "unknown"}`).join("<br>"))
+    .get(0);
+}
+
 function getMarkerPopupContent(markerData, options) {
   const popupContentDiv = $("<div></div>")
     .append($(`<div>${markerData.datagroup.name}</div>`).addClass("center underlined")); // header with datagroup name
