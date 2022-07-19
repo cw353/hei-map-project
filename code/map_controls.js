@@ -49,7 +49,7 @@ const layerControlTree = L.control.layers.tree(
   }
 );
 
-const legend = L.control({position: "bottomright"});
+const legend = L.control({position: "bottomleft"});
 
 const gradients = {
   viridis1: { 0: "#440154", 0.25: "#3b528b", 0.5: "#21908d", 0.75: "#5bc864", 1: "#fbe723", },
@@ -69,6 +69,11 @@ const heatLayerControl = L.control.heatLayer({
     gradient: { 0: "#0d0887", 0.25: "#7e03a8", 0.5: "#cb4679", 0.75: "#f89342", 1: "#f0f724" },
   },
   datagroups: [cityOwned, taxSale2019, taxSale2020, scavengerSale, schoolLocations, businessLicenses, crimes, userAddedMarkers],
+  getBottomOffset: () => {
+    return 30 + (legend._container.offsetParent
+      ? legend._container.offsetParent.clientHeight
+      : 0);
+  },
 });
 
 // reference: https://leafletjs.com/examples/choropleth/
@@ -88,7 +93,6 @@ legend.onAdd = function(map) {
   div.innerHTML += `<i class='bar' style="background: linear-gradient(to right, ${gradientColors.join(", ")})"></i>`;
   return div;
 }
-
 layerControlTree.addTo(map);
 legend.addTo(map);
 heatLayerControl.addTo(map);
