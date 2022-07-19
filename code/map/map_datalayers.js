@@ -13,13 +13,6 @@ const neighborhoodHighlightSelect = new HighlightSelect(
   (props, comparand) => { return "pri_neigh" in props && props.pri_neigh === comparand },
 );
 
-/*const zoneClassHighlightSelect = new HighlightSelect(
-  "Choose a zone class to highlight: ",
-  "Select the zone class that should be highlighted on the map",
-  (props, comparand) => { return "zone_class" in props && props.zone_class.startsWith(comparand); },
-);*/
-
-// add geographic boundaries
 const geoBoundaries = new ChildLayerGroup("Geographic Boundaries");
 geoBoundaries.addChildLayer(new BoundaryLayerInfo(
   "Ward Boundaries (2015–2023)",
@@ -49,17 +42,6 @@ geoBoundaries.addChildLayer(new BoundaryLayerInfo(
     onEachFeature: (feature) => { neighborhoodHighlightSelect.addOption(feature.properties.pri_neigh); },
   },
 ));
-/*const zoneClassRegex = new RegExp("^[A-Z]+");
-geoBoundaries.addChildLayer(new BoundaryLayerInfo(
-  "Zoning Districts",
-  zoning_districts.data,
-  zoning_districts.metadata.attribution ? zoning_districts.metadata.attribution : "City of Chicago",
-  {
-    getTooltipText: (props) => { return props.zone_class; },
-    highlightFunction: zoneClassHighlightSelect.highlightFunction,
-    onEachFeature: (feature) => { zoneClassHighlightSelect.addOption(zoneClassRegex.exec(feature.properties.zone_class)[0]); }, // add alphabetic zone class prefix
-  }
-));*/
 geoBoundaries.addChildLayer(new LayerInfo("No Boundaries", null, L.layerGroup(), false));
 map.addLayer(geoBoundaries.getChildLayer("Ward Boundaries (2015–2023)").layer);
 
@@ -352,7 +334,6 @@ const allMetadata = [
   ward_boundaries_2015_to_2023.metadata,
   ward_boundaries_2023.metadata,
   neighborhood_boundaries.metadata,
-  //zoning_districts.metadata,        
 ];
 const changeableRadiusDatagroups = [
   ward20Office,
@@ -361,5 +342,4 @@ const changeableRadiusDatagroups = [
 const highlightSelects = [
   { highlightSelect: wardHighlightSelect, sort: false, layerNames: ["Ward Boundaries (2015–2023)", "Ward Boundaries (2023+)"] },
   { highlightSelect: neighborhoodHighlightSelect, sort: true, layerNames: ["Neighborhood Boundaries"] },
-  //{ highlightSelect: zoneClassHighlightSelect, sort: true, layerNames: ["Zoning Districts"] },
 ];
