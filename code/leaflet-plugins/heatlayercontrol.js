@@ -1,3 +1,5 @@
+/* Author: Claire Wagner (Summer 2022 Wheaton College Research Team) */
+
 L.Control.HeatLayer = L.Control.extend({
   options: {
     selectNoneValue: "-- None --",

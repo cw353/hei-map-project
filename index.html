@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="author" content="Claire Wagner (Summer 2022 Wheaton College Research Team)">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Map of Properties of Interest to HEI</title>
+  
+  <!-- jQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+    integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+    crossorigin=""></script>
+    
+</head>
+
+<body>
+
+  <style>
+    #loadingDiv {
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    #loadingText {
+      font-size: 5em;
+      font-style: italic;
+      margin-top: 50px;
+      margin-bottom: 25px;
+    }
+  </style>
+
+  <div id="loadingDiv" class="center">
+    <p id="loadingText">
+      Please wait for the map to load...
+    </p>
+    <svg  xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 100 100">
+      <title>Loading Icon (Azizsoft, CC BY-SA 4.0)</title>
+      <desc>Azizsoft, CC BY-SA 4.0, via Wikimedia Commons (https://upload.wikimedia.org/wikipedia/commons/0/08/Loadin_8_part.svg)</desc>
+      <style type="text/css">
+        .c{cy:50px;cx:50px;r:35px;fill:none;stroke-width:15;stroke-dashoffset:-4;stroke:#000;}.a{opacity: 0.2;stroke-dasharray:20 7.5;}
+        .b{stroke-dasharray:20 200;transform-origin:50px;animation:d 1s steps(8) 0s infinite;}
+        @keyframes d{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+      </style>
+      <circle class="a c"/><circle class="b c"/>
+    </svg>
+  </div>
+
+  <div id="pageContent">
+    
+    <div id="pageHeader">
+      <h1>Map of Properties of Interest to HEI</h1>
+    </div>
+
+    <div id="tabDiv"></div>
+    
+    <div id="mapTab">
+      <div id="additionalMapControlsContainer" class="formContainer">
+        <div id="additionalMapControls">
+          <div id="pinSearchBarDiv"></div>
+          <div id="highlightSelectDiv"></div>
+          <div id="radiiInputDiv"></div>
+        </div>
+      </div>
+      <div id="map"></div>
+    </div>
+
+    <div id="favoritedMarkersTab">
+      <p class="italic">
+        To add a marker to your Favorited Markers, click on the marker on the map. If the marker can be added to your Favorited Markers, a popup with a button labeled "Add to Favorited Markers" will appear. Click the button to add the marker to your Favorited Markers.
+      </p>
+      <p id="favoritedMarkersOverviewParagraph" class="italic"></p>
+      <div id="favoritedMarkersDetailsDiv">
+        <div id="favoritedMarkersButtonsDiv"></div>
+        <div id="favoritedMarkersTableDiv" class="center"></div>
+      </div>
+    </div>
+
+    <div id="aboutMapTab">
+      <div id="datasetTableDiv" class="center"></div>
+    </div>
+
+  </div>
+
+  <script>
+    $("#pageContent").hide();
+  </script>
+
+  <!-- Leaflet and Leaflet plugins available via CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+    integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+    crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+    integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+    crossorigin=""></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
+    integrity="sha512-RLEjtaFGdC4iQMJDbMzim/dOvAu+8Qp9sw7QE4wIMYcg2goVoivzwgSZq9CsIxp4xKAZPKh5J2f2lOko2Ze6FQ=="
+    crossorigin=""/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"
+    integrity="sha512-BBToHPBStgMiw0lD4AtkRIZmdndhB6aQbXpX7omcrXeG2PauGBl2lzq2xUZTxaLxYz5IDHlmneCZ1IJ+P3kYtQ=="
+    crossorigin=""/>
+  <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"
+    integrity="sha512-MQlyPV+ol2lp4KodaU/Xmrn+txc1TP15pOBF/2Sfre7MRsA/pB4Vy58bEqe9u7a7DczMLtU5wT8n7OblJepKbg=="
+    crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet.markercluster.layersupport@2.0.1/dist/leaflet.markercluster.layersupport.js"
+    integrity="sha512-Utd3nyu+vSSF4E6z/hcIzoi2mCedtng1MTF2sZWLnlL2BCwSyyvwT2otaWEiVmkgCpfTy6C/RVxo5WIoJ9zY3Q=="
+    crossorigin=""></script>
+  <link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css"
+    integrity="sha512-Tbna5DrK+N26ZZczWjdHj7BHyU3vUAjA7JsGhIyTM/7jBiy4f4DbiScuLQxaxB51+Gh/+a+Z7AwQmh2FyafjLg=="
+    crossorigin=""/>
+  <script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js"
+    integrity="sha512-gyvCiKy2sIRwqd5QeTyyeJBTPx5OQdyluEFSIe1KnKDi0DM0w/T+T8iczSYRRcwmMYGVixYL2QGKJ+8XylbyTA=="
+    crossorigin=""></script>
+
+  <!-- Leaflet plugins not available via CDN -->
+  <link rel="stylesheet" href="code/leaflet-plugins/ControlLayersTree/L.Control.Layers.Tree.css"/>
+  <script src="code/leaflet-plugins/ControlLayersTree/L.Control.Layers.Tree.js"></script>
+  <link rel="stylesheet" href="code/leaflet-plugins/defaultextent/leaflet.defaultextent.css"/>
+  <script src="code/leaflet-plugins/defaultextent/leaflet.defaultextent.js"></script>
+  <script src="code/leaflet-plugins/heat/leaflet-heat.js"></script>
+  <script src="code/leaflet-plugins/heatlayercontrol.js"></script>
+
+  <!-- Map data -->
+  <script src="data/geojson/ward_boundaries.js"></script>
+  <script src="data/geojson/neighborhood_boundaries.js"></script>
+  <!--script src="data/geojson/zoning_districts.js"></script-->
+  <script src="data/geojson/school_locations.js"></script>
+  <script src="data/misc/misc.js"></script>
+  <script src="data/misc/individual_properties.js"></script>
+  <script src="data/city-owned/city_owned_data.js"></script>
+  <script src="data/tax-sale/taxsale_2019.js"></script>
+  <script src="data/tax-sale/taxsale_2020.js"></script>
+  <script src="data/scavenger-sale/scavenger_data.js"></script>
+  <script src="data/business-licenses/business_license_data.js"></script>
+  <script src="data/crime/crime_data.js"></script>
+  
+  <!-- Map code -->
+  <link rel="stylesheet" href="code/map_stylesheet.css"/>
+  <script src="code/map_functions.js"></script>
+  <script src="code/map_classes.js"></script>
+  <script src="code/map_initialization.js"></script>
+  <script src="code/map_datalayers.js"></script>
+  <script src="code/map_controls.js"></script>
+  <script src="code/map_ui.js"></script>
+
+  <script>
+    $("#loadingDiv").hide();
+    $("#pageContent").show(0, () => {
+      map.invalidateSize(false);
+    });
+  </script>
+
+</body>
+
+</html>

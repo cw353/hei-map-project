@@ -436,20 +436,20 @@ function getPinSearchBar(map, datasetsToSearch, markerClusterGroup, addSearchRes
     ]);
 }
 
-function getMarkerClusterLegend(position) {
-  // add marker cluster legend to map (reference: https://leafletjs.com/examples/choropleth/)
-  const legend = L.control({position: position});
-  legend.onAdd = function(map) {
-    const rangeBounds = [1, 10, 100];
-    const colors = ["rgba(110, 204, 57, 0.8)", "rgba(240, 194, 12, 0.6)", "rgba(241, 128, 23, 0.8)"];
-    const div = L.DomUtil.create("div", "legend leaflet-bar");
-    div.innerHTML = "<header>Marker Clusters</header>";
-    for (let i = 0; i < rangeBounds.length; i++) {
-      div.innerHTML += `<p><i class='circle' style="background-color: ${colors[i]}"></i> ${rangeBounds[i]}` + (rangeBounds[i+1] ? `–${rangeBounds[i+1]} properties<br>` : "+ properties</p>");
-    }
-    return div;
-  }
-  return legend;
+function getToggleFavoritedButton(markerData, favoritedMarkers) {
+  return $(`<button type='button'></button>`).addClass("toggleFavoritedButton")
+    .text(favoritedMarkers.has(markerData) ? "Remove from Favorited Markers" : "Add to Favorited Markers")
+    .data("markerData", markerData);
+}
+
+function getWard(ward) {
+  return ward === 20 ? "Ward 20"
+    : ward <= 10 ? "Wards 01–10"
+    : ward < 20 ? "Wards 11–19"
+    : ward <= 30 ? "Wards 21–30"
+    : ward <= 40 ? "Wards 31–40"
+    : ward <= 50 ? "Wards 41–50"
+    : "Unknown Ward";
 }
 
 /**
