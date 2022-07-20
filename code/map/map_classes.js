@@ -432,6 +432,32 @@ class HighlightSelect {
   }
 }
 
+class ToggleFill {
+  constructor(getFillOpacity, initialToggleValue) {
+    this.toggleFill = initialToggleValue;
+    this.getFillOpacity = (props) => { return getFillOpacity(props, this.toggleFill); }
+  }
+  getToggleFillElement(checkboxId, label, title, legendData, layersToRefresh) {
+    const updateToggleFill = (event) => {
+      this.toggleFill = event.target.checked;
+      console.log(this.toggleFill);
+      layersToRefresh.forEach((layer) => { layer.refreshStyles() });
+    };
+    const legend = L.DomUtil.create("span", "toggleFillLegend");
+    let legendItems = legendData.map(
+      (item) => `<i class='square' style="background-color: ${item.color}"></i> ${item.label}`
+    );
+    legend.innerHTML = " (Legend: " + legendItems.join(", ") + ")";
+    return $("<span></span>")
+      .attr("title", title)
+      .append([
+        $("<input type='checkbox'></input>").attr("id", checkboxId).on("change", updateToggleFill),
+        `<label for="${checkboxId}">${label}</label>`,
+        legend,
+      ]);
+  }
+}
+
 class FavoritedMarkerGroup {
   constructor(localStorageItemName) {
     this.favoritedMarkers = new Set();

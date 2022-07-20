@@ -15,6 +15,10 @@ button {
   margin-bottom: 3px;
 }
 
+input[type="checkbox"] {
+  margin-left: 0;
+}
+
 table {
   width: 100%;
 }
@@ -128,7 +132,7 @@ td ul, .markerClusterPopupContent ul {
 }
 
 /* reference: https://leafletjs.com/examples/choropleth/ */
-.legend i {
+.legend i, .toggleFillLegend i {
   border-color: black;
   border-width: 1px;
   border-style: solid;
@@ -150,6 +154,13 @@ td ul, .markerClusterPopupContent ul {
   height: 18px;
   float: left;
   margin-top: 3px;
+}
+
+.toggleFillLegend .square {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  opacity: 0.8;
 }
 
 .gradientLabel {

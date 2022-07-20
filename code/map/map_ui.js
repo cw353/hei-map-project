@@ -5,14 +5,6 @@ getToggleVisibilityButton(
   additionalMapControlsDiv, "+ Show Additional Map Controls", "- Hide Additional Map Controls", null,
 ).insertBefore(additionalMapControlsDiv.hide());
 
-const highlightSelectDiv = $("#highlightSelectDiv");
-for (const item of highlightSelects) {
-  highlightSelectDiv.append(
-    $("<div></div>").addClass("formContainer")
-      .append(item.highlightSelect.getHighlightSelectElement(item.sort, item.layerNames.map((layerName) => geoBoundaries.getChildLayer(layerName))))
-  );
-}
-
 $("#pinSearchBarDiv").append(
   getPinSearchBar(
     map,
@@ -21,6 +13,22 @@ $("#pinSearchBarDiv").append(
     (data) => userAddedMarkers.addSearchResult(data),
   )
 );
+
+const highlightSelectDiv = $("#highlightSelectDiv");
+for (const item of highlightSelects) {
+  highlightSelectDiv.append(
+    $("<div></div>").addClass("formContainer")
+      .append(item.highlightSelect.getHighlightSelectElement(item.sort, item.layerNames.map((layerName) => geoBoundaries.getChildLayer(layerName))))
+  );
+}
+
+const toggleFillDiv = $("#toggleFillDiv");
+for (const item of toggleFills) {
+  toggleFillDiv.append(
+    $("<div></div>").addClass("formContainer")
+      .append(item.toggleFill.getToggleFillElement(item.checkboxId, item.label, item.title, item.legendData, item.layerNames.map((layerName) => geoBoundaries.getChildLayer(layerName))))
+  );
+}
 
 const radiiInputDiv = document.getElementById("radiiInputDiv");
 for (const item of changeableRadiusDatagroups) {
