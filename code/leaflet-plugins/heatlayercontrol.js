@@ -12,7 +12,7 @@ L.Control.HeatLayer = L.Control.extend({
     collapsedToggleTitle: "Click to show heatmap options",
     expandedToggleText: "&#9650; Heatmap",
     expandedToggleTitle: "Click to hide heatmap options",
-    getBottomOffset: () => { return 50; }, // based on line 155 of https://github.com/Leaflet/Leaflet/blob/v1.8.0/src/control/Control.Layers.js
+    getMaxHeight: (mapHeight, topOffset) => { return mapHeight - (topOffset + 50) }, // based on line 155 of https://github.com/Leaflet/Leaflet/blob/v1.8.0/src/control/Control.Layers.js
   },
   initialize(options) {
     L.Util.setOptions(this, options);
@@ -67,9 +67,7 @@ L.Control.HeatLayer = L.Control.extend({
       .get(0);
   },
   _updateHeight() {
-    // based on line 155 of https://github.com/Leaflet/Leaflet/blob/v1.8.0/src/control/Control.Layers.js
-    const offset = this._container.offsetTop + this.options.getBottomOffset();
-    this._container.style.maxHeight = (this._map.getSize().y - offset) + "px";
+    this._container.style.maxHeight = this.options.getMaxHeight(this._map.getSize().y, this._container.offsetTop) + "px";
   },
   _updateHeatLayer(data, attribution) {
     // remove heatlayer from map before updating it

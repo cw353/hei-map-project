@@ -69,16 +69,7 @@ const heatLayerControl = L.control.heatLayer({
     gradient: { 0: "#0d0887", 0.25: "#7e03a8", 0.5: "#cb4679", 0.75: "#f89342", 1: "#f0f724" },
   },
   datagroups: [cityOwned, taxSale2019, taxSale2020, scavengerSale, schoolLocations, businessLicenses, crimes, userAddedMarkers],
-  /*getBottomOffset: () => {
-    return 30 + (legend._container.offsetParent
-      ? legend._container.offsetParent.clientHeight
-      : 0)
-  },*/
-  getBottomOffset: () => {
-    return 100 + (layerControlTree._container
-      ? layerControlTree._container.clientHeight
-      : 0);
-  },
+  getMaxHeight: (mapHeight, topOffset) => { return (mapHeight >> 1) - (topOffset << 1) },
 });
 
 // reference: https://leafletjs.com/examples/choropleth/
