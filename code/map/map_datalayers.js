@@ -1,16 +1,16 @@
 /* Author: Claire Wagner (Summer 2022 Wheaton College Research Team) */
 
 const wardHighlightSelect = new HighlightSelect(
-  "Choose a ward to highlight: ",
-  "Select the ward that should be highlighted on the map",
-  (props, comparand) => { return "ward" in props && ("Ward " + props.ward) === comparand },
+  "Choose a ward to highlight yellow: ",
+  "Select the ward that should be highlighted in yellow on the map",
+  (props, comparand) => { return ("ward" in props && ("Ward " + props.ward) === comparand) ? "0.4" : "0" },
 );
 for (let i = 1; i < 51; i++) { wardHighlightSelect.addOption("Ward " + i); }
 
 const neighborhoodHighlightSelect = new HighlightSelect(
-  "Choose a neighborhood to highlight: ",
-  "Select the neighborhood that should be highlighted on the map",
-  (props, comparand) => { return "pri_neigh" in props && props.pri_neigh === comparand },
+  "Choose a neighborhood to highlight yellow: ",
+  "Select the neighborhood that should be highlighted in yellow on the map",
+  (props, comparand) => { return ("pri_neigh" in props && props.pri_neigh === comparand) ? "0.4" : "0" },
 );
 
 const geoBoundaries = new ChildLayerGroup("Geographic Boundaries");
@@ -20,7 +20,7 @@ geoBoundaries.addChildLayer(new BoundaryLayerInfo(
   ward_boundaries_2015_to_2023.metadata.attribution,
   {
     getTooltipText: (props) => { return `Ward ${props.ward} (2015–2023)`; },
-    highlightFunction: wardHighlightSelect.highlightFunction,
+    getFillOpacity: wardHighlightSelect.getFillOpacity,
   },
 ));
 geoBoundaries.addChildLayer(new BoundaryLayerInfo(
@@ -29,7 +29,7 @@ geoBoundaries.addChildLayer(new BoundaryLayerInfo(
   ward_boundaries_2023.metadata.attribution,
   {
     getTooltipText: (props) => { return `Ward ${props.ward} (2023+)`; },
-    highlightFunction: wardHighlightSelect.highlightFunction,
+    getFillOpacity: wardHighlightSelect.getFillOpacity,
   },
 ));
 geoBoundaries.addChildLayer(new BoundaryLayerInfo(
@@ -38,18 +38,26 @@ geoBoundaries.addChildLayer(new BoundaryLayerInfo(
   neighborhood_boundaries.metadata.attribution,
   {
     getTooltipText: (props) => { return props.pri_neigh; },
-    highlightFunction: neighborhoodHighlightSelect.highlightFunction,
+    getFillOpacity: neighborhoodHighlightSelect.getFillOpacity,
     onEachFeature: (feature) => { neighborhoodHighlightSelect.addOption(feature.properties.pri_neigh); },
   },
 ));
+// source: https://dsl.richmond.edu/panorama/redlining/ and https://github.com/americanpanorama/panorama-holc/blob/master/src/components/CityStats.jsx (CC BY-NC-SA license)
+const holcGrades = {
+  "A" : { desc: "Best", color: "#418e41" },
+  "B" : { desc: "Still Desirable", color: "#4a4ae4" },
+  "C" : { desc: "Definitely Declining", color: "#ffdf00", },
+  "D" : { desc: "Hazardous", color: "#eb3f3f", }
+};
+
 geoBoundaries.addChildLayer(new BoundaryLayerInfo(
-  "Redlining in Chicago",
+  "HOLC Redlining in Chicago",
   redlining.data,
   redlining.metadata.attribution,
   {
-    getTooltipText: (props) => { return props.holc_grade; },
-    //highlightFunction: neighborhoodHighlightSelect.highlightFunction,
-    //onEachFeature: (feature) => { neighborhoodHighlightSelect.addOption(feature.properties.pri_neigh); },
+    getTooltipText: (props) => { return "holc_grade" in props ? `HOLC Grade ${props.holc_grade} ("${holcGrades[props.holc_grade].desc}")` : "" },
+    getFillColor: (props) => holcGrades[props.holc_grade].color,
+    getFillOpacity: (props) => "0.25",
   },
 ));
 geoBoundaries.addChildLayer(new LayerInfo("No Boundaries", null, L.layerGroup(), false));

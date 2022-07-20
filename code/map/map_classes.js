@@ -351,14 +351,15 @@ class BoundaryLayerInfo extends LayerInfo {
   constructor(name, dataset, attribution, options) {
     super(name, "color" in options ? options.color : "black", null, false);
     const strokeColor = this.color;
-    const fillColor = "highlightColor" in options ? options.highlightColor : "#f1ab29";
+    const getFillColor = "getFillColor" in options ? options.getFillColor : () => "#f1ab29";
+    const getFillOpacity = "getFillOpacity" in options ? options.getFillOpacity : () => "0";
     this.defaultStyle = function(feature) {
       return {
         color: strokeColor,
-        fillColor: fillColor,
+        fillColor: getFillColor(feature.properties),
         weight: 2,
         opacity: 1,
-        fillOpacity: ("highlightFunction" in options && options.highlightFunction(feature.properties)) ? 0.4 : 0,
+        fillOpacity: getFillOpacity(feature.properties),
       }
     };
     this.layer = L.geoJSON(
@@ -389,9 +390,9 @@ class BoundaryLayerInfo extends LayerInfo {
           const layer = event.target;
           layer.setStyle({
             color: "#262626",
-            fillColor: fillColor,
+            fillColor: getFillColor(layer.feature.properties),
             weight: 5,
-            fillOpacity: ("highlightFunction" in options && options.highlightFunction(layer.feature.properties)) ? 0.4 : 0,
+            fillOpacity: getFillOpacity(feature.properties),
           });
           if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
             layer.bringToFront();
@@ -408,12 +409,12 @@ class BoundaryLayerInfo extends LayerInfo {
 
 class HighlightSelect {
   _defaultOption = "-- None --";
-  constructor(label, selectTitleText, highlightFunction) {
+  constructor(label, selectTitleText, getFillOpacity) {
     this.label = label;
     this.selectTitleText = selectTitleText;
     this.comparand = this._defaultOption;
     this.optionSet = new Set([this._defaultOption]);
-    this.highlightFunction = (props) => { return highlightFunction(props, this.comparand); }
+    this.getFillOpacity = (props) => { return getFillOpacity(props, this.comparand); }
   }
   addOption(option) {
     this.optionSet.add(option);
