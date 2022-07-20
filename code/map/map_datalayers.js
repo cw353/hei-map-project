@@ -17,7 +17,7 @@ const geoBoundaries = new ChildLayerGroup("Geographic Boundaries");
 geoBoundaries.addChildLayer(new BoundaryLayerInfo(
   "Ward Boundaries (2015–2023)",
   ward_boundaries_2015_to_2023.data,
-  ward_boundaries_2015_to_2023.metadata.attribution ? ward_boundaries_2015_to_2023.metadata.attribution : "City of Chicago",
+  ward_boundaries_2015_to_2023.metadata.attribution,
   {
     getTooltipText: (props) => { return `Ward ${props.ward} (2015–2023)`; },
     highlightFunction: wardHighlightSelect.highlightFunction,
@@ -26,7 +26,7 @@ geoBoundaries.addChildLayer(new BoundaryLayerInfo(
 geoBoundaries.addChildLayer(new BoundaryLayerInfo(
   "Ward Boundaries (2023+)",
   ward_boundaries_2023.data,
-  ward_boundaries_2023.metadata.attribution ? ward_boundaries_2023.metadata.attribution : "City of Chicago",
+  ward_boundaries_2023.metadata.attribution,
   {
     getTooltipText: (props) => { return `Ward ${props.ward} (2023+)`; },
     highlightFunction: wardHighlightSelect.highlightFunction,
@@ -35,11 +35,21 @@ geoBoundaries.addChildLayer(new BoundaryLayerInfo(
 geoBoundaries.addChildLayer(new BoundaryLayerInfo(
   "Neighborhood Boundaries",
   neighborhood_boundaries.data,
-  neighborhood_boundaries.metadata.attribution ? neighborhood_boundaries.metadata.attribution : "City of Chicago",
+  neighborhood_boundaries.metadata.attribution,
   {
     getTooltipText: (props) => { return props.pri_neigh; },
     highlightFunction: neighborhoodHighlightSelect.highlightFunction,
     onEachFeature: (feature) => { neighborhoodHighlightSelect.addOption(feature.properties.pri_neigh); },
+  },
+));
+geoBoundaries.addChildLayer(new BoundaryLayerInfo(
+  "Redlining in Chicago",
+  redlining.data,
+  redlining.metadata.attribution,
+  {
+    getTooltipText: (props) => { return props.holc_grade; },
+    //highlightFunction: neighborhoodHighlightSelect.highlightFunction,
+    //onEachFeature: (feature) => { neighborhoodHighlightSelect.addOption(feature.properties.pri_neigh); },
   },
 ));
 geoBoundaries.addChildLayer(new LayerInfo("No Boundaries", null, L.layerGroup(), false));
@@ -332,6 +342,7 @@ const allMetadata = [
   ward_boundaries_2015_to_2023.metadata,
   ward_boundaries_2023.metadata,
   neighborhood_boundaries.metadata,
+  redlining.metadata,
 ];
 const changeableRadiusDatagroups = [
   ward20Office,
