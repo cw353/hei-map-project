@@ -1,16 +1,22 @@
 /* Author: Claire Wagner (Summer 2022 Wheaton College Research Team) */
 
 const wardHighlightSelect = new HighlightSelect(
-  "Choose a ward to highlight yellow: ",
+  "Choose a ward to highlight in yellow: ",
   "Select the ward that should be highlighted in yellow on the map",
   (props, comparand) => { return ("ward" in props && ("Ward " + props.ward) === comparand) ? "0.4" : "0" },
 );
 for (let i = 1; i < 51; i++) { wardHighlightSelect.addOption("Ward " + i); }
 
 const neighborhoodHighlightSelect = new HighlightSelect(
-  "Choose a neighborhood to highlight yellow: ",
+  "Choose a neighborhood to highlight in yellow: ",
   "Select the neighborhood that should be highlighted in yellow on the map",
   (props, comparand) => { return ("pri_neigh" in props && props.pri_neigh === comparand) ? "0.4" : "0" },
+);
+
+const zoneClassHighlightSelect = new HighlightSelect(
+  "Choose a zone class to highlight in yellow: ",
+  "Select the zone class that should be highlighted in yellow on the map",
+  (props, comparand) => { return ("zone_class" in props && props.zone_class.startsWith(comparand)) ? "0.4" : "0" },
 );
 
 const geoBoundaries = new ChildLayerGroup("Geographic Boundaries");
@@ -42,6 +48,17 @@ geoBoundaries.addChildLayer(new BoundaryLayerInfo(
     onEachFeature: (feature) => { neighborhoodHighlightSelect.addOption(feature.properties.pri_neigh); },
   },
 ));
+const zoneClassRegex = new RegExp("^[A-Z]+");  // regex to extract alphabetic zone class prefix
+geoBoundaries.addChildLayer(new BoundaryLayerInfo(
+  "Zoning Districts",
+  zoning_districts.data,
+  zoning_districts.metadata.attribution ? zoning_districts.metadata.attribution : "City of Chicago",
+  {
+    getTooltipText: (props) => { return props.zone_class; },
+    getFillOpacity: zoneClassHighlightSelect.getFillOpacity,
+    onEachFeature: (feature) => { zoneClassHighlightSelect.addOption(zoneClassRegex.exec(feature.properties.zone_class)[0]); },
+  }
+));
 // source: https://dsl.richmond.edu/panorama/redlining/ and https://github.com/americanpanorama/panorama-holc/blob/master/src/components/CityStats.jsx (CC BY-NC-SA license)
 const holcGrades = {
   "A" : { desc: "Best", color: "#418e41" },
@@ -49,7 +66,6 @@ const holcGrades = {
   "C" : { desc: "Definitely Declining", color: "#ffdf00", },
   "D" : { desc: "Hazardous", color: "#eb3f3f", }
 };
-
 geoBoundaries.addChildLayer(new BoundaryLayerInfo(
   "HOLC Redlining in Chicago",
   redlining.data,
@@ -350,6 +366,7 @@ const allMetadata = [
   ward_boundaries_2015_to_2023.metadata,
   ward_boundaries_2023.metadata,
   neighborhood_boundaries.metadata,
+  zoning_districts.metadata,
   redlining.metadata,
 ];
 const changeableRadiusDatagroups = [
@@ -359,4 +376,5 @@ const changeableRadiusDatagroups = [
 const highlightSelects = [
   { highlightSelect: wardHighlightSelect, sort: false, layerNames: ["Ward Boundaries (2015–2023)", "Ward Boundaries (2023+)"] },
   { highlightSelect: neighborhoodHighlightSelect, sort: true, layerNames: ["Neighborhood Boundaries"] },
+  { highlightSelect: zoneClassHighlightSelect, sort: true, layerNames: ["Zoning Districts"] },
 ];
