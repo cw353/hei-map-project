@@ -1,0 +1,27 @@
+const zoneClassHighlightSelect = new HighlightSelect(
+  "Choose a zone class to highlight: ",
+  "Select the zone class that should be highlighted on the map",
+  (props, comparand) => { return "zone_class" in props && props.zone_class.startsWith(comparand); },
+);
+
+const zoneClassRegex = new RegExp("^[A-Z]+");
+geoBoundaries.addChildLayer(new BoundaryLayerInfo(
+  "Zoning Districts",
+  zoning_districts.data,
+  zoning_districts.metadata.attribution ? zoning_districts.metadata.attribution : "City of Chicago",
+  {
+    getTooltipText: (props) => { return props.zone_class; },
+    highlightFunction: zoneClassHighlightSelect.highlightFunction,
+    onEachFeature: (feature) => { zoneClassHighlightSelect.addOption(zoneClassRegex.exec(feature.properties.zone_class)[0]); }, // add alphabetic zone class prefix
+  }
+));
+
+const highlightSelects = [
+  { highlightSelect: wardHighlightSelect, sort: false, layerNames: ["Ward Boundaries (2015–2023)", "Ward Boundaries (2023+)"] },
+  { highlightSelect: neighborhoodHighlightSelect, sort: true, layerNames: ["Neighborhood Boundaries"] },
+  { highlightSelect: zoneClassHighlightSelect, sort: true, layerNames: ["Zoning Districts"] },
+];
+
+Data:
+<!--script src="data/geojson/zoning_districts.js"></script-->
+zoning_districts.metadata
