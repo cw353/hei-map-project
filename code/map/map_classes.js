@@ -392,7 +392,7 @@ class BoundaryLayerInfo extends LayerInfo {
             color: "#262626",
             fillColor: getFillColor(layer.feature.properties),
             weight: 5,
-            fillOpacity: getFillOpacity(feature.properties),
+            fillOpacity: getFillOpacity(layer.feature.properties),
           });
           if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
             layer.bringToFront();
