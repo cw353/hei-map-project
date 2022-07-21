@@ -94,3 +94,30 @@ legend.toggleSection(heatmapLegendSection); // hide initially
 
 heatLayerControl.addTo(map);
 layerControlTree.addTo(map);
+
+const geocodeResults = new Map();
+const getGeocodePopupContent = (markerData) => getMarkerPopupContent(markerData, { getDataToDisplay: (markerData) => markerData.data.html });
+L.Control.geocoder({
+  placeholder: "Search for an address...",
+  errorMessage: "No results found.",
+  defaultMarkGeocode: false,
+})
+  .on("markgeocode", function(e) {
+    if (e.geocode && e.geocode.center) {
+      let markerData = null;
+      if (e.geocode.name && geocodeResults.has(e.geocode.name)) {
+        // retrieve existing marker
+        markerData = geocodeResults.get(e.geocode.name);
+      } else {
+        // create new marker
+        const marker = new L.Marker.DatagroupAwareMarker(e.geocode.center, geocodeDatagroup.markerOptions, geocodeDatagroup.name)
+          .setIcon(generateIcon(geocodeLayerInfo.color));
+        geocodeLayerInfo.addLayer(marker);
+        markerData = new MarkerData("name", e.geocode, geocodeDatagroup, geocodeLayerInfo, marker);
+        marker.bindPopup(getGeocodePopupContent(markerData));
+        geocodeResults.set(e.geocode.name, markerData);
+      }
+      markerData && showMarkerOnMap(map, markerData, markerClusterSupportGroup, null);
+    }
+  })
+  .addTo(map);

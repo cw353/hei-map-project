@@ -315,12 +315,7 @@ const userAddedMarkers = new SearchResultsDatagroup(
         },
       );
     },
-    getLayerInfo: (name, attribution) => new LayerInfo(
-      name,
-      "red",
-      getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }),
-      false,
-    ),
+    getLayerInfo: (name, attribution) => new LayerInfo(name, "red", getCheckedInLayer(markerClusterSupportGroup, { attribution: attribution }), false),
     getMarkerPopupContent: getMarkerPopupContent,
     markerPopupContentOptions: {
       getDataToDisplay: (markerData) => {
@@ -342,6 +337,11 @@ const userAddedMarkers = new SearchResultsDatagroup(
     },
   },
 );
+userAddedMarkers.addChildLayer(
+  new LayerInfo("Geocoding Search Results", "red", getCheckedInLayer(markerClusterSupportGroup, { attribution: "OSM/Nominatim" }), false),
+);
+const geocodeDatagroup = userAddedMarkers;
+const geocodeLayerInfo = userAddedMarkers.getChildLayer("Geocoding Search Results");
 
 const allDatagroups = [
   ward20Office,
@@ -372,7 +372,6 @@ const heatmapDatagroups = [
   schoolLocations,
   businessLicenses,
   crimes,
-  userAddedMarkers,
 ];
 const allMetadata = [
   property_locations_metadata,
