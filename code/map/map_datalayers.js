@@ -296,8 +296,25 @@ const crimes = new AutomaticClassificationDatagroup(
 const userAddedMarkers = new SearchResultsDatagroup(
   "User-Added Markers",
   new Dataset({}, property_locations_metadata.attribution, "pin"),
-  "hei-map-user-search-results",
   {
+    searchResultsLayerName: "PIN Search Results",
+    useLocalStorage: true,
+    localStorageItemName: "hei-map-user-search-results",
+    restoreSearchResult: (identifier, addSearchResult) => {
+      return getLocationDataViaAjax(
+        identifier,
+        (data) => {
+          if (data.length < 1) {
+            console.error(`Error: no data found for user-added PIN ${identifier}`);
+          } else {
+            addSearchResult(data[0]);
+          }
+        },
+        (jqxhr, textStatus) => { 
+          console.error(`Error: failed to retrieve data for user-added PIN ${pin} - ${textStatus}`);
+        },
+      );
+    },
     getLayerInfo: (name, attribution) => new LayerInfo(
       name,
       "red",

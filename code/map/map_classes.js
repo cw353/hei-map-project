@@ -265,52 +265,43 @@ function getLocalStorageItem(key) {
 }
 
 class SearchResultsDatagroup extends Datagroup {
-  constructor(name, dataset, localStorageItemName, options) {
+  constructor(name, dataset, options) {
     super(name, dataset, options);
-    this.localStorageItemName = localStorageItemName;
+    this.searchResultsLayerName = options.searchResultsLayerName;
+    this.useLocalStorage = options.useLocalStorage;
+    this.localStorageItemName = options.localStorageItemName;
+    this.restoreSearchResult = options.restoreSearchResult;
     this.addChildLayer(
       "getLayerInfo" in options
-        ? options.getLayerInfo("Search Results", this.dataset.attribution)
-        : new LayerInfo("Search Results", "blue", L.layerGroup([], { attribution : this.dataset.attribution }), false)
+        ? options.getLayerInfo(this.searchResultsLayerName, this.dataset.attribution)
+        : new LayerInfo(this.searchResultsLayerName, "blue", L.layerGroup([], { attribution : this.dataset.attribution }), false)
     );
     this.restoreFromLocalStorage();
   }
   localStorageSize() {
-    const saved = getLocalStorageItem(this.localStorageItemName);
+    const saved = this.useLocalStorage ? getLocalStorageItem(this.localStorageItemName) : null;
     return saved ? JSON.parse(saved).length : 0;
   }
   saveToLocalStorage() {
-    setLocalStorageItem(this.localStorageItemName, JSON.stringify([...this.markerData.keys()]));
+    this.useLocalStorage && setLocalStorageItem(this.localStorageItemName, JSON.stringify([...this.markerData.keys()]));
   }
   restoreFromLocalStorage() {
-    const toRestore = getLocalStorageItem(this.localStorageItemName);
+    const toRestore = this.useLocalStorage ? getLocalStorageItem(this.localStorageItemName) : null;
     if (toRestore) {
-      for (const pin of JSON.parse(toRestore)) {
-        getLocationDataViaAjax(
-          pin,
-          (data) => {
-            if (data.length < 1) {
-              console.error(`Error: no data found for user-added PIN ${pin}`);
-            } else {
-              this.addSearchResult(data[0], true);
-            }
-          },
-          (jqxhr, textStatus) => { 
-            console.error(`Error: failed to retrieve data for user-added PIN ${pin} - ${textStatus}`);
-          },
-        );
+      for (const identifier of JSON.parse(toRestore)) {
+        this.restoreSearchResult(identifier, (data) => this.addSearchResult(data, true));
       }
     }
   }
   removeFromLocalStorage() {
-    localStorage.removeItem(this.localStorageItemName);
+    this.useLocalStorage && localStorage.removeItem(this.localStorageItemName);
   }
   addSearchResult(data, skipUpdatingLocalStorage) {
     const identifier = this.dataset.getIdentifier(data);
     this.addMarker(
       identifier,
       data,
-      this.getChildLayer("Search Results"),
+      this.getChildLayer(this.searchResultsLayerName),
     );
     !skipUpdatingLocalStorage && this.saveToLocalStorage();
     return this.getMarkerData(identifier);
