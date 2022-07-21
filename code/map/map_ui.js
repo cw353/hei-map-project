@@ -45,6 +45,7 @@ aboutMapTab.append([
     { name: "Leaflet.fullscreen", link: "https://github.com/Leaflet/Leaflet.fullscreen", license: "ISC License" },
     { name: "Leaflet.defaultextent", link: "https://github.com/nguyenning/Leaflet.defaultextent", license: "MIT License", modified: true, },
     { name: "Leaflet.heat", link: "https://github.com/Leaflet/Leaflet.heat", license: "BSD 2-Clause \"Simplified\" License" },
+    { name: "Leaflet Control Geocoder", link: "https://github.com/perliedman/leaflet-control-geocoder", license: "BSD 2-Clause \"Simplified\" License" },
   ], "italic"),
   generateMetadataTable("Data Used in This Map", allMetadata),
 ]);
