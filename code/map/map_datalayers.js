@@ -395,4 +395,4 @@ const highlightSelects = [
 
 const toggleFills = [
   { toggleFill: redliningToggleFill, checkboxId: "redliningToggleFillCheckbox", label: `Show colors for \"HOLC Redlining in Chicago\" map layer (see ${getOpenInNewTabLink("https://dsl.richmond.edu/panorama/redlining/#text=intro", "Mapping Inequality")} for the meaning of these colors)`, title: "Show or hide colors for the \"HOLC Redlining in Chicago\" map layer", layerNames: ["HOLC Redlining in Chicago"] },
-]
+];
