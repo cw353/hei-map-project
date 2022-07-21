@@ -5,14 +5,6 @@ getToggleVisibilityButton(
   additionalMapControlsDiv, "+ Show Additional Map Controls", "- Hide Additional Map Controls", null,
 ).insertBefore(additionalMapControlsDiv.hide());
 
-const highlightSelectDiv = $("#highlightSelectDiv");
-for (const item of highlightSelects) {
-  highlightSelectDiv.append(
-    $("<div></div>").addClass("formContainer")
-      .append(item.highlightSelect.getHighlightSelectElement(item.sort, item.layerNames.map((layerName) => geoBoundaries.getChildLayer(layerName))))
-  );
-}
-
 $("#pinSearchBarDiv").append(
   getPinSearchBar(
     map,
@@ -21,6 +13,22 @@ $("#pinSearchBarDiv").append(
     (data) => userAddedMarkers.addSearchResult(data),
   )
 );
+
+const highlightSelectDiv = $("#highlightSelectDiv");
+for (const item of highlightSelects) {
+  highlightSelectDiv.append(
+    $("<div></div>").addClass("formContainer")
+      .append(item.highlightSelect.getHighlightSelectElement(item.sort, item.layerNames.map((layerName) => geoBoundaries.getChildLayer(layerName))))
+  );
+}
+
+$("#toggleFillDiv").append(redliningToggleFill.getToggleFillElement(
+  "redliningToggleFillCheckbox",
+  `Show colors for \"HOLC Redlining in Chicago\" map layer (see ${getOpenInNewTabLink("https://dsl.richmond.edu/panorama/redlining/#text=intro", "Mapping Inequality")} for the meaning of these colors)`,
+  "Show or hide colors for the \"HOLC Redlining in Chicago\" map layer",
+  [geoBoundaries.getChildLayer("HOLC Redlining in Chicago")],
+  () => legend.toggleSection(redliningLegendSection),
+));
 
 const radiiInputDiv = document.getElementById("radiiInputDiv");
 for (const item of changeableRadiusDatagroups) {
@@ -114,23 +122,20 @@ $("#favoritedMarkersButtonsDiv").append([
 ]);
 
 let restoreHeatLayer = false; // whether or not to restore heat layer after switching back to map tab
-const heatLayer = heatLayerControl.getHeatLayer();
 
 $("#tabDiv").append(getTabs([
   {
     label: "Map", id: "mapTabItem", tabContent: $("#mapTab"),
     prehide: () => {
       // remove heat layer to avoid problems with invalid map size
-      if (map.hasLayer(heatLayer)) {
-        map.removeLayer(heatLayer);
+      if (heatLayerControl.removeHeatLayer()) {
         restoreHeatLayer = true;
       }
     },
     postshow: () => {
       map.invalidateSize(false);
       // restore heat layer if necessary
-      if (restoreHeatLayer && !map.hasLayer(heatLayer)) {
-        map.addLayer(heatLayer);
+      if (restoreHeatLayer && heatLayerControl.addHeatLayer()) {
         restoreHeatLayer = false;
       }
     },

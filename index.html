@@ -59,8 +59,12 @@
       <div id="additionalMapControlsContainer" class="formContainer">
         <div id="additionalMapControls">
           <div id="pinSearchBarDiv"></div>
+          <hr>
           <div id="highlightSelectDiv"></div>
+          <hr>
           <div id="radiiInputDiv"></div>
+          <hr>
+          <div id="toggleFillDiv"></div>
         </div>
       </div>
       <div id="map"></div>
@@ -84,6 +88,7 @@
   </div>
 
   <script>
+    jQuery.fx.off;
     $("#pageContent").hide();
   </script>
 
@@ -120,10 +125,13 @@
   <script src="code/leaflet-plugins/defaultextent/leaflet.defaultextent.js"></script>
   <script src="code/leaflet-plugins/heat/leaflet-heat.js"></script>
   <script src="code/leaflet-plugins/heatlayercontrol.js"></script>
+  <script src="code/leaflet-plugins/collapsiblelegend.js"></script>
 
   <!-- Map data -->
   <script src="data/geojson/ward_boundaries.js"></script>
   <script src="data/geojson/neighborhood_boundaries.js"></script>
+  <script src="data/geojson/zoning_districts.js"></script>
+  <script src="data/geojson/redlining.js"></script>
   <script src="data/geojson/school_locations.js"></script>
   <script src="data/misc/misc.js"></script>
   <script src="data/misc/individual_properties.js"></script>

@@ -82,7 +82,7 @@ return (function () {
           onClick();
           feedbackSpan.show(0);
           setTimeout(function() {
-            feedbackSpan.fadeOut(200);
+            feedbackSpan.fadeOut();
           }, 1500);
         });
       return $("<div></div>").append([
