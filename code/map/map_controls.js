@@ -92,5 +92,18 @@ div2.innerHTML += `<i class='bar' style="background: linear-gradient(to right, $
 legend.addSection(div2, heatmapLegendSection);
 legend.toggleSection(heatmapLegendSection); // hide initially
 
+const geocoderControl = L.Control.geocoder({
+  placeholder: "Search for a location...",
+  errorMessage: "No results found.",
+  defaultMarkGeocode: false,
+  position: "topright",
+}).on("markgeocode", function(e) {
+  if (e.geocode && e.geocode.center) {
+    map.setView(e.geocode.center, map.getMaxZoom());
+    L.popup().setLatLng(e.geocode.center).setContent(e.geocode.html).openOn(map);
+  }
+});
+
 heatLayerControl.addTo(map);
+geocoderControl.addTo(map);
 layerControlTree.addTo(map);
