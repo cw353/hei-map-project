@@ -49,18 +49,20 @@ const layerControlTree = L.control.layers.tree(
   }
 );
 
+const legend = L.control.collapsibleLegend({position: "bottomleft", className: "legend"}).addTo(map);
+const heatmapLegendSection = "Heatmap Legend";
+
 const heatLayerControl = L.control.heatLayer({
   position: "topright",
   heatLayerOptions: {
     // generated from plasma colormap (https://github.com/BIDS/colormap, CC0 License) using scale-color-perceptual (https://github.com/politiken-journalism/scale-color-perceptual, ISC License) with the command "[0, 0.25, 0.5, 0.75, 1].map(scale.plasma)"
     gradient: { 0: "#0d0887", 0.25: "#7e03a8", 0.5: "#cb4679", 0.75: "#f89342", 1: "#f0f724" },
-	minOpacity: 0.08,
+	  minOpacity: 0.08,
   },
   datagroups: [cityOwned, taxSale2019, taxSale2020, scavengerSale, schoolLocations, businessLicenses, crimes, userAddedMarkers],
   getMaxHeight: (mapHeight, topOffset) => { return (mapHeight >> 1) - (topOffset << 1) },
+  toggleHeatLayerCallback: () => legend.toggleSection(heatmapLegendSection), // hide or show heatmap legend when heatmap is removed from or added to map, respectively
 });
-
-const legend = L.control.collapsibleLegend({position: "bottomleft", className: "legend"}).addTo(map);
 
 // add marker clusters legend (reference: https://leafletjs.com/examples/choropleth/)
 const div1 = document.createElement("div");
@@ -79,6 +81,7 @@ const gradient = heatLayerControl.getHeatLayerGradient();
 const gradientColors = Object.keys(gradient).sort().map((intensity) => gradient[intensity]);
 div2.innerHTML += `<i class='bar' style="background: linear-gradient(to right, ${gradientColors.join(", ")})"></i>`;
 legend.addSection(div2, "Heatmap Legend");
+legend.toggleSection(heatmapLegendSection); // hide initially
 
 heatLayerControl.addTo(map);
 layerControlTree.addTo(map);

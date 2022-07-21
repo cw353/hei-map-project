@@ -122,23 +122,20 @@ $("#favoritedMarkersButtonsDiv").append([
 ]);
 
 let restoreHeatLayer = false; // whether or not to restore heat layer after switching back to map tab
-const heatLayer = heatLayerControl.getHeatLayer();
 
 $("#tabDiv").append(getTabs([
   {
     label: "Map", id: "mapTabItem", tabContent: $("#mapTab"),
     prehide: () => {
       // remove heat layer to avoid problems with invalid map size
-      if (map.hasLayer(heatLayer)) {
-        map.removeLayer(heatLayer);
+      if (heatLayerControl.removeHeatLayer()) {
         restoreHeatLayer = true;
       }
     },
     postshow: () => {
       map.invalidateSize(false);
       // restore heat layer if necessary
-      if (restoreHeatLayer && !map.hasLayer(heatLayer)) {
-        map.addLayer(heatLayer);
+      if (restoreHeatLayer && heatLayerControl.addHeatLayer()) {
         restoreHeatLayer = false;
       }
     },

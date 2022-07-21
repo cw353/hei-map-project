@@ -12,6 +12,8 @@ L.Control.HeatLayer = L.Control.extend({
     collapsedToggleTitle: "Click to show heatmap options",
     expandedToggleText: "&#9650; Heatmap",
     expandedToggleTitle: "Click to hide heatmap options",
+    heatLayerOptions: null,
+    toggleHeatLayerCallback: null, // parameter: true if heat layer was added, false if heat layer was removed
     getMaxHeight: (mapHeight, topOffset) => { return mapHeight - (topOffset + 50) }, // based on line 155 of https://github.com/Leaflet/Leaflet/blob/v1.8.0/src/control/Control.Layers.js
   },
   initialize(options) {
@@ -27,8 +29,23 @@ L.Control.HeatLayer = L.Control.extend({
     this._removeEventListeners();
     this._subcategoryDiv.empty();
   },
-  getHeatLayer() {
-    return this._heatLayer;
+  // returns whether layer was added
+  addHeatLayer() {
+    if (!map.hasLayer(this._heatLayer)) {
+      this._map.addLayer(this._heatLayer);
+      this.options.toggleHeatLayerCallback && this.options.toggleHeatLayerCallback(true);
+      return true;
+    }
+    return false;
+  },
+  // returns whether layer was removed
+  removeHeatLayer() {
+    if (map.hasLayer(this._heatLayer)) {
+      this._map.removeLayer(this._heatLayer);
+      this.options.toggleHeatLayerCallback && this.options.toggleHeatLayerCallback(false);
+      return true;
+    }
+    return false;
   },
   getHeatLayerGradient() {
     return this._heatLayer.options.gradient;
@@ -72,12 +89,12 @@ L.Control.HeatLayer = L.Control.extend({
   _updateHeatLayer(data, attribution) {
     // remove heatlayer from map before updating it
     if (this._map.hasLayer(this._heatLayer)) {
-      this._map.removeLayer(this._heatLayer);
+      this.removeHeatLayer();
     }
     // if valid data was provided, update heatlayer and add it to map
     if (data && data.length > 0) {
       this._heatLayer.options.attribution = attribution ? attribution : "";
-      this._map.addLayer(this._heatLayer);
+      this.addHeatLayer();
       this._heatLayer.setLatLngs(data);
     }
   },
