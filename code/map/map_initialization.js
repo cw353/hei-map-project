@@ -10,7 +10,7 @@ const map = L.map("map", {
 
 // add attribution control manually to avoid bug with using setPosition to change position
 map.addControl(
-  new L.control.attribution({position: "bottomleft"}).addAttribution("&copy; " + getOpenInNewTabLink("https://github.com/cw353/", "Claire Wagner"))
+  L.control.attribution({position: "bottomleft"}).addAttribution("&copy; " + getOpenInNewTabLink("https://github.com/cw353/", "Claire Wagner"))
 );
 
 const osmtiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {

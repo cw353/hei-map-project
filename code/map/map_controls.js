@@ -60,24 +60,25 @@ const heatLayerControl = L.control.heatLayer({
   getMaxHeight: (mapHeight, topOffset) => { return (mapHeight >> 1) - (topOffset << 1) },
 });
 
-// reference: https://leafletjs.com/examples/choropleth/
-const legend = L.control({position: "bottomleft"});
-legend.onAdd = function(map) {
-  const rangeBounds = [1, 10, 100];
-  const colors = ["rgba(110, 204, 57, 0.8)", "rgba(240, 194, 12, 0.6)", "rgba(241, 128, 23, 0.8)"];
-  const div = L.DomUtil.create("div", "legend leaflet-bar");
-  div.innerHTML = "<header>Marker Clusters</header>";
-  for (let i = 0; i < rangeBounds.length; i++) {
-    div.innerHTML += `<p><i class='circle' style="background-color: ${colors[i]}"></i> ${rangeBounds[i]}` + (rangeBounds[i+1] ? `–${rangeBounds[i+1]} properties<br>` : "+ properties</p>");
-  }
-  div.innerHTML += "<hr><header>Heatmap</header>";
-  div.innerHTML += "<span class='gradientLabel', style='float: left'>Less<br>Dense</span>";
-  div.innerHTML += "<span class='gradientLabel', style='float: right'>More<br>Dense</span>";
-  const gradient = heatLayerControl.getHeatLayerGradient();
-  const gradientColors = Object.keys(gradient).sort().map((intensity) => gradient[intensity]);
-  div.innerHTML += `<i class='bar' style="background: linear-gradient(to right, ${gradientColors.join(", ")})"></i>`;
-  return div;
+const legend = L.control.collapsibleLegend({position: "bottomleft", className: "legend"}).addTo(map);
+
+// add marker clusters legend (reference: https://leafletjs.com/examples/choropleth/)
+const div1 = document.createElement("div");
+const rangeBounds = [1, 10, 100];
+const colors = ["rgba(110, 204, 57, 0.8)", "rgba(240, 194, 12, 0.6)", "rgba(241, 128, 23, 0.8)"];
+for (let i = 0; i < rangeBounds.length; i++) {
+  div1.innerHTML += `<p><i class='circle' style="background-color: ${colors[i]}"></i> ${rangeBounds[i]}` + (rangeBounds[i+1] ? `–${rangeBounds[i+1]} properties<br>` : "+ properties</p>");
 }
-legend.addTo(map);
+legend.addSection(div1, "Marker Clusters Legend");
+
+// add heatmap legend
+const div2 = document.createElement("div");
+div2.innerHTML = "<span class='gradientLabel', style='float: left'>Less<br>Dense</span>";
+div2.innerHTML += "<span class='gradientLabel', style='float: right'>More<br>Dense</span>";
+const gradient = heatLayerControl.getHeatLayerGradient();
+const gradientColors = Object.keys(gradient).sort().map((intensity) => gradient[intensity]);
+div2.innerHTML += `<i class='bar' style="background: linear-gradient(to right, ${gradientColors.join(", ")})"></i>`;
+legend.addSection(div2, "Heatmap Legend");
+
 heatLayerControl.addTo(map);
 layerControlTree.addTo(map);
