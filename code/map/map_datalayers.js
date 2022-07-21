@@ -26,16 +26,7 @@ const holcGrades = {
   "C" : { label: "HOLC Grade C", meaning: "Definitely Declining", color: "#ffdf00", },
   "D" : { label: "HOLC Grade D", meaning: "Hazardous", color: "#eb3f3f", }
 };
-const redliningToggleFill = new ToggleFill(
-  (props, toggleFill) => toggleFill ? "0.3" : "0",
-  false,
-  {
-    map: map,
-    position: "bottomright",
-    title: "Redlining",
-    data: Object.values(holcGrades).sort(),
-  }
-);
+const redliningToggleFill = new ToggleFill((props, toggleFill) => toggleFill ? "0.3" : "0", false);
 
 const geoBoundaries = new ChildLayerGroup("Geographic Boundaries");
 geoBoundaries.addChildLayer(new BoundaryLayerInfo(
@@ -391,8 +382,4 @@ const highlightSelects = [
   { highlightSelect: wardHighlightSelect, sort: false, layerNames: ["Ward Boundaries (2015–2023)", "Ward Boundaries (2023+)"] },
   { highlightSelect: neighborhoodHighlightSelect, sort: true, layerNames: ["Neighborhood Boundaries"] },
   { highlightSelect: zoneClassHighlightSelect, sort: true, layerNames: ["Zoning Districts"] },
-];
-
-const toggleFills = [
-  { toggleFill: redliningToggleFill, checkboxId: "redliningToggleFillCheckbox", label: `Show colors for \"HOLC Redlining in Chicago\" map layer (see ${getOpenInNewTabLink("https://dsl.richmond.edu/panorama/redlining/#text=intro", "Mapping Inequality")} for the meaning of these colors)`, title: "Show or hide colors for the \"HOLC Redlining in Chicago\" map layer", layerNames: ["HOLC Redlining in Chicago"] },
 ];

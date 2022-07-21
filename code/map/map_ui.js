@@ -22,13 +22,13 @@ for (const item of highlightSelects) {
   );
 }
 
-const toggleFillDiv = $("#toggleFillDiv");
-for (const item of toggleFills) {
-  toggleFillDiv.append(
-    $("<div></div>").addClass("formContainer")
-      .append(item.toggleFill.getToggleFillElement(item.checkboxId, item.label, item.title, item.layerNames.map((layerName) => geoBoundaries.getChildLayer(layerName))))
-  );
-}
+$("#toggleFillDiv").append(redliningToggleFill.getToggleFillElement(
+  "redliningToggleFillCheckbox",
+  `Show colors for \"HOLC Redlining in Chicago\" map layer (see ${getOpenInNewTabLink("https://dsl.richmond.edu/panorama/redlining/#text=intro", "Mapping Inequality")} for the meaning of these colors)`,
+  "Show or hide colors for the \"HOLC Redlining in Chicago\" map layer",
+  [geoBoundaries.getChildLayer("HOLC Redlining in Chicago")],
+  () => legend.toggleSection(redliningLegendSection),
+));
 
 const radiiInputDiv = document.getElementById("radiiInputDiv");
 for (const item of changeableRadiusDatagroups) {

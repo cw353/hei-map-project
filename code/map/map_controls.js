@@ -50,7 +50,7 @@ const layerControlTree = L.control.layers.tree(
 );
 
 const legend = L.control.collapsibleLegend({position: "bottomleft", className: "legend"}).addTo(map);
-const heatmapLegendSection = "Heatmap Legend";
+const heatmapLegendSection = "Heatmap";
 
 const heatLayerControl = L.control.heatLayer({
   position: "topright",
@@ -71,7 +71,16 @@ const colors = ["rgba(110, 204, 57, 0.8)", "rgba(240, 194, 12, 0.6)", "rgba(241,
 for (let i = 0; i < rangeBounds.length; i++) {
   div1.innerHTML += `<p><i class='circle' style="background-color: ${colors[i]}"></i> ${rangeBounds[i]}` + (rangeBounds[i+1] ? `–${rangeBounds[i+1]} properties<br>` : "+ properties</p>");
 }
-legend.addSection(div1, "Marker Clusters Legend");
+legend.addSection(div1, "Marker Clusters");
+
+// add redlining legend
+const redliningLegendSection = "Redlining";
+const div3 = document.createElement("div");
+for (const item of Object.values(holcGrades).sort()) {
+  div3.innerHTML += `<p><i class='square' style="opacity: 0.8; background-color: ${item.color}"></i> ${item.label}</p>`
+}
+legend.addSection(div3, redliningLegendSection);
+legend.toggleSection(redliningLegendSection); // hide initially
 
 // add heatmap legend
 const div2 = document.createElement("div");
@@ -80,7 +89,7 @@ div2.innerHTML += "<span class='gradientLabel', style='float: right'>More<br>Den
 const gradient = heatLayerControl.getHeatLayerGradient();
 const gradientColors = Object.keys(gradient).sort().map((intensity) => gradient[intensity]);
 div2.innerHTML += `<i class='bar' style="background: linear-gradient(to right, ${gradientColors.join(", ")})"></i>`;
-legend.addSection(div2, "Heatmap Legend");
+legend.addSection(div2, heatmapLegendSection);
 legend.toggleSection(heatmapLegendSection); // hide initially
 
 heatLayerControl.addTo(map);

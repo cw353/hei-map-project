@@ -433,30 +433,15 @@ class HighlightSelect {
 }
 
 class ToggleFill {
-  constructor(getFillOpacity, initialToggleValue, legendOptions) {
+  constructor(getFillOpacity, initialToggleValue) {
     this._toggleFill = initialToggleValue;
     this.getFillOpacity = (props) => { return getFillOpacity(props, this._toggleFill); }
-    this.legendOptions = legendOptions;
-    this._legend = this._initializeLegend();
   }
-  _initializeLegend() {
-    const legend = L.control({position: this.legendOptions.position});
-    const div = L.DomUtil.create("div", "legend");
-    div.innerHTML = `<header>${this.legendOptions.title}</header>`;
-    for (const item of this.legendOptions.data) {
-      div.innerHTML += `<p><i class='square' style="background-color: ${item.color}"></i> ${item.label}</p>`
-    }
-    legend.onAdd = (map) => {
-      return div;
-    }
-    return legend;
-  };
-  getToggleFillElement(checkboxId, label, title, layersToRefresh) {
+  getToggleFillElement(checkboxId, label, title, layersToRefresh, callback) {
     const updateToggleFill = (event) => {
       this._toggleFill = event.target.checked;
-      const map = this.legendOptions.map;
-      this._toggleFill ? map.addControl(this._legend) : map.removeControl(this._legend);
       layersToRefresh.forEach((layer) => { layer.refreshStyles() });
+      callback && callback();
     };
     return $("<span></span>")
       .attr("title", title)
