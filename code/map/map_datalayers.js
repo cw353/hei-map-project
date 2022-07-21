@@ -70,7 +70,7 @@ const zoneClassRegex = new RegExp("^[A-Z]+");  // regex to extract alphabetic zo
 geoBoundaries.addChildLayer(new BoundaryLayerInfo(
   "Zoning Districts",
   zoning_districts.data,
-  zoning_districts.metadata.attribution ? zoning_districts.metadata.attribution : "City of Chicago",
+  zoning_districts.metadata.attribution,
   {
     getTooltipText: (props) => { return props.zone_class; },
     getFillOpacity: zoneClassHighlightSelect.getFillOpacity,
