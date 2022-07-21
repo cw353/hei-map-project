@@ -132,7 +132,6 @@ const taxSale2019 = new AutomaticClassificationDatagroup(
       return [
         { label: "PIN", data: data.pin },
         { label: "Address", data: data.property_address },
-        { label: "Ward", data: data.ward },
         { label: "Classification", data: data.classification },
         { label: "2019 Tax Due (Including Interest)", data: `$${data.total_due_including_interest}` },
         { label: "2019 Tax Due (Excluding Interest)", data: `$${data.total_tax_due}` },
@@ -152,7 +151,6 @@ const taxSale2020 = new AutomaticClassificationDatagroup(
       return [
         { label: "PIN", data: data.pin },
         { label: "Address", data: data.property_address },
-        { label: "Ward", data: data.ward },
         { label: "Classification", data: data.classification },
         { label: "2020 Tax Due (Including Interest)", data: data.total_due_including_interest },
         { label: "2020 Tax Due (Excluding Interest)", data: data.total_tax_due },

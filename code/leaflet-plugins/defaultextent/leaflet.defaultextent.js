@@ -74,7 +74,6 @@ return (function () {
     _createButtonDiv: function(buttonText, buttonTitle, onClick) {
       const feedbackSpan = $("<span></span>")
         .html("&#x2705;")
-        .css("color", "green")
         .hide(0);
       const button = $("<button type='button'></button>")
         .text(buttonText)

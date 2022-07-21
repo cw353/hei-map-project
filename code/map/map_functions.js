@@ -244,7 +244,7 @@ function generateMetadataTable(caption, metadataList) {
     [
       { label: "Dataset", function: (datum) => getOpenInNewTabLink(datum.dataUri, datum.name) },
       { label: "Provided By", function : (datum) => getOpenInNewTabLink(datum.attributionLink, datum.attribution), },
-      { label: "Last Modified<br>(as of Access Date)", function: (datum) => {
+      { label: "Last Updated<br>(as of Access Date)", function: (datum) => {
           const dateItems = [];
           datefields.forEach((field) => {
             datum[field.accessor] && dateItems.push(`<li>${field.label} ${datum[field.accessor]}</li>`);

@@ -51,22 +51,12 @@ const layerControlTree = L.control.layers.tree(
 
 const legend = L.control({position: "bottomleft"});
 
-const gradients = {
-  viridis1: { 0: "#440154", 0.25: "#3b528b", 0.5: "#21908d", 0.75: "#5bc864", 1: "#fbe723", },
-  magma1: { 0: "#000004", 0.25: "#50127c", 0.5: "#b5367a", 0.75: "#fb8661", 1: "#fcfbbd", },
-  inferno1: { 0: "#000004", 0.25: "#56106e", 0.5: "#ba3655", 0.75: "#f98c0b", 1: "#fafda1", },
-  plasma1: { 0: "#0d0887", 0.25: "#7e03a8", 0.5: "#cb4679", 0.75: "#f89342", 1: "#f0f724", },
-  viridis2: { 0.4: "#2a788e", 0.6: "#22a785", 0.7: "#42be71", 0.8: "#78d153", 1: "#fbe723", },
-  magma2: { 0.4: "#8c2981", 0.6: "#dd4869", 0.7: "#f66e5c", 0.8: "#fe9d6c", 1: "#fcfbbd" },
-  inferno2: { 0.4: "#932667", 0.6: "#dc503b", 0.7: "#f3761b", 0.8: "#fca309", 1: "#fafda1", },
-  plasma2: { 0.4: "#b12a90", 0.6: "#e06363", 0.7: "#f1834c", 0.8: "#fca537", 1: "#f0f724", },
-};
-
 const heatLayerControl = L.control.heatLayer({
   position: "topright",
   heatLayerOptions: {
     // generated from plasma colormap (https://github.com/BIDS/colormap, CC0 License) using scale-color-perceptual (https://github.com/politiken-journalism/scale-color-perceptual, ISC License) with the command "[0, 0.25, 0.5, 0.75, 1].map(scale.plasma)"
     gradient: { 0: "#0d0887", 0.25: "#7e03a8", 0.5: "#cb4679", 0.75: "#f89342", 1: "#f0f724" },
+	minOpacity: 0.08,
   },
   datagroups: [cityOwned, taxSale2019, taxSale2020, scavengerSale, schoolLocations, businessLicenses, crimes, userAddedMarkers],
   getMaxHeight: (mapHeight, topOffset) => { return (mapHeight >> 1) - (topOffset << 1) },
