@@ -19,9 +19,22 @@ const zoneClassHighlightSelect = new HighlightSelect(
   (props, comparand) => { return ("zone_class" in props && props.zone_class.startsWith(comparand)) ? "0.4" : "0" },
 );
 
+// source: https://dsl.richmond.edu/panorama/redlining/ and https://github.com/americanpanorama/panorama-holc/blob/master/src/components/CityStats.jsx (CC BY-NC-SA license)
+const holcGrades = {
+  "A" : { label: "HOLC Grade A",  meaning: "Best", color: "#418e41" },
+  "B" : { label: "HOLC Grade B", meaning: "Still Desirable", color: "#4a4ae4" },
+  "C" : { label: "HOLC Grade C", meaning: "Definitely Declining", color: "#ffdf00", },
+  "D" : { label: "HOLC Grade D", meaning: "Hazardous", color: "#eb3f3f", }
+};
 const redliningToggleFill = new ToggleFill(
   (props, toggleFill) => toggleFill ? "0.3" : "0",
   false,
+  {
+    map: map,
+    position: "bottomright",
+    title: "Redlining",
+    data: Object.values(holcGrades).sort(),
+  }
 );
 
 const geoBoundaries = new ChildLayerGroup("Geographic Boundaries");
@@ -64,13 +77,6 @@ geoBoundaries.addChildLayer(new BoundaryLayerInfo(
     onEachFeature: (feature) => { zoneClassHighlightSelect.addOption(zoneClassRegex.exec(feature.properties.zone_class)[0]); },
   }
 ));
-// source: https://dsl.richmond.edu/panorama/redlining/ and https://github.com/americanpanorama/panorama-holc/blob/master/src/components/CityStats.jsx (CC BY-NC-SA license)
-const holcGrades = {
-  "A" : { label: "HOLC Grade A",  meaning: "Best", color: "#418e41" },
-  "B" : { label: "HOLC Grade B", meaning: "Still Desirable", color: "#4a4ae4" },
-  "C" : { label: "HOLC Grade C", meaning: "Definitely Declining", color: "#ffdf00", },
-  "D" : { label: "HOLC Grade D", meaning: "Hazardous", color: "#eb3f3f", }
-};
 geoBoundaries.addChildLayer(new BoundaryLayerInfo(
   "HOLC Redlining in Chicago",
   redlining.data,
@@ -388,5 +394,5 @@ const highlightSelects = [
 ];
 
 const toggleFills = [
-  { toggleFill: redliningToggleFill, checkboxId: "redliningToggleFillCheckbox", label: "Show colors for \"HOLC Redlining in Chicago\"", title: "Show or hide colors for the \"HOLC Redlining in Chicago\" map layer", legendData: Object.values(holcGrades).sort(), layerNames: ["HOLC Redlining in Chicago"] },
+  { toggleFill: redliningToggleFill, checkboxId: "redliningToggleFillCheckbox", label: "Show colors for \"HOLC Redlining in Chicago\"", title: "Show or hide colors for the \"HOLC Redlining in Chicago\" map layer", layerNames: ["HOLC Redlining in Chicago"] },
 ]

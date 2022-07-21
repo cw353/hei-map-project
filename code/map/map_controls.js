@@ -49,8 +49,6 @@ const layerControlTree = L.control.layers.tree(
   }
 );
 
-const legend = L.control({position: "bottomleft"});
-
 const heatLayerControl = L.control.heatLayer({
   position: "topright",
   heatLayerOptions: {
@@ -63,6 +61,7 @@ const heatLayerControl = L.control.heatLayer({
 });
 
 // reference: https://leafletjs.com/examples/choropleth/
+const legend = L.control({position: "bottomleft"});
 legend.onAdd = function(map) {
   const rangeBounds = [1, 10, 100];
   const colors = ["rgba(110, 204, 57, 0.8)", "rgba(240, 194, 12, 0.6)", "rgba(241, 128, 23, 0.8)"];

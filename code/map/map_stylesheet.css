@@ -156,9 +156,9 @@ td ul, .markerClusterPopupContent ul {
   margin-top: 3px;
 }
 
-.toggleFillLegend .square {
-  width: 10px;
-  height: 10px;
+.legend .square {
+  width: 12px;
+  height: 12px;
   display: inline-block;
   opacity: 0.8;
 }

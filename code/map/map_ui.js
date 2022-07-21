@@ -26,7 +26,7 @@ const toggleFillDiv = $("#toggleFillDiv");
 for (const item of toggleFills) {
   toggleFillDiv.append(
     $("<div></div>").addClass("formContainer")
-      .append(item.toggleFill.getToggleFillElement(item.checkboxId, item.label, item.title, item.legendData, item.layerNames.map((layerName) => geoBoundaries.getChildLayer(layerName))))
+      .append(item.toggleFill.getToggleFillElement(item.checkboxId, item.label, item.title, item.layerNames.map((layerName) => geoBoundaries.getChildLayer(layerName))))
   );
 }
 

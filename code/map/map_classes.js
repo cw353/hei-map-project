@@ -433,27 +433,36 @@ class HighlightSelect {
 }
 
 class ToggleFill {
-  constructor(getFillOpacity, initialToggleValue) {
-    this.toggleFill = initialToggleValue;
-    this.getFillOpacity = (props) => { return getFillOpacity(props, this.toggleFill); }
+  constructor(getFillOpacity, initialToggleValue, legendOptions) {
+    this._toggleFill = initialToggleValue;
+    this.getFillOpacity = (props) => { return getFillOpacity(props, this._toggleFill); }
+    this.legendOptions = legendOptions;
+    this._legend = this._initializeLegend();
   }
-  getToggleFillElement(checkboxId, label, title, legendData, layersToRefresh) {
+  _initializeLegend() {
+    const legend = L.control({position: this.legendOptions.position});
+    const div = L.DomUtil.create("div", "legend");
+    div.innerHTML = `<header>${this.legendOptions.title}</header>`;
+    for (const item of this.legendOptions.data) {
+      div.innerHTML += `<p><i class='square' style="background-color: ${item.color}"></i> ${item.label}</p>`
+    }
+    legend.onAdd = (map) => {
+      return div;
+    }
+    return legend;
+  };
+  getToggleFillElement(checkboxId, label, title, layersToRefresh) {
     const updateToggleFill = (event) => {
-      this.toggleFill = event.target.checked;
-      console.log(this.toggleFill);
+      this._toggleFill = event.target.checked;
+      const map = this.legendOptions.map;
+      this._toggleFill ? map.addControl(this._legend) : map.removeControl(this._legend);
       layersToRefresh.forEach((layer) => { layer.refreshStyles() });
     };
-    const legend = L.DomUtil.create("span", "toggleFillLegend");
-    let legendItems = legendData.map(
-      (item) => `<i class='square' style="background-color: ${item.color}"></i> ${item.label}`
-    );
-    legend.innerHTML = " (Legend: " + legendItems.join(", ") + ")";
     return $("<span></span>")
       .attr("title", title)
       .append([
         $("<input type='checkbox'></input>").attr("id", checkboxId).on("change", updateToggleFill),
         `<label for="${checkboxId}">${label}</label>`,
-        legend,
       ]);
   }
 }
