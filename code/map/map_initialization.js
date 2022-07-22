@@ -25,7 +25,7 @@ const markerClusterSupportGroup = L.markerClusterGroup.layerSupport({
 
 markerClusterSupportGroup.on("clustermouseover", (a) => {
   a.layer.bindTooltip(
-    getMarkerClusterTooltipContent(a.layer.getAllChildMarkers()),
+    L.tooltip({offset: [15, 0]}).setContent(getMarkerClusterTooltipContent(a.layer.getAllChildMarkers()))
   ).openTooltip();
 });
 
