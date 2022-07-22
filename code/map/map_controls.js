@@ -95,12 +95,15 @@ legend.toggleSection(heatmapLegendSection); // hide initially
 const geocoderControl = L.Control.geocoder({
   placeholder: "Search for a location...",
   errorMessage: "No results found.",
+  showUniqueResult: false,
   defaultMarkGeocode: false,
   position: "topright",
 }).on("markgeocode", function(e) {
   if (e.geocode && e.geocode.center) {
     map.setView(e.geocode.center, map.getMaxZoom());
-    L.popup().setLatLng(e.geocode.center).setContent(e.geocode.html).openOn(map);
+	const div = L.DomUtil.create("div", "center");
+	div.innerHTML = e.geocode.html;
+    L.popup().setLatLng(e.geocode.center).setContent(div).openOn(map);
   }
 });
 
