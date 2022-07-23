@@ -295,9 +295,10 @@ const crimes = new AutomaticClassificationDatagroup(
 
 const userAddedMarkers = new SearchResultsDatagroup(
   "User-Added Markers",
-  new Dataset({}, property_locations_metadata.attribution, "pin"),
-  "hei-map-user-search-results",
+  new Dataset({}, property_locations_metadata.attribution, "pin", (data) => [data.lat, data.lon]),
   {
+    useLocalStorage: true,
+    localStorageItemName: "hei-map-user-search-results",
     getLayerInfo: (name, attribution) => new LayerInfo(
       name,
       "red",
@@ -310,9 +311,7 @@ const userAddedMarkers = new SearchResultsDatagroup(
         const data = markerData.data;
         return getDataToDisplay([
           { label: "PIN", data: data.pin },
-          { label: "Address", data: data.property_address },
-          { label: "Zip Code", data: data.property_zip },
-          { label: "City", data: data.property_city },
+          { label: "Address", data: data.addr },
           { label: "Ward", data: data.ward },
           { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
         ]);
@@ -325,6 +324,7 @@ const userAddedMarkers = new SearchResultsDatagroup(
     },
   },
 );
+userAddedMarkers.restoreFromLocalStorage();
 
 const allDatagroups = [
   ward20Office,
@@ -383,3 +383,8 @@ const highlightSelects = [
   { highlightSelect: neighborhoodHighlightSelect, sort: true, layerNames: ["Neighborhood Boundaries"] },
   { highlightSelect: zoneClassHighlightSelect, sort: true, layerNames: ["Zoning Districts"] },
 ];
+
+for (const datagroup of favoritableDatagroups) {
+  favoritedMarkers.registerDatagroup(datagroup);
+}
+favoritedMarkers.restoreFromLocalStorage();

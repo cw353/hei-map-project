@@ -50,11 +50,6 @@ aboutMapTab.append([
   generateMetadataTable("Data Used in This Map", allMetadata),
 ]);
 
-
-for (const datagroup of favoritableDatagroups) {
-  favoritedMarkers.registerDatagroup(datagroup);
-}
-
 $(".leaflet-popup-pane")
   .on("click", ".toggleFavoritedButton", (event) => {
     const target = $(event.target);
@@ -145,13 +140,3 @@ $("#tabDiv").append(getTabs([
   { label: "About This Map", id: "aboutMapTabItem", tabContent: aboutMapTab, },
   { label: "Favorited Markers", id: "favoritedMarkersTabItem", tabContent: $("#favoritedMarkersTab"), postshow: generateFavoritedMarkersContent, }
 ]));
-
-// restore favorited markers from local storage
-const numSaved = favoritedMarkers.localStorageSize();
-if (numSaved > 0) {
-  if (window.confirm(`You have ${numSaved} Favorited Marker${numSaved === 1 ? " that was" : "s that were"} saved during your previous session. Do you want to keep ${numSaved === 1 ? "it" : "them"}?`)) {
-    favoritedMarkers.restoreFromLocalStorage();
-  } else {
-    favoritedMarkers.removeFromLocalStorage();
-  }
-}

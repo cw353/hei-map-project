@@ -265,45 +265,39 @@ function getLocalStorageItem(key) {
 }
 
 class SearchResultsDatagroup extends Datagroup {
-  constructor(name, dataset, localStorageItemName, options) {
+  constructor(name, dataset, options) {
     super(name, dataset, options);
-    this.localStorageItemName = localStorageItemName;
+    this.useLocalStorage = options.useLocalStorage;
+    this.localStorageItemName = options.localStorageItemName;
     this.addChildLayer(
       "getLayerInfo" in options
         ? options.getLayerInfo("Search Results", this.dataset.attribution)
         : new LayerInfo("Search Results", "blue", L.layerGroup([], { attribution : this.dataset.attribution }), false)
     );
-    this.restoreFromLocalStorage();
   }
   localStorageSize() {
-    const saved = getLocalStorageItem(this.localStorageItemName);
+    const saved = this.useLocalStorage ? getLocalStorageItem(this.localStorageItemName) : null;
     return saved ? JSON.parse(saved).length : 0;
   }
   saveToLocalStorage() {
-    setLocalStorageItem(this.localStorageItemName, JSON.stringify([...this.markerData.keys()]));
+    if (this.useLocalStorage) {
+      const toSave = [];
+      this.markerData.forEach((markerData) => {
+        toSave.push(markerData.data);
+      });
+      setLocalStorageItem(this.localStorageItemName, JSON.stringify(toSave));
+    }
   }
   restoreFromLocalStorage() {
-    const toRestore = getLocalStorageItem(this.localStorageItemName);
+    const toRestore = this.useLocalStorage ? getLocalStorageItem(this.localStorageItemName) : null;
     if (toRestore) {
-      for (const pin of JSON.parse(toRestore)) {
-        getLocationDataViaAjax(
-          pin,
-          (data) => {
-            if (data.length < 1) {
-              console.error(`Error: no data found for user-added PIN ${pin}`);
-            } else {
-              this.addSearchResult(data[0], true);
-            }
-          },
-          (jqxhr, textStatus) => { 
-            console.error(`Error: failed to retrieve data for user-added PIN ${pin} - ${textStatus}`);
-          },
-        );
+      for (const data of JSON.parse(toRestore)) {
+        this.addSearchResult(data, true);
       }
     }
   }
   removeFromLocalStorage() {
-    localStorage.removeItem(this.localStorageItemName);
+    this.useLocalStorage && localStorage.removeItem(this.localStorageItemName);
   }
   addSearchResult(data, skipUpdatingLocalStorage) {
     const identifier = this.dataset.getIdentifier(data);
@@ -453,16 +447,17 @@ class ToggleFill {
 }
 
 class FavoritedMarkerGroup {
-  constructor(localStorageItemName) {
+  constructor(useLocalStorage, localStorageItemName) {
     this.favoritedMarkers = new Set();
     this.registeredDatagroups = new Map();
+    this.useLocalStorage = useLocalStorage;
     this.localStorageItemName = localStorageItemName;
   }
   size() {
     return this.favoritedMarkers.size;
   }
   localStorageSize() {
-    const saved = getLocalStorageItem(this.localStorageItemName);
+    const saved = this.useLocalStorage ? getLocalStorageItem(this.localStorageItemName) : null;
     return saved ? JSON.parse(saved).length : 0;
   }
   getAll() {
@@ -498,23 +493,25 @@ class FavoritedMarkerGroup {
     this.registeredDatagroups.set(datagroup.name, datagroup);
   }
   saveToLocalStorage() {
-    const toSave = [];
-    this.favoritedMarkers.forEach((markerData) => {
-      if (this.registeredDatagroups.has(markerData.datagroup.name)) {
-        toSave.push({
-          identifier: markerData.identifier,
-          datagroupName: markerData.datagroup.name,
-        })
-      }
-    });
-    setLocalStorageItem(this.localStorageItemName, JSON.stringify(toSave));
+    if (this.useLocalStorage) {
+      const toSave = [];
+      this.favoritedMarkers.forEach((markerData) => {
+        if (this.registeredDatagroups.has(markerData.datagroup.name)) {
+          toSave.push({
+            id: markerData.identifier,
+            group: markerData.datagroup.name,
+          })
+        }
+      });
+      setLocalStorageItem(this.localStorageItemName, JSON.stringify(toSave));
+    }
   }
   restoreFromLocalStorage() {
-    const toRestore = getLocalStorageItem(this.localStorageItemName);
+    const toRestore = this.useLocalStorage ? getLocalStorageItem(this.localStorageItemName) : null;
     if (toRestore) {
       for (const item of JSON.parse(toRestore)) {
-        if (this.registeredDatagroups.has(item.datagroupName)) {
-          const markerData = this.registeredDatagroups.get(item.datagroupName).getMarkerData(item.identifier);
+        if (this.registeredDatagroups.has(item.group)) {
+          const markerData = this.registeredDatagroups.get(item.group).getMarkerData(item.id);
           if (markerData) {
             this.add(markerData, true);
             markerData.datagroup.refreshMarkerPopupContent(markerData.identifier);
@@ -528,6 +525,6 @@ class FavoritedMarkerGroup {
     }
   }
   removeFromLocalStorage() {
-    localStorage.removeItem(this.localStorageItemName);
+    this.useLocalStorage && localStorage.removeItem(this.localStorageItemName);
   }
 }
