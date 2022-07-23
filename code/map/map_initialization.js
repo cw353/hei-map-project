@@ -29,4 +29,4 @@ markerClusterSupportGroup.on("clustermouseover", (a) => {
   ).openTooltip();
 });
 
-const favoritedMarkers = new FavoritedMarkerGroup("hei-map-favorited-markers");
+const favoritedMarkers = new FavoritedMarkerGroup(true, "hei-map-favorited-markers");

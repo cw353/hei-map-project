@@ -338,7 +338,7 @@ function getLocationDataViaAjax(pin, done, fail, always) {
     url: "https://datacatalog.cookcountyil.gov/resource/c49d-89sn.json",
     type: "GET",
     data: {
-      "$query" : `SELECT pin, property_address, property_zip, property_city, ward, latitude, longitude WHERE (pin = '${pin}') AND (latitude IS NOT NULL) AND (longitude IS NOT NULL) LIMIT 1`,
+      "$query" : `SELECT pin, property_address AS addr, ward, latitude AS lat, longitude AS lon WHERE (pin = '${pin}') AND (latitude IS NOT NULL) AND (longitude IS NOT NULL) LIMIT 1`,
     },
     datatype: "json",
   });
