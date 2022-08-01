@@ -75,12 +75,14 @@ legend.addSection(div1, "Marker Clusters");
 
 // add redlining legend
 const redliningLegendSection = "Redlining";
+const redliningLayer = geoBoundaries.getChildLayer("HOLC Redlining in Chicago (with colors)").layer;
 const div3 = document.createElement("div");
 for (const item of Object.values(holcGrades).sort()) {
-  div3.innerHTML += `<p><i class='square' style="opacity: 0.8; background-color: ${item.color}"></i> ${item.label}</p>`
+  div3.innerHTML += `<p><i class='square' style="opacity: 0.7; background-color: ${item.color}"></i> ${item.label}</p>`
 }
 legend.addSection(div3, redliningLegendSection);
-legend.toggleSection(redliningLegendSection); // hide initially
+!map.hasLayer(redliningLayer) && legend.toggleSection(redliningLegendSection); // hide initially if not on map
+map.on("overlayadd overlayremove", (event) => event.layer === redliningLayer && legend.toggleSection(redliningLegendSection));
 
 // add heatmap legend
 const div2 = document.createElement("div");

@@ -343,8 +343,8 @@ class LayerInfo {
 
 class BoundaryLayerInfo extends LayerInfo {
   constructor(name, dataset, attribution, options) {
-    super(name, "color" in options ? options.color : "black", null, false);
-    const strokeColor = this.color;
+    super(name, "color" in options ? options.color : null, null, false);
+    const strokeColor = "strokeColor" in options ? options.strokeColor : "black";
     const getFillColor = "getFillColor" in options ? options.getFillColor : () => "#f1ab29";
     const getFillOpacity = "getFillOpacity" in options ? options.getFillOpacity : () => "0";
     this.defaultStyle = function(feature) {
@@ -363,12 +363,7 @@ class BoundaryLayerInfo extends LayerInfo {
         style: this.defaultStyle,
         onEachFeature: function(feature, layer) {
           if ("getTooltipText" in options) {
-            layer.bindTooltip(
-              options.getTooltipText(feature.properties),
-              {
-                className: "darkTooltip",
-                sticky : true
-              });
+            layer.bindTooltip(options.getTooltipText(feature.properties), { className: "darkTooltip", sticky : true });
           }
           if ("onEachFeature" in options) {
             options.onEachFeature(feature);
@@ -423,26 +418,6 @@ class HighlightSelect {
         layersToRefresh.forEach((layer) => { layer.refreshStyles() });
       },
     );
-  }
-}
-
-class ToggleFill {
-  constructor(getFillOpacity, initialToggleValue) {
-    this._toggleFill = initialToggleValue;
-    this.getFillOpacity = (props) => { return getFillOpacity(props, this._toggleFill); }
-  }
-  getToggleFillElement(checkboxId, label, title, layersToRefresh, callback) {
-    const updateToggleFill = (event) => {
-      this._toggleFill = event.target.checked;
-      layersToRefresh.forEach((layer) => { layer.refreshStyles() });
-      callback && callback();
-    };
-    return $("<span></span>")
-      .attr("title", title)
-      .append([
-        $("<input type='checkbox'></input>").attr("id", checkboxId).on("change", updateToggleFill),
-        `<label for="${checkboxId}">${label}</label>`,
-      ]);
   }
 }
 

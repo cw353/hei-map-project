@@ -22,13 +22,13 @@ for (const item of highlightSelects) {
   );
 }
 
-$("#toggleFillDiv").append(redliningToggleFill.getToggleFillElement(
+/*$("#toggleFillDiv").append(redliningToggleFill.getToggleFillElement(
   "redliningToggleFillCheckbox",
   `Show colors for \"HOLC Redlining in Chicago\" map layer (see ${getOpenInNewTabLink("https://dsl.richmond.edu/panorama/redlining/#text=intro", "Mapping Inequality")} for the meaning of these colors)`,
   "Show or hide colors for the \"HOLC Redlining in Chicago\" map layer",
   [geoBoundaries.getChildLayer("HOLC Redlining in Chicago")],
   () => legend.toggleSection(redliningLegendSection),
-));
+));*/
 
 const radiiInputDiv = document.getElementById("radiiInputDiv");
 for (const item of changeableRadiusDatagroups) {
