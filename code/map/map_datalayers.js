@@ -19,15 +19,6 @@ const zoneClassHighlightSelect = new HighlightSelect(
   (props, comparand) => { return ("zone_class" in props && props.zone_class.startsWith(comparand)) ? "0.4" : "0" },
 );
 
-// source: https://dsl.richmond.edu/panorama/redlining/ and https://github.com/americanpanorama/panorama-holc/blob/master/src/components/CityStats.jsx (CC BY-NC-SA license)
-const holcGrades = {
-  "A" : { label: "HOLC Grade A",  meaning: "Best", color: "#418e41" },
-  "B" : { label: "HOLC Grade B", meaning: "Still Desirable", color: "#4a4ae4" },
-  "C" : { label: "HOLC Grade C", meaning: "Definitely Declining", color: "#ffdf00", },
-  "D" : { label: "HOLC Grade D", meaning: "Hazardous", color: "#eb3f3f", }
-};
-const redliningToggleFill = new ToggleFill((props, toggleFill) => toggleFill ? "0.3" : "0", false);
-
 const geoBoundaries = new ChildLayerGroup("Geographic Boundaries");
 geoBoundaries.addChildLayer(new BoundaryLayerInfo(
   "Ward Boundaries (2015–2023)",
@@ -68,8 +59,15 @@ geoBoundaries.addChildLayer(new BoundaryLayerInfo(
     onEachFeature: (feature) => { zoneClassHighlightSelect.addOption(zoneClassRegex.exec(feature.properties.zone_class)[0]); },
   }
 ));
+// source: https://dsl.richmond.edu/panorama/redlining/ and https://github.com/americanpanorama/panorama-holc/blob/master/src/components/CityStats.jsx (CC BY-NC-SA license)
+const holcGrades = {
+  "A" : { label: "HOLC Grade A",  meaning: "Best", color: "#418e41" },
+  "B" : { label: "HOLC Grade B", meaning: "Still Desirable", color: "#4a4ae4" },
+  "C" : { label: "HOLC Grade C", meaning: "Definitely Declining", color: "#ffdf00", },
+  "D" : { label: "HOLC Grade D", meaning: "Hazardous", color: "#eb3f3f", }
+};
 geoBoundaries.addChildLayer(new BoundaryLayerInfo(
-  "HOLC Redlining in Chicago",
+  "HOLC Redlining in Chicago (with colors)",
   redlining.data,
   redlining.metadata.attribution,
   {
@@ -78,7 +76,19 @@ geoBoundaries.addChildLayer(new BoundaryLayerInfo(
       return `${grade.label} ("${grade.meaning}")`
     },
     getFillColor: (props) => holcGrades[props.holc_grade].color,
-    getFillOpacity: redliningToggleFill.getFillOpacity,
+    getFillOpacity: () => 0.3,
+  },
+));
+geoBoundaries.addChildLayer(new BoundaryLayerInfo(
+  "HOLC Redlining in Chicago (without colors)",
+  redlining.data,
+  redlining.metadata.attribution,
+  {
+    getTooltipText: (props) => {
+      const grade = holcGrades[props.holc_grade];
+      return `${grade.label} ("${grade.meaning}")`
+    },
+    getFillOpacity: () => 0,
   },
 ));
 geoBoundaries.addChildLayer(new LayerInfo("No Boundaries", null, L.layerGroup(), false));
