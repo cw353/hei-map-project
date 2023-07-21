@@ -443,16 +443,6 @@ function getToggleFavoritedButton(markerData, favoritedMarkers) {
     .data("markerData", markerData);
 }
 
-function getWard(ward) {
-  return ward === 20 ? "Ward 20"
-    : ward <= 10 ? "Wards 01–10"
-    : ward < 20 ? "Wards 11–19"
-    : ward <= 30 ? "Wards 21–30"
-    : ward <= 40 ? "Wards 31–40"
-    : ward <= 50 ? "Wards 41–50"
-    : "Unknown Ward";
-}
-
 /**
  * Helper function to download data as file.
  * Based on https://stackoverflow.com/a/30832210 (CC BY-SA 3.0 license).

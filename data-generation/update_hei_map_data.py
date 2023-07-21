@@ -193,7 +193,7 @@ def main():
 		city_owned = makeAPIRequest(
 			api_endpoint = get_dataset_url(city_owned_api_info, "json"),
 			params = [
-				"$select=pin, managing_organization, date_of_acquisition, last_update",
+				"$select=pin, managing_organization, date_of_acquisition, last_update, zoning_classification",
 				"$where=(lower(property_status)='owned by city') AND (lower(managing_organization)='none' OR managing_organization IS NULL)",
 			],
 			limit = limit,

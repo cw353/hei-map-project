@@ -154,7 +154,7 @@ const ward20Office = new MarkerAndCircleDatagroup(
 const cityOwned = new AutomaticClassificationDatagroup(
   "City-Owned PINs (Possibly for Sale)",
   new Dataset(city_owned_data, city_owned_metadata.attribution + " & " + property_locations_metadata.attribution, "pin"),
-  (data) => { return data.ward ? getWard(data.ward) : "Unknown Ward" },
+  (data) => { return data.zoning_classification ? zoneClassRegex.exec(data.zoning_classification)[0] : "Unknown" },
   getDefaultAutomaticClassificationOptions(
     (markerData) => {
       const data = markerData.data;
@@ -163,6 +163,7 @@ const cityOwned = new AutomaticClassificationDatagroup(
         { label: "Address", data: data.property_address },
         { label: "Ward", data: data.ward },
         { label: "Zip Code", data: data.property_zip },
+        { label: "Zoning Classification", data: data.zoning_classification },
         { label: "Date of Acquisition", data: data.date_of_acquisition },
         { label: "Record Last Updated", data: data.last_update },
         { label: "Property Details", data: getPropertyDetailsLink(data.pin) },
