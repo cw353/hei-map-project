@@ -8,9 +8,9 @@ L.Control.HeatLayer = L.Control.extend({
     selectLabelText: "Select category to show as heatmap: ",
     selectTitleText: "Select a category of data to show on the map as a heatmap",
     className: "heatLayerControl",
-    collapsedToggleText: "&#9660; Heatmap",
+    collapsedToggleText: "&#9658; Heatmap",
     collapsedToggleTitle: "Click to show heatmap options",
-    expandedToggleText: "&#9650; Heatmap",
+    expandedToggleText: "&#9660; Heatmap",
     expandedToggleTitle: "Click to hide heatmap options",
     heatLayerOptions: null,
     toggleHeatLayerCallback: null, // parameter: true if heat layer was added, false if heat layer was removed

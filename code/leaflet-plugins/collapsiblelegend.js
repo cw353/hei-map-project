@@ -5,9 +5,9 @@ L.Control.CollapsibleLegend = L.Control.extend({
     id: "collapsibleLegend",
     className: "collapsibleLegend",
     dividerElement: "hr",
-    collapsedTextPrefix: "&#9660; ",
+    collapsedTextPrefix: "&#9658; ",
     collapsedTitle: "Click to show legend",
-    expandedTextPrefix: "&#9650; ",
+    expandedTextPrefix: "&#9660; ",
     expandedTitle: "Click to hide legend",
   },
   initialize(options) {
