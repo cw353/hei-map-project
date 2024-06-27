@@ -37,7 +37,7 @@ for (const item of changeableRadiusDatagroups) {
 
 const aboutMapTab = $("#aboutMapTab");
 aboutMapTab.append([
-  `<p class='italic'>This is a map of properties that may be of interest to Sunshine Gospel Ministries' ${getOpenInNewTabLink("https://www.sunshinegospel.org/hei/", "Housing Equity Initiative")} (HEI). This map was created by Claire Wagner, a member of the Wheaton College Summer 2022 Research Team. The source code for this map is licensed under the MIT License.</p>`,
+  `<p class='italic'>This is a map of properties that may be of interest to Sunshine Gospel Ministries' ${getOpenInNewTabLink("https://www.sunshinegospel.org/hei/", "Housing Equity Initiative")} (HEI). This map was created by Claire Wagner, a member of the Wheaton College Summer 2022 Research Team. The ${getOpenInNewTabLink("https://github.com/cw353/hei-map-project", "source code")} for this map is licensed under the MIT License.</p>`,
   generatePluginsAttribution([
     { name: "Leaflet.markercluster", link: "https://github.com/Leaflet/Leaflet.markercluster", license: "MIT License" },
     { name: "Leaflet.MarkerCluster.LayerSupport", link: "https://github.com/ghybs/Leaflet.MarkerCluster.LayerSupport", license: "MIT License" },
