@@ -205,6 +205,7 @@ td ul, .markerClusterPopupContent ul {
   margin-bottom: -2px;
   padding: 0.5rem 0.75rem;
   font-size: 1.05em;
+  cursor: pointer;
 }
 
 /* based on https://www.digitalocean.com/community/tutorials/react-tabs-component (joshtronic and christinagorton, CC BY-NC-SA 4.0 license) */
